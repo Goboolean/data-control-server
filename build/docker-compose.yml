@@ -1,6 +1,6 @@
 services:
   server:
-    container_name: platform-container
+    container_name: data-control-server
     image: golang
     volumes:
       - .:/go/src/app
