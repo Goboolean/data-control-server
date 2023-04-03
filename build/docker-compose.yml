@@ -1,0 +1,11 @@
+services:
+  server:
+    container_name: platform-container
+    image: golang
+    volumes:
+      - .:/go/src/app
+    working_dir: /go/src/app
+    ports:
+      - "7001:8080"
+    enviromnent:
+    command: ["go", "run", "cmd/main/run.go"]
