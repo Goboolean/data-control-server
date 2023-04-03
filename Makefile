@@ -5,7 +5,8 @@ DOCKERABLE=$(shell id -Gn | grep -c docker)
 MAIN_PATH=cmd/main/run.go
 DOCKER_COMPOSE_PATH = ./build/docker-compose.yml
 SQLC_PATH = ./api/sqlc/sqlc.yml
-PROTO_PATH = ./api/grpc/
+.PROTO_PATH = ./api/grpc/sample.proto
+GRPC_GEN_PATH = ./internal/infrastructure/grpc
 
 
 
@@ -39,15 +40,18 @@ else
 endif
 
 
+test:
+
+
+
 sqlc-generate:
 	sqlc generate -f $(SQLC_PATH)
 
 proto-generate:
 	protoc \
-		--go_out=./internal/infrastructure/grpc \
-		--go_opt=paths=source_relative \
-		--go-grpc_out=. \
-		--go-grpc_opt=paths=source_relative ./api/grpc/sample.proto
+		--go_out=$(GRPC_GEN_PATH) \
+		--go-grpc_out=$(GRPC_GEN_PATH) \
+		$(.PROTO_PATH)
 
 go-init:
 	rm go.mod go.sum
