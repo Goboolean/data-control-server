@@ -2,7 +2,7 @@ package main
 
 import (
 	"log"
-	"platform/internal"
+	"github.com/Goboolean/data-control-server/internal"
 )
 
 
