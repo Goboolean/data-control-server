@@ -1,0 +1,9 @@
+version: 2
+sql:
+  - queries: "./queries.sql"
+    schema:  "./schema.sql"
+    engine: "postgresql"
+    gen:
+      go:
+        package: "info"
+        out: "../../internal/infrastructure/persistance/info"
