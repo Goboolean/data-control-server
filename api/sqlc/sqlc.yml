@@ -6,4 +6,4 @@ sql:
     gen:
       go:
         package: "info"
-        out: "../../internal/infrastructure/persistance/info"
+        out: "../../internal/infrastructure/postgresql/info"
