@@ -7,12 +7,10 @@ import (
 
 
 
-
-
-
 type Transaction struct {
 	MongoTx infratx.TransactionHandler
-	PsqlTx infratx.TransactionHandler
+	PsqlTx  infratx.TransactionHandler
+	RedisTx infratx.TransactionHandler
 	ctx context.Context
 }
 
@@ -23,6 +21,9 @@ func (t *Transaction) Commit() {
 	if err := t.PsqlTx.Commit(); err != nil {
 		panic(err)
 	}
+	if err := t.RedisTx.Commit(); err != nil {
+		panic(err)
+	}
 }
 
 func (t *Transaction) Rollback() {
@@ -30,6 +31,9 @@ func (t *Transaction) Rollback() {
 		panic(err)
 	}
 	if err := t.PsqlTx.Rollback(); err != nil {
+		panic(err)
+	}
+	if err := t.RedisTx.Rollback(); err != nil {
 		panic(err)
 	}
 }
@@ -43,8 +47,10 @@ func NewTransaction() *Transaction {
 
 	return &Transaction{
 		ctx: ctx,
+
 		MongoTx: NewMongoTx(ctx),
 		PsqlTx: NewPsqlTx(ctx),
+		RedisTx: NewRedisTx(ctx),
 	}
 }
 
