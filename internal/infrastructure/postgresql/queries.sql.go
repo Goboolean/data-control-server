@@ -9,29 +9,11 @@ import (
 	"context"
 )
 
-const getAllStockInfo = `-- name: GetAllStockInfo :many
-SELECT stock_id, name FROM stock_info
+const createAccessInfo = `-- name: CreateAccessInfo :exec
+INSERT INTO access_log (connected_at) VALUES (NOW())
 `
 
-func (q *Queries) GetAllStockInfo(ctx context.Context) ([]StockInfo, error) {
-	rows, err := q.db.QueryContext(ctx, getAllStockInfo)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []StockInfo
-	for rows.Next() {
-		var i StockInfo
-		if err := rows.Scan(&i.StockID, &i.Name); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
+func (q *Queries) CreateAccessInfo(ctx context.Context) error {
+	_, err := q.db.ExecContext(ctx, createAccessInfo)
+	return err
 }
