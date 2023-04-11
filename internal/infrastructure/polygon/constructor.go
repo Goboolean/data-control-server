@@ -8,6 +8,8 @@ import (
 
 
 var (
+	POLYGON_API_KEY = os.Getenv("POLYGON_API_KEY")
+
 	DEFAULT_BUFFER_SIZE = 1000
 )
 
@@ -21,7 +23,7 @@ type PolygonWs struct {
 func NewPolygonWs() *PolygonWs {
 
 	c, err := polygonws.New(polygonws.Config{
-		APIKey:    os.Getenv("POLYGON_API_KEY"),
+		APIKey:    POLYGON_API_KEY,
 		Feed:      polygonws.RealTime,
 		Market:    polygonws.Stocks,
 	})
@@ -34,10 +36,7 @@ func NewPolygonWs() *PolygonWs {
 		panic(err)
 	}
 	
-	return &PolygonWs{
-		conn: c,
-		ch: make(chan models.EquityAgg, DEFAULT_BUFFER_SIZE),
-	}
+	return &PolygonWs{conn: c}
 }
 
 

@@ -6,29 +6,36 @@ import (
 )
 
 
-func (p *PolygonWs) SubscribeStocksSecAggs(stock string) (chan models.EquityAgg, error) {
+func (p *PolygonWs) SubscribeStocksSecAggs(stock string) (chan models.EquityAgg, chan error) {
 	c := p.conn
 
+	errch := make(chan error)
+
 	if err := c.Subscribe(polygonws.StocksSecAggs, stock); err != nil {
-		return nil, err
+		return nil, errch
 	}
 
+	p.ch = make(chan models.EquityAgg, DEFAULT_BUFFER_SIZE)
+
 	go func() {
+		defer close(p.ch)
+
 		for {
 			select {
 			case err := <-c.Error():
-				panic(err)
+				errch <- err
+				return
 			case out, more := <-c.Output():
-					if !more {
-							return
-					}
+				if !more {
+					return
+				}
 
-					p.ch <- out.(models.EquityAgg)
+				p.ch <- out.(models.EquityAgg)
 			}
 		}
 	}()
 
-	return p.ch, nil
+	return p.ch, errch
 }
 
 
