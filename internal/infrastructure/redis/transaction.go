@@ -1,4 +1,4 @@
-package wsserver
+package redis
 
 import (
 	"context"
@@ -31,6 +31,6 @@ func (d *Transaction) Transaction() interface{} {
 	return d.pipe
 }
 
-func NewTransaction(pipe *redis.Pipeline, ctx context.Context) *Transaction {
+func NewTransaction(pipe redis.Pipeliner, ctx context.Context) *Transaction {
 	return &Transaction{pipe: pipe, ctx: ctx}
 }
