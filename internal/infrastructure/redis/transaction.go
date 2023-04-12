@@ -3,6 +3,7 @@ package redis
 import (
 	"context"
 
+	infratx "github.com/Goboolean/data-control-server/internal/infrastructure/transaction"
 	"github.com/go-redis/redis/v8"
 )
 
@@ -31,6 +32,6 @@ func (d *Transaction) Transaction() interface{} {
 	return d.pipe
 }
 
-func NewTransaction(pipe redis.Pipeliner, ctx context.Context) *Transaction {
+func NewTransaction(pipe redis.Pipeliner, ctx context.Context) infratx.TransactionHandler {
 	return &Transaction{pipe: pipe, ctx: ctx}
 }
