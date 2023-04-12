@@ -1,4 +1,3 @@
-CREATE TABLE stock_info (
-  stock_id SERIAL PRIMARY KEY,
-  name TEXT NOT NULL
+CREATE TABLE access_log (
+  connected_at TIMESTAMP NOT NULL
 );

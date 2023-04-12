@@ -4,9 +4,10 @@
 
 package postgresql
 
-import ()
+import (
+	"time"
+)
 
-type StockInfo struct {
-	StockID int32
-	Name    string
+type AccessLog struct {
+	ConnectedAt time.Time
 }
