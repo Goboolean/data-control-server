@@ -8,7 +8,6 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-
 var (
 	BUYCYCLE_HOST = os.Getenv("BUYCYCLE_HOST")
 	BUYCYCLE_PORT = os.Getenv("BUYCYCLE_PORT")
@@ -17,18 +16,17 @@ var (
 	DEFAULT_BUFFER_SIZE = 1000
 )
 
-
-type BuycycleWs struct {
+type Subscriber struct {
 	conn *websocket.Conn
-	ch chan StockAggregate
+	ch   chan StockAggregate
 }
 
-func NewBuycycleWs() *BuycycleWs {
+func NewSubscriber() *Subscriber {
 
 	u := url.URL{
 		Scheme: "ws",
-		Host: fmt.Sprintf("%s:%s", BUYCYCLE_HOST, BUYCYCLE_PORT),
-		Path: BUYCYCLE_PATH,
+		Host:   fmt.Sprintf("%s:%s", BUYCYCLE_HOST, BUYCYCLE_PORT),
+		Path:   BUYCYCLE_PATH,
 	}
 
 	c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
@@ -37,8 +35,8 @@ func NewBuycycleWs() *BuycycleWs {
 		panic(err)
 	}
 
-	return &BuycycleWs{
+	return &Subscriber{
 		conn: c,
-		ch: make(chan StockAggregate, DEFAULT_BUFFER_SIZE),
-	}	
+		ch:   make(chan StockAggregate, DEFAULT_BUFFER_SIZE),
+	}
 }

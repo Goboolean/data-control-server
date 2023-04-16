@@ -2,13 +2,11 @@ package buycycle
 
 import "encoding/json"
 
-
-
-func (w *BuycycleWs) SubscribeStocks(stock string) (chan StockAggregate, chan error) {
+func (w *Subscriber) SubscribeStocks(stock string) (chan StockAggregate, chan error) {
 
 	w.ch = make(chan StockAggregate, DEFAULT_BUFFER_SIZE)
 
-	errch := make(chan error)
+	errCh := make(chan error)
 
 	go func() {
 		defer close(w.ch)
@@ -17,14 +15,14 @@ func (w *BuycycleWs) SubscribeStocks(stock string) (chan StockAggregate, chan er
 			_, message, err := w.conn.ReadMessage()
 
 			if err != nil {
-				errch <- err
+				errCh <- err
 				return
 			}
 
 			var data StockAggregate
 
 			if err := json.Unmarshal(message, &data); err != nil {
-				errch <- err
+				errCh <- err
 				return
 			}
 
@@ -32,5 +30,5 @@ func (w *BuycycleWs) SubscribeStocks(stock string) (chan StockAggregate, chan er
 		}
 	}()
 
-	return w.ch, errch
+	return w.ch, errCh
 }
