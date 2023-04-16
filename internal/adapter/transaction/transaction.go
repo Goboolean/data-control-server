@@ -2,6 +2,8 @@ package adaptertx
 
 import (
 	"context"
+
+	"github.com/Goboolean/data-control-server/internal/domain/port"
 	"github.com/Goboolean/data-control-server/internal/infrastructure/transaction"
 )
 
@@ -14,36 +16,49 @@ type Transaction struct {
 	ctx context.Context
 }
 
-func (t *Transaction) Commit() {
+
+
+func (t *Transaction) Commit() error {
+
 	if err := t.MongoTx.Commit(); err != nil {
-		panic(err)
+		return err
 	}
+
 	if err := t.PsqlTx.Commit(); err != nil {
-		panic(err)
+		return err
 	}
+
 	if err := t.RedisTx.Commit(); err != nil {
-		panic(err)
+		return err
 	}
+
+	return nil
 }
 
-func (t *Transaction) Rollback() {
+
+
+func (t *Transaction) Rollback() error {
+
 	if err := t.MongoTx.Rollback(); err != nil {
-		panic(err)
+		return err
 	}
+
 	if err := t.PsqlTx.Rollback(); err != nil {
-		panic(err)
+		return err
 	}
+
 	if err := t.RedisTx.Rollback(); err != nil {
-		panic(err)
+		return err
 	}
+
+	return nil
 }
 
 func (t *Transaction) Context() context.Context {
 	return t.ctx
 }
 
-func NewTransaction() *Transaction {
-	ctx := context.Background()
+func NewTransaction(ctx context.Context) port.Transactioner {
 
 	return &Transaction{
 		ctx: ctx,
