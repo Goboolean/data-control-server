@@ -5,14 +5,11 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-
-
-func (p *Publisher) InsertStockList(topic string, batch []StockAggregate) error {
+func (p *Publisher) InsertStockBatch(topic string, batch []StockAggregate) error {
 
 	message := &sarama.ProducerMessage{Topic: topic}
 
-
-	messageList := []*sarama.ProducerMessage{};
+	messageBatch := []*sarama.ProducerMessage{}
 
 	for idx := range batch {
 
@@ -27,10 +24,10 @@ func (p *Publisher) InsertStockList(topic string, batch []StockAggregate) error 
 			Value: sarama.ByteEncoder(bsonData),
 		}
 
-		messageList = append(messageList, message)
+		messageBatch = append(messageBatch, message)
 	}
 
-	if err := p.conn.SendMessages(messageList); err != nil {
+	if err := p.conn.SendMessages(messageBatch); err != nil {
 		return err
 	}
 

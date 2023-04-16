@@ -9,7 +9,7 @@ import (
 
 
 func NewRedisTx(ctx context.Context) infratx.TransactionHandler {
-	instance := redis.NewInstance()
+	instance := redis.New()
 	pipe := instance.TxPipeline()
 
 	return redis.NewTransaction(pipe, ctx)

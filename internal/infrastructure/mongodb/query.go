@@ -1,22 +1,20 @@
 package mongodb
 
 import (
-	"github.com/Goboolean/data-control-server/internal/infrastructure/transaction"
+	infratx "github.com/Goboolean/data-control-server/internal/infrastructure/transaction"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
-
-
 
 type Queries struct {
 	client *mongo.Client
 }
 
-func NewQueries(client *mongo.Client) *Queries {
+func New(client *mongo.Client) *Queries {
 	return &Queries{client: client}
 }
 
-func (q *Queries) InsertStockList(tx infratx.TransactionHandler, collName string, arg []StockAggregate) error {
+func (q *Queries) InsertStockBatch(tx infratx.TransactionHandler, collName string, arg []StockAggregate) error {
 
 	coll := q.client.Database(MONGO_DATABASE).Collection(collName)
 

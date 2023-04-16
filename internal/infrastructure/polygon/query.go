@@ -6,7 +6,7 @@ import (
 )
 
 
-func (p *PolygonWs) SubscribeStocksSecAggs(stock string) (chan models.EquityAgg, chan error) {
+func (p *Subscriber) SubscribeStocksSecAggs(stock string) (chan models.EquityAgg, chan error) {
 	c := p.conn
 
 	errch := make(chan error)

@@ -14,13 +14,13 @@ var (
 )
 
 
-type PolygonWs struct {
+type Subscriber struct {
 	conn *polygonws.Client
 
 	ch chan models.EquityAgg
 }
 
-func NewPolygonWs() *PolygonWs {
+func New() *Subscriber {
 
 	c, err := polygonws.New(polygonws.Config{
 		APIKey:    POLYGON_API_KEY,
@@ -36,7 +36,7 @@ func NewPolygonWs() *PolygonWs {
 		panic(err)
 	}
 	
-	return &PolygonWs{conn: c}
+	return &Subscriber{conn: c}
 }
 
 

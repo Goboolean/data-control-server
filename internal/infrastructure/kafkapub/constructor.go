@@ -25,7 +25,7 @@ var instance *Publisher
 
 
 
-func NewKafkaPub() *Publisher {
+func New() *Publisher {
 
 	if instance == nil {
 		config := sarama.NewConfig()
