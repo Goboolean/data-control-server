@@ -3,54 +3,45 @@ package kafkapub
 import (
 	"fmt"
 	"os"
-	"time"
 
-	"github.com/Shopify/sarama"
+	"github.com/confluentinc/confluent-kafka-go/kafka"
 )
+
 
 var (
 	KAFKA_HOST = os.Getenv("KAFKA_HOST")
 	KAFKA_PORT = os.Getenv("KAFKA_PORT")
 	KAFKA_USER = os.Getenv("KAFKA_USER")
 	KAFKA_PASS = os.Getenv("KAFKA_PASS")
+	KAFKA_ADDR = fmt.Sprintf("%s:%s", KAFKA_HOST, KAFKA_PORT)
 )
 
 
 
-type Publisher struct {
-	conn sarama.SyncProducer
+type Producer struct {
+	producer *kafka.Producer
 }
 
-var instance *Publisher
 
+var instance *Producer
 
-
-func New() *Publisher {
+func New() *Producer {
 
 	if instance == nil {
-		config := sarama.NewConfig()
+		config := &kafka.ConfigMap{
+			"bootstrap.servers":  KAFKA_ADDR,
+			"security.protocol": "SASL_SSL",
+			"sasl.mechanism":    "PLAIN",
+			"sasl.username":     KAFKA_USER,
+			"sasl.password":     KAFKA_PASS,
+		}
 
-		config.Net.SASL.Enable = true
-		config.Net.SASL.User = KAFKA_USER
-		config.Net.SASL.Password = KAFKA_PASS
-		config.Net.SASL.Mechanism = sarama.SASLTypePlaintext
-		config.Net.SASL.Version = sarama.SASLHandshakeV1
-		config.Net.SASL.Handshake = true
-		config.Net.TLS.Enable = false
-	
-		config.Producer.RequiredAcks = sarama.WaitForAll
-		config.Producer.Retry.Max = 5
-		config.Producer.Timeout = 5 * time.Second
-	
-		KAFKA_ADDR := fmt.Sprintf("%s:%s", KAFKA_HOST, KAFKA_PORT)
-	
-		producer, err := sarama.NewSyncProducer([]string{KAFKA_ADDR}, config)
-
+		producer, err := kafka.NewProducer(config)
 		if err != nil {
 			panic(err)
 		}
 
-		instance = &Publisher{conn: producer}
+		instance = &Producer{producer: producer}
 	}
 
 	return instance
