@@ -42,3 +42,12 @@ func NewInstance() *sql.DB {
 	return instance
 }
 
+func Close() error {
+
+	if err := instance.Close(); err != nil {
+		return err
+	}
+	
+	return nil
+}
+

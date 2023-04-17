@@ -21,7 +21,7 @@ type Subscriber struct {
 	ch   chan StockAggregate
 }
 
-func NewSubscriber() *Subscriber {
+func New() *Subscriber {
 
 	u := url.URL{
 		Scheme: "ws",

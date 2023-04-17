@@ -41,3 +41,13 @@ func New() *redis.Client {
 
 	return instance
 }
+
+func Close() error {
+
+	if err := instance.Close(); err != nil {
+		return err
+	}
+	
+	return nil
+}
+

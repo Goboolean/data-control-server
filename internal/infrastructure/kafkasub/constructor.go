@@ -22,6 +22,8 @@ type Subscriber struct {
 	topic string
 
 	config *kafka.ConfigMap
+
+	consumer *kafka.Consumer
 }
 
 

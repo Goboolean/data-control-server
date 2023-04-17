@@ -42,5 +42,7 @@ func (s *Subscriber) SubscribeStock() (<-chan StockAggregate, error) {
 		}
 	}()
 
+	s.consumer = consumer
+
 	return msgChan, nil
 }
