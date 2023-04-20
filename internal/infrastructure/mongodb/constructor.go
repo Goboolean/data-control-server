@@ -40,3 +40,11 @@ func NewInstance() *mongo.Client {
 	return instance
 }
 
+func Close() error {
+
+	if err := instance.Disconnect(context.TODO()); err != nil {
+		return err
+	}
+
+	return nil
+}

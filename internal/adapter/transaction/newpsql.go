@@ -11,11 +11,11 @@ import (
 
 func NewPsqlTx(ctx context.Context) infratx.TransactionHandler {
 	instance := postgresql.NewInstance()
-	session, err := instance.Begin()
+	tx, err := instance.Begin()
 
 	if err != nil {
 		panic(err)
 	}
 
-	return postgresql.NewTransaction(session, ctx);
+	return postgresql.NewTransaction(tx, ctx);
 }

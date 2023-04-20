@@ -1,4 +1,4 @@
-package wsserver
+package redis
 
 import (
 	"context"
@@ -21,7 +21,7 @@ var (
 var instance *redis.Client
 
 
-func NewInstance() *redis.Client {
+func New() *redis.Client {
 	if instance == nil {
 		rdb := redis.NewClient(&redis.Options{
 			Addr:     fmt.Sprintf("%s:%s", REDIS_HOST, REDIS_PORT),
@@ -41,3 +41,13 @@ func NewInstance() *redis.Client {
 
 	return instance
 }
+
+func Close() error {
+
+	if err := instance.Close(); err != nil {
+		return err
+	}
+	
+	return nil
+}
+
