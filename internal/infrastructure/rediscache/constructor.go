@@ -20,9 +20,24 @@ var (
 )
 
 func init() {
+
 	if err != nil {
 		panic(err)
 	}
+
+	rdb := redis.NewClient(&redis.Options{
+		Addr:     fmt.Sprintf("%s:%s", REDIS_HOST, REDIS_PORT),
+		Password: REDIS_PASS,
+		Username: REDIS_USER,
+		DB:       REDIS_DATABASE,
+	})
+
+	result := rdb.Ping(context.TODO())
+	if err := result.Err(); err != nil {
+		panic(err)
+	}
+
+	instance = rdb
 }
 
 
@@ -30,28 +45,10 @@ func init() {
 var instance *redis.Client
 
 func NewInstance() *redis.Client {
-
-	if instance == nil {
-		rdb := redis.NewClient(&redis.Options{
-			Addr:     fmt.Sprintf("%s:%s", REDIS_HOST, REDIS_PORT),
-			Password: REDIS_PASS,
-			Username: REDIS_USER,
-			DB:       REDIS_DATABASE,
-		})
-
-		result := rdb.Ping(context.TODO())
-		if err := result.Err(); err != nil {
-			panic(err)
-		}
-
-		instance = rdb
-	}
-
 	return instance
 }
 
 func Close() error {
-
 	if err := instance.Close(); err != nil {
 		return err
 	}

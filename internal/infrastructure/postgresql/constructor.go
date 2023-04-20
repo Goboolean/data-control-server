@@ -20,25 +20,24 @@ var (
 	PSQL_DATABASE = os.Getenv("PSQL_DATABASE")
 )
 
-
-
 var instance *sql.DB
 
-func NewInstance() *sql.DB {
+func init() {
+	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+	PSQL_HOST, PSQL_PORT, PSQL_USER, PSQL_PASS, PSQL_DATABASE)
+	
+	db, err := sql.Open("postgres", psqlInfo)
 
-	if instance == nil {
-		psqlInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-			PSQL_HOST, PSQL_PORT, PSQL_USER, PSQL_PASS, PSQL_DATABASE)
-
-		db, err := sql.Open("postgres", psqlInfo)
-
-		if err != nil {
-			panic(db)
-		}
-
-		instance = db
+	if err != nil {
+		panic(db)
 	}
+	
+	instance = db
+}
 
+
+
+func NewInstance() *sql.DB {
 	return instance
 }
 

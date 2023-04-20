@@ -20,23 +20,24 @@ var (
 
 var instance *mongo.Client
 
-func NewInstance() *mongo.Client {
-	if instance == nil {
+func init() {
+	var mongoURI = fmt.Sprintf("mongodb://%s:%s@%s:%s/?maxPoolSize=20&w=majority",
+	MONGO_USER, MONGO_PASS, MONGO_HOST, MONGO_PORT)
+	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
+	opts := options.Client().ApplyURI(mongoURI).SetServerAPIOptions(serverAPI)
 
-		var mongoURI = fmt.Sprintf("mongodb://%s:%s@%s:%s/?maxPoolSize=20&w=majority",
-			MONGO_USER, MONGO_PASS, MONGO_HOST, MONGO_PORT)
-		serverAPI := options.ServerAPI(options.ServerAPIVersion1)
-		opts := options.Client().ApplyURI(mongoURI).SetServerAPIOptions(serverAPI)
+	client, err := mongo.Connect(context.TODO(), opts)
 
-		client, err := mongo.Connect(context.TODO(), opts)
-
-		if err != nil {
-			panic(err)
-		}
-
-		instance = client
+	if err != nil {
+		panic(err)
 	}
 
+	instance = client
+}
+
+
+
+func NewInstance() *mongo.Client {
 	return instance
 }
 
