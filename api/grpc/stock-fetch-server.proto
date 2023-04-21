@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package api;
+
+option go_package = "github.com/Goboolean/data-control-server/internal/infrastructure/grpc";;
+
+service StockConfigurator {
+  rpc UpdateStockConfiguration (StockConfigUpdateRequest) returns (StockConfigUpdateResponse) {}
+}
+
+message StockConfigUpdateRequest {
+  string stock_name = 1;
+  int32 store_amount = 2;
+  int32 relay_amount = 3;
+}
+
+message StockConfigUpdateResponse {
+
+}

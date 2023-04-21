@@ -51,10 +51,11 @@ sqlc-generate:
 	sqlc generate -f $(SQLC_PATH)
 
 grpc-generate:
-	protoc \
-		--go_out=$(GRPC_GEN_PATH) \
-		--go-grpc_out=$(GRPC_GEN_PATH) \
-		$(.GRPC_PROTO_PATH )
+	protoc --go_out=${GRPC_GEN_PATH}  --go_opt=paths=source_relative \
+    ${GRPC_PROTO_PATH}	
+	rm ./internal/infrastructure/grpc/stock-fetch-server.pb.go
+	mv ./internal/infrastructure/grpc/api/grpc/stock-fetch-server.pb.go ./internal/infrastructure/grpc
+	rm -rf ./internal/infrastructure/grpc/api
 
 proto-generate:
 	protoc \
