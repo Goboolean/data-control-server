@@ -65,10 +65,3 @@ proto-generate:
 	rm ./internal/infrastructure/rediscache/model.pb.go
 	mv ./internal/infrastructure/rediscache/api/redis-model/model.pb.go ./internal/infrastructure/rediscache
 	rm -rf ./internal/infrastructure/rediscache/api
-
-
-
-go-init:
-	rm go.mod go.sum
-	go mod init github.com/Goboolean/data-control-server
-	go mod tidy
