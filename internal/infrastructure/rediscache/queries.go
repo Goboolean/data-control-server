@@ -4,13 +4,11 @@ import "github.com/go-redis/redis/v8"
 
 type Queries struct {
 	rds *redis.Client
-	localLock bool
 }
 
-func New(client *redis.Client) *Queries {
+func New() *Queries {
 	return &Queries{
-		rds: client,
-		localLock: false,
+		rds: NewInstance(),
 	}
 }
 

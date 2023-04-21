@@ -3,7 +3,7 @@ package rediscache
 import (
 	"github.com/Goboolean/data-control-server/internal/infrastructure/transaction"
 	"github.com/go-redis/redis/v8"
-	"go.mongodb.org/mongo-driver/bson"
+	"google.golang.org/protobuf/proto"
 )
 
 
@@ -28,7 +28,7 @@ func (q *Queries) GetAndEmptyCache(tx infra.Transactioner, stock string) ([]Stoc
 	for idx := range stockBatch {
 		data, _ := getListCmd.Result()
 
-		if err := bson.Unmarshal(data.([]byte), stockBatch[idx]); err != nil {
+		if err := proto.Unmarshal(data.([]byte), &stockBatch[idx]); err != nil {
 			return nil, err
 		}
 	}

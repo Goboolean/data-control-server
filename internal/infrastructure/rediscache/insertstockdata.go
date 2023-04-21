@@ -2,7 +2,7 @@ package rediscache
 
 import (
 	"github.com/Goboolean/data-control-server/internal/infrastructure/transaction"
-	"go.mongodb.org/mongo-driver/bson"
+	"google.golang.org/protobuf/proto"
 )
 
 
@@ -10,7 +10,7 @@ import (
 
 func (q *Queries) InsertStockData(tx infra.Transactioner, stock string, stockItem *StockAggregate) error {
 
-	data, err := bson.Marshal(&stockItem)
+	data, err := proto.Marshal(stockItem)
 
 	if err != nil {
 		return err
@@ -25,7 +25,7 @@ func (q *Queries) InsertStockDataBatch(tx infra.Transactioner, stock string, sto
 	dataBatch := make([]interface{}, len(stockBatch))
 
 	for idx := range dataBatch {
-		data, err := bson.Marshal(&dataBatch[idx])
+		data, err := proto.Marshal(&stockBatch[idx])
 
 		if err != nil {
 			return err

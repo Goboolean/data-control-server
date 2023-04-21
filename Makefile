@@ -5,9 +5,12 @@ DOCKERABLE=$(shell id -Gn | grep -c docker)
 MAIN_PATH=cmd/main/run.go
 DOCKER_COMPOSE_PATH = ./build/docker-compose.yml
 SQLC_PATH = ./api/sqlc/sqlc.yml
-.PROTO_PATH = ./api/grpc/sample.proto
+
+GRPC_PROTO_PATH = ./api/grpc/stock-fetch-server.proto
 GRPC_GEN_PATH = ./internal/infrastructure/grpc
 
+REDIS_MODEL_PROTO_PATH = ./api/redis-model/model.proto
+REDIS_MODEL_GEN_PATH = ./internal/infrastructure/rediscache
 
 
 
@@ -47,11 +50,22 @@ test:
 sqlc-generate:
 	sqlc generate -f $(SQLC_PATH)
 
-proto-generate:
+grpc-generate:
 	protoc \
 		--go_out=$(GRPC_GEN_PATH) \
 		--go-grpc_out=$(GRPC_GEN_PATH) \
-		$(.PROTO_PATH)
+		$(.GRPC_PROTO_PATH )
+
+proto-generate:
+	protoc \
+		--go_out=$(REDIS_MODEL_GEN_PATH) \
+		--go_opt=paths=source_relative \
+		$(REDIS_MODEL_PROTO_PATH)
+	rm ./internal/infrastructure/rediscache/model.pb.go
+	mv ./internal/infrastructure/rediscache/api/redis-model/model.pb.go ./internal/infrastructure/rediscache
+	rm -rf ./internal/infrastructure/rediscache/api
+
+
 
 go-init:
 	rm go.mod go.sum
