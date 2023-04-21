@@ -2,9 +2,8 @@ package postgresql
 
 import (
 	"context"
-	"database/sql"
-
 	"github.com/Goboolean/data-control-server/internal/infrastructure/transaction"
+	"database/sql"
 )
 
 type Transaction struct {
@@ -28,7 +27,6 @@ func (d *Transaction) Transaction() interface{} {
 	return d.tx
 }
 
-
-func NewTransaction(tx *sql.Tx, ctx context.Context) infratx.TransactionHandler {
+func NewTransaction(tx *sql.Tx, ctx context.Context) infra.Transactioner {
 	return &Transaction{tx: tx, ctx: ctx}
 }

@@ -50,3 +50,8 @@ func Close() error {
 	return nil
 }
 
+
+
+func SetTx(tx *Transaction) *Queries {
+	return New(NewInstance()).WithTx(tx.tx)
+}

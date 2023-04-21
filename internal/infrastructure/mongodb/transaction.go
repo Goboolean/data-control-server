@@ -28,6 +28,6 @@ func (d *Transaction) Transaction() interface{} {
 	return d.session
 }
 
-func NewTransaction(session *mongo.Session, ctx context.Context) *Transaction {
-	return &Transaction{session: *session, ctx: ctx}
+func NewTransaction(session mongo.Session, ctx context.Context) *Transaction {
+	return &Transaction{session: session, ctx: ctx}
 }

@@ -16,15 +16,15 @@ var (
 	MONGO_USER     = os.Getenv("MONGO_USER")
 	MONGO_PASS     = os.Getenv("MONGO_PASS")
 	MONGO_DATABASE = os.Getenv("MONGO_DATABASE")
+	MONGO_URI = fmt.Sprintf("mongodb://%s:%s@%s:%s/?maxPoolSize=20&w=majority",
+	MONGO_USER, MONGO_PASS, MONGO_HOST, MONGO_PORT)
 )
 
 var instance *mongo.Client
 
 func init() {
-	var mongoURI = fmt.Sprintf("mongodb://%s:%s@%s:%s/?maxPoolSize=20&w=majority",
-	MONGO_USER, MONGO_PASS, MONGO_HOST, MONGO_PORT)
 	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
-	opts := options.Client().ApplyURI(mongoURI).SetServerAPIOptions(serverAPI)
+	opts := options.Client().ApplyURI(MONGO_URI).SetServerAPIOptions(serverAPI)
 
 	client, err := mongo.Connect(context.TODO(), opts)
 

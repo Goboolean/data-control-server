@@ -1,53 +1,46 @@
-package adaptertx
+package adapter
 
 import (
 	"context"
 
-	"github.com/Goboolean/data-control-server/internal/domain/port"
-	"github.com/Goboolean/data-control-server/internal/infrastructure/transaction"
+	infra "github.com/Goboolean/data-control-server/internal/infrastructure/transaction"
 )
 
-
-
 type Transaction struct {
-	MongoTx infratx.TransactionHandler
-	PsqlTx  infratx.TransactionHandler
-	RedisTx infratx.TransactionHandler
-	ctx context.Context
+	Mongo infra.Transactioner
+	Psql  infra.Transactioner
+	Redis infra.Transactioner
+	ctx   context.Context
 }
-
-
 
 func (t *Transaction) Commit() error {
 
-	if err := t.MongoTx.Commit(); err != nil {
+	if err := t.Mongo.Commit(); err != nil {
 		return err
 	}
 
-	if err := t.PsqlTx.Commit(); err != nil {
+	if err := t.Psql.Commit(); err != nil {
 		return err
 	}
 
-	if err := t.RedisTx.Commit(); err != nil {
+	if err := t.Redis.Commit(); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-
-
 func (t *Transaction) Rollback() error {
 
-	if err := t.MongoTx.Rollback(); err != nil {
+	if err := t.Mongo.Rollback(); err != nil {
 		return err
 	}
 
-	if err := t.PsqlTx.Rollback(); err != nil {
+	if err := t.Psql.Rollback(); err != nil {
 		return err
 	}
 
-	if err := t.RedisTx.Rollback(); err != nil {
+	if err := t.Redis.Rollback(); err != nil {
 		return err
 	}
 
@@ -57,15 +50,3 @@ func (t *Transaction) Rollback() error {
 func (t *Transaction) Context() context.Context {
 	return t.ctx
 }
-
-func NewTransaction(ctx context.Context) port.Transactioner {
-
-	return &Transaction{
-		ctx: ctx,
-
-		MongoTx: NewMongoTx(ctx),
-		PsqlTx: NewPsqlTx(ctx),
-		RedisTx: NewRedisTx(ctx),
-	}
-}
-
