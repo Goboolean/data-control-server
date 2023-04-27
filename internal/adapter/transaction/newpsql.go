@@ -1,15 +1,13 @@
-package adaptertx
+package adapter
 
 import (
 	"context"
 
 	"github.com/Goboolean/data-control-server/internal/infrastructure/postgresql"
-	infratx "github.com/Goboolean/data-control-server/internal/infrastructure/transaction"
+	infra "github.com/Goboolean/data-control-server/internal/infrastructure/transaction"
 )
 
-
-
-func NewPsqlTx(ctx context.Context) infratx.TransactionHandler {
+func newPsql(ctx context.Context) infra.Transactioner {
 	instance := postgresql.NewInstance()
 	tx, err := instance.Begin()
 
@@ -17,5 +15,5 @@ func NewPsqlTx(ctx context.Context) infratx.TransactionHandler {
 		panic(err)
 	}
 
-	return postgresql.NewTransaction(tx, ctx);
+	return postgresql.NewTransaction(tx, ctx)
 }

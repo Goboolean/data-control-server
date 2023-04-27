@@ -1,14 +1,11 @@
-package redis
+package rediscache
 
 import (
 	"context"
 
-	infratx "github.com/Goboolean/data-control-server/internal/infrastructure/transaction"
+	infrastructure "github.com/Goboolean/data-control-server/internal/infrastructure/transaction"
 	"github.com/go-redis/redis/v8"
 )
-
-
-
 
 type Transaction struct {
 	pipe redis.Pipeliner
@@ -32,6 +29,6 @@ func (d *Transaction) Transaction() interface{} {
 	return d.pipe
 }
 
-func NewTransaction(pipe redis.Pipeliner, ctx context.Context) infratx.TransactionHandler {
+func NewTransaction(pipe redis.Pipeliner, ctx context.Context) infrastructure.Transactioner {
 	return &Transaction{pipe: pipe, ctx: ctx}
 }

@@ -1,16 +1,15 @@
-package adaptertx
+package adapter
 
 import (
 	"context"
 
-	"github.com/Goboolean/data-control-server/internal/infrastructure/redis"
-	infratx "github.com/Goboolean/data-control-server/internal/infrastructure/transaction"
+	"github.com/Goboolean/data-control-server/internal/infrastructure/rediscache"
+	infra "github.com/Goboolean/data-control-server/internal/infrastructure/transaction"
 )
 
+func newRedis(ctx context.Context) infra.Transactioner {
+	instance := rediscache.NewInstance()
+	var pipe = instance.TxPipeline()
 
-func NewRedisTx(ctx context.Context) infratx.TransactionHandler {
-	instance := redis.New()
-	pipe := instance.TxPipeline()
-
-	return redis.NewTransaction(pipe, ctx)
+	return rediscache.NewTransaction(pipe, ctx)
 }

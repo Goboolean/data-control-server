@@ -23,26 +23,31 @@ type Producer struct {
 }
 
 
+
 var instance *Producer
 
-func New() *Producer {
-
-	if instance == nil {
-		config := &kafka.ConfigMap{
-			"bootstrap.servers":  KAFKA_ADDR,
-			"security.protocol": "SASL_SSL",
-			"sasl.mechanism":    "PLAIN",
-			"sasl.username":     KAFKA_USER,
-			"sasl.password":     KAFKA_PASS,
-		}
-
-		producer, err := kafka.NewProducer(config)
-		if err != nil {
-			panic(err)
-		}
-
-		instance = &Producer{producer: producer}
+func init() {
+	config := &kafka.ConfigMap{
+		"bootstrap.servers":  KAFKA_ADDR,
+		"security.protocol": "SASL_SSL",
+		"sasl.mechanism":    "PLAIN",
+		"sasl.username":     KAFKA_USER,
+		"sasl.password":     KAFKA_PASS,
 	}
 
+	producer, err := kafka.NewProducer(config)
+	if err != nil {
+		panic(err)
+	}
+
+	instance = &Producer{producer: producer}
+}
+
+func New() *Producer {
 	return instance
+}
+
+func Close() error {
+	instance.producer.Close()
+	return nil
 }

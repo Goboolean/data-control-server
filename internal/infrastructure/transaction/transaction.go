@@ -1,8 +1,8 @@
-package infratx
+package infra
 
 import "context"
 
-type TransactionHandler interface {
+type Transactioner interface {
 	Commit() error
 	Rollback() error
 	Context() context.Context
