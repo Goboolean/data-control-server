@@ -1,11 +1,10 @@
 package inport
 
-
-type StockConfiguratorPort interface {
+type ConfiguratorPort interface {
 	SetStockRelayableTrue(string) error
 	SetStockRelayableFalse(string) error
 	SetStockStoreableTrue(string) error
 	SetStockStoreableFalse(string) error
-	SetStockTransmitableTrue(string) error
-	SetStockTransmitableFalse(string) error
+	SetStockTransmittableTrue(string) error
+	SetStockTransmittableFalse(string) error
 }
