@@ -3,7 +3,7 @@ package adapter
 import (
 	"context"
 
-	"github.com/Goboolean/data-control-server/internal/domain/port"
+	"github.com/Goboolean/stock-fetch-server/internal/domain/port"
 )
 
 func NewMongoRdbmsRedis(ctx context.Context) port.Transactioner {

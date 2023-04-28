@@ -3,17 +3,16 @@ package main
 import (
 	"log"
 
-	"github.com/Goboolean/data-control-server/internal"
+	"github.com/Goboolean/stock-fetch-server/internal/infrastructure/grpc"
 	"github.com/joho/godotenv"
 )
-
 
 func main() {
 	err := godotenv.Load()
 
 	if err != nil {
 		panic(err)
-  }
+	}
 
-	log.Fatal(internal.App())
+	log.Fatal(server.Run())
 }

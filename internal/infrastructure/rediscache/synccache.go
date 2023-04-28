@@ -1,12 +1,10 @@
 package rediscache
 
 import (
-	"github.com/Goboolean/data-control-server/internal/infrastructure/transaction"
+	"github.com/Goboolean/stock-fetch-server/internal/infrastructure/transaction"
 	"github.com/go-redis/redis/v8"
 	"google.golang.org/protobuf/proto"
 )
-
-
 
 func (q *Queries) GetAndEmptyCache(tx infra.Transactioner, stock string) ([]StockAggregate, error) {
 

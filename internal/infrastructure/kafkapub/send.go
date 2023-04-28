@@ -1,12 +1,15 @@
 package kafkapub
 
 import (
+	"errors"
+	"time"
+
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
 
-func (p *Producer) SendData(topic string, data StockAggregate) error {
+func (p *Producer) SendDataSync(topic string, data StockAggregate) error {
 
 	bsonData, err := bson.Marshal(data)
 	
@@ -24,22 +27,34 @@ func (p *Producer) SendData(topic string, data StockAggregate) error {
 	return nil
 }
 
+
+
 func (p *Producer) SendDataBatch(topic string, batch []StockAggregate) error {
 
 	msgChan := p.producer.ProduceChannel()
 
-	for idx := range batch {
+	bsonBatch := make([][]byte, len(batch))
 
-		bsonData, err := bson.Marshal(batch[idx])
+
+	for idx := range batch {
+		data, err := bson.Marshal(batch[idx])
 
 		if err != nil {
 			return err
 		}
 
+		bsonBatch[idx] = data
+	}
+
+	for idx := range batch {
 		msgChan <- &kafka.Message{
 			TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
-			Value:          bsonData,
+			Value:          bsonBatch[idx],
 		}
+	}
+
+	if e := p.producer.Flush(int(time.Minute)); e != 0  {
+		return errors.New("failed some flush")
 	}
 
 	return nil
