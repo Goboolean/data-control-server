@@ -1,18 +1,18 @@
 package polygon
 
 import (
-	"github.com/polygon-io/client-go/websocket/models"
+	"log"
+
 	polygonws "github.com/polygon-io/client-go/websocket"
+	"github.com/polygon-io/client-go/websocket/models"
 )
 
 
-func (p *Subscriber) SubscribeStocksSecAggs(stock string) (chan models.EquityAgg, chan error) {
+func (p *Subscriber) SubscribeStocksSecAggs(stock string) (<-chan models.EquityAgg, error) {
 	c := p.conn
 
-	errch := make(chan error)
-
 	if err := c.Subscribe(polygonws.StocksSecAggs, stock); err != nil {
-		return nil, errch
+		return nil, err
 	}
 
 	p.ch = make(chan models.EquityAgg, DEFAULT_BUFFER_SIZE)
@@ -23,7 +23,7 @@ func (p *Subscriber) SubscribeStocksSecAggs(stock string) (chan models.EquityAgg
 		for {
 			select {
 			case err := <-c.Error():
-				errch <- err
+				log.Fatal("error: ", err)
 				return
 			case out, more := <-c.Output():
 				if !more {
@@ -35,7 +35,7 @@ func (p *Subscriber) SubscribeStocksSecAggs(stock string) (chan models.EquityAgg
 		}
 	}()
 
-	return p.ch, errch
+	return p.ch, nil
 }
 
 

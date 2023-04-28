@@ -3,7 +3,7 @@ package rediscache
 import (
 	"context"
 
-	infrastructure "github.com/Goboolean/data-control-server/internal/infrastructure/transaction"
+	infrastructure "github.com/Goboolean/stock-fetch-server/internal/infrastructure/transaction"
 	"github.com/go-redis/redis/v8"
 )
 

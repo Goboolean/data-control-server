@@ -3,8 +3,8 @@ package adapter
 import (
 	"context"
 
-	"github.com/Goboolean/data-control-server/internal/infrastructure/postgresql"
-	infra "github.com/Goboolean/data-control-server/internal/infrastructure/transaction"
+	"github.com/Goboolean/stock-fetch-server/internal/infrastructure/postgresql"
+	infra "github.com/Goboolean/stock-fetch-server/internal/infrastructure/transaction"
 )
 
 func newPsql(ctx context.Context) infra.Transactioner {

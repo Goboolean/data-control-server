@@ -3,8 +3,8 @@ package adapter
 import (
 	"context"
 
-	"github.com/Goboolean/data-control-server/internal/infrastructure/mongodb"
-	infra "github.com/Goboolean/data-control-server/internal/infrastructure/transaction"
+	"github.com/Goboolean/stock-fetch-server/internal/infrastructure/mongodb"
+	infra "github.com/Goboolean/stock-fetch-server/internal/infrastructure/transaction"
 )
 
 func newMongo(ctx context.Context) infra.Transactioner {

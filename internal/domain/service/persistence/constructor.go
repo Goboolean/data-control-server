@@ -1,29 +1,26 @@
-package cache
+package persistence
 
 import (
-	"github.com/Goboolean/data-control-server/internal/adapter/stock"
-	outport "github.com/Goboolean/data-control-server/internal/domain/port/out"
+	"github.com/Goboolean/stock-fetch-server/internal/adapter/stock"
+	outport "github.com/Goboolean/stock-fetch-server/internal/domain/port/out"
+	"github.com/Goboolean/stock-fetch-server/internal/domain/service/relayer"
 )
 
-
-type StockCacheManager struct {
-	QMap map[string]*stockQueue
-
-	adapter outport.StockPort
+type PersistenceManager struct {
+	db      outport.StockPersistencePort
+	relayer *relayer.RelayerManager
+	running map[string]chan struct{}
 }
 
-var instance *StockCacheManager
+var instance *PersistenceManager
 
-
-
-func NewStockCacheManager() *StockCacheManager {
-
-	if instance == nil {
-		instance = &StockCacheManager{
-			QMap: make(map[string]*stockQueue),
-			adapter: stock.NewStockAdapter(),
-		}
+func init() {
+	instance = &PersistenceManager{
+		db:      stock.NewStockAdapter(),
+		running: make(map[string]chan struct{}),
 	}
+}
 
+func NewPersistenceManager() *PersistenceManager {
 	return instance
 }

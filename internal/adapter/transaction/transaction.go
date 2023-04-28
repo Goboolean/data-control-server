@@ -3,7 +3,7 @@ package adapter
 import (
 	"context"
 
-	infra "github.com/Goboolean/data-control-server/internal/infrastructure/transaction"
+	infra "github.com/Goboolean/stock-fetch-server/internal/infrastructure/transaction"
 )
 
 type Transaction struct {

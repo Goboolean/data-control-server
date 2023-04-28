@@ -3,8 +3,8 @@ package adapter
 import (
 	"context"
 
-	"github.com/Goboolean/data-control-server/internal/infrastructure/rediscache"
-	infra "github.com/Goboolean/data-control-server/internal/infrastructure/transaction"
+	"github.com/Goboolean/stock-fetch-server/internal/infrastructure/rediscache"
+	infra "github.com/Goboolean/stock-fetch-server/internal/infrastructure/transaction"
 )
 
 func newRedis(ctx context.Context) infra.Transactioner {

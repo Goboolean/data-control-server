@@ -2,8 +2,8 @@ package postgresql
 
 import (
 	"context"
-	"github.com/Goboolean/data-control-server/internal/infrastructure/transaction"
 	"database/sql"
+	"github.com/Goboolean/stock-fetch-server/internal/infrastructure/transaction"
 )
 
 type Transaction struct {
