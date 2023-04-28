@@ -4,21 +4,27 @@ import (
 	"context"
 	"errors"
 
-	"github.com/Goboolean/data-control-server/internal/domain/port/in"
-	"github.com/Goboolean/data-control-server/internal/infrastructure/grpc"
+	"github.com/Goboolean/stock-fetch-server/internal/domain/port/in"
+	"github.com/Goboolean/stock-fetch-server/internal/domain/service/config"
+	model "github.com/Goboolean/stock-fetch-server/internal/infrastructure/grpc/config"
 )
 
-
-
 type StockConfiguratorAdapter struct {
-	service inport.StockConfiguratorPort
+	service inport.ConfiguratorPort
+	model.UnimplementedStockConfiguratorServer
 }
 
-func init() {}
+var instance *StockConfiguratorAdapter
 
+func init() {
+	instance = &StockConfiguratorAdapter{service: config.NewConfigurationManager()}
+}
 
+func New() *StockConfiguratorAdapter {
+	return instance
+}
 
-func (c *StockConfiguratorAdapter) UpdateStockConfiguration(ctx context.Context, in *server.StockConfigUpdateRequest) (nil *server.StockConfigUpdateResponse, err error) {
+func (c *StockConfiguratorAdapter) UpdateStockConfiguration(ctx context.Context, in *model.StockConfigUpdateRequest) (nil *model.StockConfigUpdateResponse, err error) {
 	stock := in.StockName
 	optionType := in.OptionType
 	status := in.OptionStatus
@@ -27,7 +33,7 @@ func (c *StockConfiguratorAdapter) UpdateStockConfiguration(ctx context.Context,
 
 	case int(StockRelay):
 		if status {
-			err = c.service.SetStockRelayableTrue(stock)		
+			err = c.service.SetStockRelayableTrue(stock)
 		} else {
 			err = c.service.SetStockRelayableFalse(stock)
 		}
@@ -35,7 +41,7 @@ func (c *StockConfiguratorAdapter) UpdateStockConfiguration(ctx context.Context,
 
 	case int(StockReal):
 		if status {
-			err = c.service.SetStockRelayableTrue(stock)		
+			err = c.service.SetStockRelayableTrue(stock)
 		} else {
 			err = c.service.SetStockRelayableFalse(stock)
 		}
@@ -43,7 +49,7 @@ func (c *StockConfiguratorAdapter) UpdateStockConfiguration(ctx context.Context,
 
 	case int(StockPersistance):
 		if status {
-			err = c.service.SetStockRelayableTrue(stock)		
+			err = c.service.SetStockRelayableTrue(stock)
 		} else {
 			err = c.service.SetStockRelayableFalse(stock)
 		}
