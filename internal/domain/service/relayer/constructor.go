@@ -23,5 +23,5 @@ func init() {
 		MiddleRelayer:  NewMiddleRelayer(),
 	}
 
-	go instance.TransferRawToLinedUp()
+	go instance.transferRawToLinedUp()
 }
