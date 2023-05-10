@@ -3,7 +3,6 @@ package buycycle
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/url"
 
 	"github.com/Goboolean/shared-packages/pkg/resolver"
@@ -12,14 +11,15 @@ import (
 
 var DEFAULT_BUFFER_SIZE = 1000
 
-type Client struct {
+type Subscriber struct {
 	*websocket.Conn
 
 	ctx context.Context
 	cancel context.CancelFunc
+	r Receiver
 }
 
-func New(c *resolver.Config, r Receiver) *Client {
+func New(c *resolver.Config, r Receiver) *Subscriber {
 
 	if err := c.ShouldHostExist(); err != nil {
 		panic(err)
@@ -45,38 +45,20 @@ func New(c *resolver.Config, r Receiver) *Client {
 
 	ctx, cancel := context.WithCancel(context.Background())
 
-	go func(ctx context.Context) {
-
-		var data StockAggregate
-
-		for {
-			select {
-			case <- ctx.Done():
-				return
-			default:
-
-				if err := conn.ReadJSON(&data); err != nil {
-					log.Fatalf("failed to read json data: %v", err)
-					continue
-				}
-
-				if err := r.OnReceiveBuycycleStockAggs(data); err != nil {
-					log.Fatalf("failed to process data: %v", err)
-					continue
-				}
-			}
-		}
-	}(ctx)
-
-	return &Client{
+	instance := &Subscriber{
 		Conn: conn,
 		ctx: ctx,
 		cancel: cancel,
+		r: r,
 	}
+
+	go RelayMessageToReceiver(instance);
+
+	return instance
 }
 
 
-func (s *Client) Close() error {
+func (s *Subscriber) Close() error {
 	
 	if err := s.Close(); err != nil {
 		return err
