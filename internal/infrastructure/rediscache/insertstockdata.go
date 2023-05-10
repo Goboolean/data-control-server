@@ -1,11 +1,11 @@
 package rediscache
 
 import (
-	"github.com/Goboolean/stock-fetch-server/internal/infrastructure/transaction"
+	"github.com/Goboolean/shared-packages/pkg/resolver"
 	"google.golang.org/protobuf/proto"
 )
 
-func (q *Queries) InsertStockData(tx infra.Transactioner, stock string, stockItem *StockAggregate) error {
+func (q *Queries) InsertStockData(tx resolver.Transactioner, stock string, stockItem *StockAggregate) error {
 
 	data, err := proto.Marshal(stockItem)
 
@@ -16,7 +16,7 @@ func (q *Queries) InsertStockData(tx infra.Transactioner, stock string, stockIte
 	return q.rds.RPush(tx.Context(), stock, &data).Err()
 }
 
-func (q *Queries) InsertStockDataBatch(tx infra.Transactioner, stock string, stockBatch []StockAggregate) error {
+func (q *Queries) InsertStockDataBatch(tx resolver.Transactioner, stock string, stockBatch []StockAggregate) error {
 
 	dataBatch := make([]interface{}, len(stockBatch))
 
