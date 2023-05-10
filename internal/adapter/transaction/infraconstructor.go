@@ -11,41 +11,41 @@ import (
 
 
 
-func newMongo(ctx context.Context) resolver.Transactioner {
+func newMongo(ctx context.Context) (resolver.Transactioner, error) {
 	instance := mongo.New()
 	session, err := instance.StartSession()
 
 	if err != nil {
-		panic(err)
+		return err, nil
 	}
 
-	return mongo.NewTransaction(session, ctx)
+	return mongo.NewTransaction(session, ctx), nil
 }
 
 
 
-func newPSQL(ctx context.Context) resolver.Transactioner {
+func newPSQL(ctx context.Context) (resolver.Transactioner, error) {
 	instance := rdbms.New()
 	tx, err := instance.Begin()
 
 	if err != nil {
-		panic(err)
+		return err, nil
 	}
 
-	return rdbms.NewTransaction(tx, ctx)
+	return rdbms.NewTransaction(tx, ctx), nil
 }
 
 
 
-func newRedis(ctx context.Context) resolver.Transactioner {
+func newRedis(ctx context.Context) (resolver.Transactioner, error) {
 	instance := rediscache.NewInstance()
 	var pipe = instance.TxPipeline()
 
-	return rediscache.NewTransaction(pipe, ctx)
+	return rediscache.NewTransaction(pipe, ctx), nil
 }
 
 
 
-func newKafka(ctx context.Context) resolver.Transactioner {
-	return nil
+func newKafka(ctx context.Context) (resolver.Transactioner, error) {
+	return nil, nil
 }

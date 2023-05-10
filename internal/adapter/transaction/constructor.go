@@ -89,25 +89,35 @@ type Option struct {
 	Kafka    bool
 }
 
-func New(ctx context.Context, o *Option) *Transaction {
-	
-	instance := &Transaction{}
+func New(ctx context.Context, o *Option) (instance *Transaction, err error) {
 	
 	if o.Mongo {
-		instance.M = newMongo(ctx)
+		instance.M, err = newMongo(ctx)
+		if err != nil {
+			return 
+		}
 	}
 
 	if o.Postgres {
-		instance.P = newPSQL(ctx)
+		instance.P, err = newPSQL(ctx)
+		if err != nil {
+			return 
+		}
 	}
 
 	if o.Redis {
-		instance.R = newRedis(ctx)
+		instance.R, err = newRedis(ctx)
+		if err != nil {
+			return 
+		}
 	}
 
 	if o.Kafka {
-		instance.K = newKafka(ctx)
+		instance.K, err = newKafka(ctx)
+		if err != nil {
+			return 
+		}
 	}
 
-	return instance
+	return
 }
