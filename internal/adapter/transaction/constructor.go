@@ -65,7 +65,7 @@ func (t *Transaction) Rollback() error {
 		}
 	}
 
-	if t.R != nil {
+	if t.K != nil {
 		if err := t.K.Rollback(); err != nil {
 			return err
 		}
@@ -90,30 +90,32 @@ type Option struct {
 }
 
 func New(ctx context.Context, o *Option) (instance *Transaction, err error) {
+
+	f := NewFactory()
 	
 	if o.Mongo {
-		instance.M, err = newMongo(ctx)
+		instance.M, err = newM(ctx, f)
 		if err != nil {
 			return 
 		}
 	}
 
 	if o.Postgres {
-		instance.P, err = newPSQL(ctx)
+		instance.P, err = newP(ctx, f)
 		if err != nil {
 			return 
 		}
 	}
 
 	if o.Redis {
-		instance.R, err = newRedis(ctx)
+		instance.R, err = newR(ctx, f)
 		if err != nil {
 			return 
 		}
 	}
 
 	if o.Kafka {
-		instance.K, err = newKafka(ctx)
+		instance.K, err = newK(ctx, f)
 		if err != nil {
 			return 
 		}

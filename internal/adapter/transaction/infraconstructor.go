@@ -11,12 +11,10 @@ import (
 
 
 
-func newMongo(ctx context.Context) (resolver.Transactioner, error) {
-	instance := mongo.New()
-	session, err := instance.StartSession()
-
+func newM(ctx context.Context, f *Factory) (resolver.Transactioner, error) {
+	session, err := f.m.StartSession()
 	if err != nil {
-		return err, nil
+		return nil, err
 	}
 
 	return mongo.NewTransaction(session, ctx), nil
@@ -24,12 +22,10 @@ func newMongo(ctx context.Context) (resolver.Transactioner, error) {
 
 
 
-func newPSQL(ctx context.Context) (resolver.Transactioner, error) {
-	instance := rdbms.New()
-	tx, err := instance.Begin()
-
+func newP(ctx context.Context, f *Factory) (resolver.Transactioner, error) {
+	tx, err := f.p.Begin()
 	if err != nil {
-		return err, nil
+		return nil, err
 	}
 
 	return rdbms.NewTransaction(tx, ctx), nil
@@ -37,15 +33,13 @@ func newPSQL(ctx context.Context) (resolver.Transactioner, error) {
 
 
 
-func newRedis(ctx context.Context) (resolver.Transactioner, error) {
-	instance := rediscache.NewInstance()
-	var pipe = instance.TxPipeline()
-
+func newR(ctx context.Context, f *Factory) (resolver.Transactioner, error) {
+	var pipe = f.r.TxPipeline()
 	return rediscache.NewTransaction(pipe, ctx), nil
 }
 
 
 
-func newKafka(ctx context.Context) (resolver.Transactioner, error) {
+func newK(ctx context.Context, f *Factory) (resolver.Transactioner, error) {
 	return nil, nil
 }
