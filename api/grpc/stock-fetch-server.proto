@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package api;
 
-option go_package = "github.com/Goboolean/stock-fetch-server/internal/infrastructure/grpc/config";
+option go_package = "github.com/Goboolean/stock-fetch-server/api/grpc;grpcapi";
 
 service StockConfigurator {
   rpc UpdateStockConfiguration (StockConfigUpdateRequest) returns (StockConfigUpdateResponse) {}

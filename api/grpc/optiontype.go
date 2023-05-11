@@ -1,4 +1,4 @@
-package config
+package grpcapi
 
 
 type OptionType int

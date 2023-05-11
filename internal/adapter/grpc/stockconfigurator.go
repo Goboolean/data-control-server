@@ -6,12 +6,12 @@ import (
 
 	"github.com/Goboolean/stock-fetch-server/internal/domain/port/in"
 	"github.com/Goboolean/stock-fetch-server/internal/domain/service/config"
-	model "github.com/Goboolean/stock-fetch-server/internal/infrastructure/grpc/config"
+	api "github.com/Goboolean/stock-fetch-server/api/grpc"
 )
 
 type StockConfiguratorAdapter struct {
-	service inport.ConfiguratorPort
-	model.UnimplementedStockConfiguratorServer
+	service in.ConfiguratorPort
+	api.UnimplementedStockConfiguratorServer
 }
 
 var instance *StockConfiguratorAdapter
@@ -24,14 +24,14 @@ func New() *StockConfiguratorAdapter {
 	return instance
 }
 
-func (c *StockConfiguratorAdapter) UpdateStockConfiguration(ctx context.Context, in *model.StockConfigUpdateRequest) (nil *model.StockConfigUpdateResponse, err error) {
+func (c *StockConfiguratorAdapter) UpdateStockConfiguration(ctx context.Context, in *api.StockConfigUpdateRequest) (nil *api.StockConfigUpdateResponse, err error) {
 	stock := in.StockName
 	optionType := in.OptionType
 	status := in.OptionStatus
 
 	switch int(optionType) {
 
-	case int(StockRelay):
+	case int(api.StockRelay):
 		if status {
 			err = c.service.SetStockRelayableTrue(stock)
 		} else {
@@ -39,7 +39,7 @@ func (c *StockConfiguratorAdapter) UpdateStockConfiguration(ctx context.Context,
 		}
 		return
 
-	case int(StockReal):
+	case int(api.StockReal):
 		if status {
 			err = c.service.SetStockRelayableTrue(stock)
 		} else {
@@ -47,7 +47,7 @@ func (c *StockConfiguratorAdapter) UpdateStockConfiguration(ctx context.Context,
 		}
 		return
 
-	case int(StockPersistance):
+	case int(api.StockPersistance):
 		if status {
 			err = c.service.SetStockRelayableTrue(stock)
 		} else {
