@@ -1,1 +1,7 @@
-package outport
+package out
+
+
+
+type TransmissionPort interface {
+	
+}

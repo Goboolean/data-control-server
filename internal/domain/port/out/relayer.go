@@ -1,4 +1,4 @@
-package outport
+package out
 
 
 type RelayerPort interface {
