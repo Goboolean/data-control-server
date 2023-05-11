@@ -16,9 +16,10 @@ func (m *ConfigurationManager) SetStockStoreableFalse(stock string) error {
 	return m.persistence.UnsubscribeRelayer(stock)
 }
 
-
-func (m *ConfigurationManager) SetStockTransmittableTrue(string) error {
+func (m *ConfigurationManager) SetStockTransmittableTrue(stock string) error {
+	return m.transmitter.SubscribeRelayer(stock)
 }
 
-func (m *ConfigurationManager) SetStockTransmittableFalse(string) error {
+func (m *ConfigurationManager) SetStockTransmittableFalse(stock string) error {
+	return m.transmitter.SubscribeRelayer(stock)
 }
