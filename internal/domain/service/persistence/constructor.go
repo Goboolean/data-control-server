@@ -3,14 +3,14 @@ package persistence
 import (
 	"sync"
 
-	outport "github.com/Goboolean/stock-fetch-server/internal/domain/port/out"
+	"github.com/Goboolean/stock-fetch-server/internal/domain/port/out"
 	"github.com/Goboolean/stock-fetch-server/internal/domain/service/relayer"
 )
 
 type PersistenceManager struct {
-	db      outport.StockPersistencePort
+	db      out.StockPersistencePort
 	relayer *relayer.RelayerManager
-	running map[string]chan struct{}
+	closed map[string]chan struct{}
 }
 
 var (
@@ -20,15 +20,24 @@ var (
 
 
 
-func New(db outport.StockPersistencePort, relayer *relayer.RelayerManager) *PersistenceManager {
+func New(db out.StockPersistencePort, r *relayer.RelayerManager) *PersistenceManager {
 
 	once.Do(func() {
 		instance = &PersistenceManager{
 			db:      db,
-			relayer: relayer,
-			running: make(map[string]chan struct{}),
+			relayer: r,
+			closed: make(map[string]chan struct{}, 1),
 		}
 	})
 
 	return instance
+}
+
+
+
+func (m *PersistenceManager) Close() {
+	for stock, ch := range m.closed {
+		ch <- struct{}{}
+		delete(m.closed, stock)
+	}
 }

@@ -18,7 +18,7 @@ func (m *PersistenceManager) SubscribeRelayer(stock string) error {
 
 		for {
 			select {
-			case <-m.running[stock]:
+			case <-m.closed[stock]:
 				return
 
 			case data := <-ch:
@@ -40,6 +40,6 @@ func (m *PersistenceManager) SubscribeRelayer(stock string) error {
 }
 
 func (m *PersistenceManager) UnsubscribeRelayer(stock string) error {
-	delete(m.running, stock)
+	delete(m.closed, stock)
 	return nil
 }
