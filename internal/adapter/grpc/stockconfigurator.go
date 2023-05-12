@@ -2,7 +2,7 @@ package config
 
 import (
 	"context"
-	"errors"
+	"fmt"
 	"sync"
 
 	api "github.com/Goboolean/stock-fetch-server/api/grpc"
@@ -61,6 +61,6 @@ func (c *StockConfiguratorAdapter) UpdateStockConfiguration(ctx context.Context,
 		return
 
 	default:
-		return nil, errors.New("invalid option type")
+		return nil, fmt.Errorf("invalid option type")
 	}
 }
