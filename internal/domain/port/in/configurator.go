@@ -1,4 +1,4 @@
-package inport
+package in
 
 type ConfiguratorPort interface {
 	SetStockRelayableTrue(string) error

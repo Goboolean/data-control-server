@@ -1,4 +1,4 @@
-package inport
+package in
 
 import "github.com/Goboolean/stock-fetch-server/internal/domain/value"
 
