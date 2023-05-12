@@ -5,9 +5,7 @@ import "log"
 
 
 
-type Receiver interface {
-	OnReceiveBuycycleStockAggs(StockAggregate) error
-}
+
 
 func (s *Subscriber) SubscribeStockAggs(stock string) error {
 	return s.WriteJSON(stock);

@@ -8,9 +8,7 @@ import (
 )
 
 
-type Receiver interface {
-	OnReceivePolygonStockAggs(models.EquityAgg) error
-}
+
 
 
 func (p *Subscriber) SubscribeStocksSecAggs(stock string) error {
