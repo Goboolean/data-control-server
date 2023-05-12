@@ -27,7 +27,7 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	wg.Add(1)
-	go server.Run(ctx, errCh)
+	go server.Run(ctx, errCh, nil)
 
 	select {
 	case <- ctx.Done():

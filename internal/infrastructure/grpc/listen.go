@@ -15,7 +15,7 @@ var (
 	FETCH_SERVER_PORT = os.Getenv("FETCH_SERVER_PORT")
 )
 
-func Run(ctx context.Context, ch chan error) {
+func Run(ctx context.Context, ch chan error, adapter *adapter.StockConfiguratorAdapter) {
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", FETCH_SERVER_PORT))
 
 	if err != nil {
@@ -23,7 +23,7 @@ func Run(ctx context.Context, ch chan error) {
 	}
 
 	grpcServer := grpc.NewServer()
-	api.RegisterStockConfiguratorServer(grpcServer, adapter.New())
+	api.RegisterStockConfiguratorServer(grpcServer, adapter)
 
 	go func() {
 		if err := grpcServer.Serve(lis); err != nil {

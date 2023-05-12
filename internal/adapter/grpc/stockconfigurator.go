@@ -3,10 +3,11 @@ package config
 import (
 	"context"
 	"errors"
+	"sync"
 
+	api "github.com/Goboolean/stock-fetch-server/api/grpc"
 	"github.com/Goboolean/stock-fetch-server/internal/domain/port/in"
 	"github.com/Goboolean/stock-fetch-server/internal/domain/service/config"
-	api "github.com/Goboolean/stock-fetch-server/api/grpc"
 )
 
 type StockConfiguratorAdapter struct {
@@ -14,20 +15,24 @@ type StockConfiguratorAdapter struct {
 	api.UnimplementedStockConfiguratorServer
 }
 
-var instance *StockConfiguratorAdapter
+var (
+	instance *StockConfiguratorAdapter
+	once sync.Once
+)
 
-func init() {
-	instance = &StockConfiguratorAdapter{service: config.NewConfigurationManager()}
-}
 
-func New() *StockConfiguratorAdapter {
+
+func New(s *config.ConfigurationManager) *StockConfiguratorAdapter {
+
+	once.Do(func() {
+		instance = &StockConfiguratorAdapter{service: s}
+	})
+
 	return instance
 }
 
 func (c *StockConfiguratorAdapter) UpdateStockConfiguration(ctx context.Context, in *api.StockConfigUpdateRequest) (nil *api.StockConfigUpdateResponse, err error) {
-	stock := in.StockName
-	optionType := in.OptionType
-	status := in.OptionStatus
+	stock, optionType, status := in.StockName, in.OptionType, in.OptionStatus
 
 	switch int(optionType) {
 
