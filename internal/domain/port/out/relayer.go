@@ -2,6 +2,6 @@ package out
 
 
 type RelayerPort interface {
-	SubscribeWebsocket(string) error
-	UnsubscribeWebsocket(string) error
+	FetchDomesticStock(stock string) error
+	FetchForeignStock(stock string) error
 }
