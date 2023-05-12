@@ -11,6 +11,8 @@ import (
 
 var DEFAULT_BUFFER_SIZE = 1000
 
+
+
 type Subscriber struct {
 	*websocket.Conn
 
@@ -29,12 +31,16 @@ func New(c *resolver.Config, r Receiver) *Subscriber {
 		panic(err)
 	}
 
+	if err := c.ShouldPathExist(); err != nil {
+		panic(err)
+	}
+
 	c.Address = fmt.Sprintf("%s:%s", c.Host, c.Port)
 
 	u := url.URL{
 		Scheme: "ws",
 		Host:   c.Address,
-		Path:   "BUYCYCLE_PATH",
+		Path:   c.Path,
 	}
 
 	conn, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
