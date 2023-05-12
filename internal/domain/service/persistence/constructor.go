@@ -1,26 +1,43 @@
 package persistence
 
 import (
-	"github.com/Goboolean/stock-fetch-server/internal/adapter/stock"
-	outport "github.com/Goboolean/stock-fetch-server/internal/domain/port/out"
+	"sync"
+
+	"github.com/Goboolean/stock-fetch-server/internal/domain/port/out"
 	"github.com/Goboolean/stock-fetch-server/internal/domain/service/relayer"
 )
 
 type PersistenceManager struct {
-	db      outport.StockPersistencePort
+	db      out.StockPersistencePort
 	relayer *relayer.RelayerManager
-	running map[string]chan struct{}
+	closed map[string]chan struct{}
 }
 
-var instance *PersistenceManager
+var (
+	instance *PersistenceManager
+	once sync.Once
+)
 
-func init() {
-	instance = &PersistenceManager{
-		db:      stock.NewStockAdapter(),
-		running: make(map[string]chan struct{}),
-	}
-}
 
-func NewPersistenceManager() *PersistenceManager {
+
+func New(db out.StockPersistencePort, r *relayer.RelayerManager) *PersistenceManager {
+
+	once.Do(func() {
+		instance = &PersistenceManager{
+			db:      db,
+			relayer: r,
+			closed: make(map[string]chan struct{}, 1),
+		}
+	})
+
 	return instance
+}
+
+
+
+func (m *PersistenceManager) Close() {
+	for stock, ch := range m.closed {
+		ch <- struct{}{}
+		delete(m.closed, stock)
+	}
 }

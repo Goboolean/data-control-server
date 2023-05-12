@@ -1,12 +1,13 @@
 package server
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"os"
 
+	api "github.com/Goboolean/stock-fetch-server/api/grpc"
 	adapter "github.com/Goboolean/stock-fetch-server/internal/adapter/grpc"
-	"github.com/Goboolean/stock-fetch-server/internal/infrastructure/grpc/config"
 	"google.golang.org/grpc"
 )
 
@@ -14,7 +15,7 @@ var (
 	FETCH_SERVER_PORT = os.Getenv("FETCH_SERVER_PORT")
 )
 
-func Run() error {
+func Run(ctx context.Context, ch chan error, adapter *adapter.StockConfiguratorAdapter) {
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", FETCH_SERVER_PORT))
 
 	if err != nil {
@@ -22,11 +23,16 @@ func Run() error {
 	}
 
 	grpcServer := grpc.NewServer()
-	config.RegisterStockConfiguratorServer(grpcServer, adapter.New())
+	api.RegisterStockConfiguratorServer(grpcServer, adapter)
 
-	if err := grpcServer.Serve(lis); err != nil {
-		return err
+	go func() {
+		if err := grpcServer.Serve(lis); err != nil {
+			ch <- err
+		}
+	}()
+
+	select {
+	case <- ctx.Done():
+		grpcServer.Stop()
 	}
-
-	return nil
 }

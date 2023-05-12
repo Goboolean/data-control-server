@@ -1,42 +1,75 @@
 package buycycle
 
 import (
+	"context"
 	"fmt"
 	"net/url"
-	"os"
 
+	"github.com/Goboolean/shared-packages/pkg/resolver"
 	"github.com/gorilla/websocket"
 )
 
-var (
-	BUYCYCLE_HOST = os.Getenv("BUYCYCLE_HOST")
-	BUYCYCLE_PORT = os.Getenv("BUYCYCLE_PORT")
-	BUYCYCLE_PATH = os.Getenv("BUYCYCLE_PATH")
+var DEFAULT_BUFFER_SIZE = 1000
 
-	DEFAULT_BUFFER_SIZE = 1000
-)
+
 
 type Subscriber struct {
-	conn *websocket.Conn
-	ch   chan StockAggregate
+	*websocket.Conn
+
+	ctx context.Context
+	cancel context.CancelFunc
+	r Receiver
 }
 
-func New() *Subscriber {
+func New(c *resolver.Config, r Receiver) *Subscriber {
+
+	if err := c.ShouldHostExist(); err != nil {
+		panic(err)
+	}
+
+	if err := c.ShouldPortExist(); err != nil {
+		panic(err)
+	}
+
+	if err := c.ShouldPathExist(); err != nil {
+		panic(err)
+	}
+
+	c.Address = fmt.Sprintf("%s:%s", c.Host, c.Port)
 
 	u := url.URL{
 		Scheme: "ws",
-		Host:   fmt.Sprintf("%s:%s", BUYCYCLE_HOST, BUYCYCLE_PORT),
-		Path:   BUYCYCLE_PATH,
+		Host:   c.Address,
+		Path:   c.Path,
 	}
 
-	c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
+	conn, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
 
 	if err != nil {
 		panic(err)
 	}
 
-	return &Subscriber{
-		conn: c,
-		ch:   make(chan StockAggregate, DEFAULT_BUFFER_SIZE),
+	ctx, cancel := context.WithCancel(context.Background())
+
+	instance := &Subscriber{
+		Conn: conn,
+		ctx: ctx,
+		cancel: cancel,
+		r: r,
 	}
+
+	go RelayMessageToReceiver(instance);
+
+	return instance
+}
+
+
+func (s *Subscriber) Close() error {
+	
+	if err := s.Close(); err != nil {
+		return err
+	}
+
+	s.cancel()
+	return nil
 }

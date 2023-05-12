@@ -3,53 +3,76 @@ package rediscache
 import (
 	"context"
 	"fmt"
-	"os"
 	"strconv"
+	"sync"
 
+	"github.com/Goboolean/shared-packages/pkg/resolver"
 	"github.com/go-redis/redis/v8"
 )
 
 
 
+
+
+type Redis struct {
+	*redis.Client
+}
+
 var (
-	REDIS_HOST     = os.Getenv("REDIS_HOST")
-	REDIS_PORT     = os.Getenv("REDIS_PORT")
-	REDIS_USER     = os.Getenv("REDIS_USER")
-	REDIS_PASS     = os.Getenv("REDIS_PASS")
-	REDIS_DATABASE, err = strconv.Atoi(os.Getenv("REDIS_DATABASE"))
+	instance *Redis
+	once sync.Once
 )
 
-func init() {
 
+
+func NewInstance(c *resolver.Config) *Redis {
+
+	if err := c.ShouldHostExist(); err != nil {
+		panic(err)
+	}
+
+	if err := c.ShouldPortExist(); err != nil {
+		panic(err)
+	}
+
+	if err := c.ShouldUserExist(); err != nil {
+		panic(err)
+	}
+
+	if err := c.ShouldPWExist(); err != nil {
+		panic(err)
+	}
+
+	if err := c.ShouldDBExist(); err != nil {
+		panic(err)
+	}
+
+	c.Address = fmt.Sprintf("%s:%s", c.Host, c.Port)
+
+	database, err := strconv.Atoi(c.Database)
 	if err != nil {
 		panic(err)
 	}
 
-	rdb := redis.NewClient(&redis.Options{
-		Addr:     fmt.Sprintf("%s:%s", REDIS_HOST, REDIS_PORT),
-		Password: REDIS_PASS,
-		Username: REDIS_USER,
-		DB:       REDIS_DATABASE,
+	once.Do(func() {
+
+		rdb := redis.NewClient(&redis.Options{
+			Addr:     c.Address,
+			Password: c.Password,
+			Username: c.User,
+			DB:       database,
+		})
+	
+		if err := rdb.Ping(context.TODO()).Err(); err != nil {
+			panic(err)
+		}
 	})
 
-	result := rdb.Ping(context.TODO())
-	if err := result.Err(); err != nil {
-		panic(err)
-	}
-
-	instance = rdb
-}
-
-
-
-var instance *redis.Client
-
-func NewInstance() *redis.Client {
 	return instance
 }
 
-func Close() error {
-	if err := instance.Close(); err != nil {
+func (r *Redis) Close() error {
+	if err := r.Close(); err != nil {
 		return err
 	}
 	

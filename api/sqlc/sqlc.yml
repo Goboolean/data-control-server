@@ -1,9 +1,0 @@
-version: 2
-sql:
-  - queries: "./queries.sql"
-    schema:  "./schema.sql"
-    engine: "postgresql"
-    gen:
-      go:
-        package: "postgresql"
-        out: "../../internal/infrastructure/postgresql"

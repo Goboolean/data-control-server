@@ -4,7 +4,7 @@
 // - protoc             v3.21.12
 // source: api/grpc/stock-fetch-server.proto
 
-package grpc
+package grpcapi
 
 import (
 	context "context"
