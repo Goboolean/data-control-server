@@ -1,11 +1,11 @@
 package config
 
 func (m *ConfigurationManager) SetStockRelayableTrue(stock string) error {
-	return m.relayer.SubscribeWebsocket(stock)
+	return m.relayer.FetchStock(stock)
 }
 
 func (m *ConfigurationManager) SetStockRelayableFalse(stock string) error {
-	return m.relayer.UnsubscribeWebsocket(stock)
+	return m.relayer.StopFetchingStock(stock)
 }
 
 func (m *ConfigurationManager) SetStockStoreableTrue(stock string) error {

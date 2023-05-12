@@ -2,6 +2,7 @@ package polygon
 
 import (
 	"context"
+	"sync"
 
 	"github.com/Goboolean/shared-packages/pkg/resolver"
 	polygonws "github.com/polygon-io/client-go/websocket"
@@ -19,6 +20,11 @@ type Subscriber struct {
 	cancel context.CancelFunc
 }
 
+var (
+	instance *Subscriber
+	once sync.Once
+)
+
 
 
 func New(c *resolver.Config, r Receiver) *Subscriber {
@@ -27,30 +33,34 @@ func New(c *resolver.Config, r Receiver) *Subscriber {
 		panic(err)
 	}
 
-	conn, err := polygonws.New(polygonws.Config{
-		APIKey:    c.Password,
-		Feed:      polygonws.RealTime,
-		Market:    polygonws.Stocks,
-	})
+	once.Do(func() {
+		conn, err := polygonws.New(polygonws.Config{
+			APIKey:    c.Password,
+			Feed:      polygonws.RealTime,
+			Market:    polygonws.Stocks,
+		})
+		
+		if err != nil {
+			panic(err)
+		}
 	
-	if err != nil {
-		panic(err)
-	}
+		if err := conn.Connect(); err != nil {
+			panic(err)
+		}
+	
+		ctx, cancel := context.WithCancel(context.Background())
+	
+		instance := &Subscriber{
+			Client: conn,
+			r: r,
+			ctx: ctx,
+			cancel: cancel,
+		}
+	
+		go RelayMessageToReceiver(instance)
+	})
 
-	if err := conn.Connect(); err != nil {
-		panic(err)
-	}
 
-	ctx, cancel := context.WithCancel(context.Background())
-
-	instance := &Subscriber{
-		Client: conn,
-		r: r,
-		ctx: ctx,
-		cancel: cancel,
-	}
-
-	go RelayMessageToReceiver(instance)
 
 	return instance
 }
