@@ -1,12 +1,16 @@
 package relayer
 
 import (
-	outport "github.com/Goboolean/stock-fetch-server/internal/domain/port/out"
+	"fmt"
+
+	"github.com/Goboolean/stock-fetch-server/internal/domain/port/out"
 	"github.com/Goboolean/stock-fetch-server/internal/domain/value"
 )
 
 type RawRelayer struct {
-	ws outport.RelayerPort
+	ws out.RelayerPort
+	db out.StockPersistencePort
+	meta out.StockMetadataPort
 
 	queue chan value.StockAggregateForm
 }
@@ -18,12 +22,30 @@ func NewRawRelayer() RawRelayer {
 }
 
 func (r *RawRelayer) SubscribeWebsocket(stock string) error {
-	return r.ws.SubscribeWebsocket(stock)
+
+	types, err := r.meta.GetStockType(stock)
+
+	if err != nil {
+		return err
+	}
+
+	switch types {
+	case value.Domestic:
+		return r.ws.FetchDomesticStock(stock)
+	case value.International:
+		return r.ws.FetchInternationalStock(stock)
+	default:
+		return fmt.Errorf("stock %s do not exist", stock)
+	}
 }
 
+
+
 func (r *RawRelayer) UnsubscribeWebsocket(stock string) error {
-	return r.ws.UnsubscribeWebsocket(stock)
+	return nil
 }
+
+
 
 func (r *RawRelayer) PlaceStockFormBatch(batch []value.StockAggregateForm) error {
 	for idx := range batch {
