@@ -22,18 +22,18 @@ func (m *RelayerManager) UnsubscribeWebsocket(stock string) error {
 	return nil
 }
 
-func (m *RelayerManager) TransferRawToLinedUp() {
+func (m *RelayerManager) transferRawToLinedUp() {
 
 	go func() {
 		data := <- m.RawRelayer.queue
 		stock := data.StockID
 	
-		m.MiddleRelayer.Push(stock, &data.StockAggregate)
-	
-		batch, ok := m.MiddleRelayer.EmptyQueue(data.StockID)
+		m.MiddleRelayer.push(stock, &data.StockAggregate)
+
+		batch, ok := m.MiddleRelayer.emptyQueue(data.StockID)
 	
 		if ok {
-			m.LinedUpRelayer.Push(stock, batch)
+			m.LinedUpRelayer.push(stock, batch)
 		}
 	}()
 

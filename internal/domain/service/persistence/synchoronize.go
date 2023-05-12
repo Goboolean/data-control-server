@@ -8,7 +8,10 @@ import (
 
 func (m *PersistenceManager) SynchronizeDatabase(ctx context.Context, stock string) error {
 
-	tx := adapter.NewMongoRdbmsRedis(ctx)
+	tx, err := transaction.New(ctx, &transaction.Option{Mongo: true, Postgres: true})
+	if err != nil {
+		return err
+	}
 
 	batch, err := m.db.EmptyCache(tx, stock)
 

@@ -4,7 +4,7 @@ import (
 	"context"
 	"log"
 
-	adapter "github.com/Goboolean/stock-fetch-server/internal/adapter/transaction"
+	"github.com/Goboolean/stock-fetch-server/internal/adapter/transaction"
 )
 
 func (m *PersistenceManager) SubscribeRelayer(stock string) error {
@@ -18,11 +18,17 @@ func (m *PersistenceManager) SubscribeRelayer(stock string) error {
 
 		for {
 			select {
-			case <-m.running[stock]:
+			case <-m.closed[stock]:
 				return
 
 			case data := <-ch:
-				tx := adapter.NewRedis(context.TODO())
+				tx, err := transaction.New(context.TODO(), &transaction.Option{
+					Redis: true,
+				})
+				if err != nil {
+					log.Fatal(err)
+				}
+
 				if err := m.db.InsertOnCache(tx, stock, data); err != nil {
 					log.Fatal(err)
 				}
@@ -34,6 +40,6 @@ func (m *PersistenceManager) SubscribeRelayer(stock string) error {
 }
 
 func (m *PersistenceManager) UnsubscribeRelayer(stock string) error {
-	delete(m.running, stock)
+	delete(m.closed, stock)
 	return nil
 }

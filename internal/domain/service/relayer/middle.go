@@ -17,7 +17,7 @@ func (r *MiddleRelayer) isExist(stock string) bool {
 	return ok
 }
 
-func (r *MiddleRelayer) Push(stock string, data *value.StockAggregate) {
+func (r *MiddleRelayer) push(stock string, data *value.StockAggregate) {
 
 	if r.isExist(stock) == false {
 		r.queue[stock] = make([]value.StockAggregate, 0)
@@ -26,7 +26,7 @@ func (r *MiddleRelayer) Push(stock string, data *value.StockAggregate) {
 	r.queue[stock] = append(r.queue[stock], *data)
 }
 
-func (r *MiddleRelayer) EmptyQueue(stock string) ([]value.StockAggregate, bool) {
+func (r *MiddleRelayer) emptyQueue(stock string) ([]value.StockAggregate, bool) {
 	if len(r.queue[stock]) > 100 {
 		batch := r.queue[stock]
 

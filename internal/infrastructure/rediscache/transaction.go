@@ -3,7 +3,7 @@ package rediscache
 import (
 	"context"
 
-	infrastructure "github.com/Goboolean/stock-fetch-server/internal/infrastructure/transaction"
+	"github.com/Goboolean/shared-packages/pkg/resolver"
 	"github.com/go-redis/redis/v8"
 )
 
@@ -29,6 +29,6 @@ func (d *Transaction) Transaction() interface{} {
 	return d.pipe
 }
 
-func NewTransaction(pipe redis.Pipeliner, ctx context.Context) infrastructure.Transactioner {
+func NewTransaction(pipe redis.Pipeliner, ctx context.Context) resolver.Transactioner {
 	return &Transaction{pipe: pipe, ctx: ctx}
 }

@@ -32,7 +32,7 @@ func (m *LinedUpRelayer) closeChannel(stock string) {
 	delete(m.queue, stock)
 }
 
-func (m *LinedUpRelayer) Push(stock string, batch []value.StockAggregate) {
+func (m *LinedUpRelayer) push(stock string, batch []value.StockAggregate) {
 	m.queue[stock] <- batch
 }
 

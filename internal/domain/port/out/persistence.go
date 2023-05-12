@@ -1,4 +1,4 @@
-package outport
+package out
 
 import (
 	"github.com/Goboolean/stock-fetch-server/internal/domain/port"
