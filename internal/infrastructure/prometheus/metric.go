@@ -10,8 +10,9 @@ import (
 var (
 	DomesticStockCounter prometheus.Counter
 	ForeignStockCounter prometheus.Counter
-	DBCounter prometheus.Counter
-	MQCounter prometheus.Counter	
+	StoreCounter prometheus.Counter
+	MQCounter prometheus.Counter
+	RequestCounter prometheus.Counter
 )
 
 
@@ -26,11 +27,15 @@ func init() {
 		Name: "counts foreign stock received",
 	})
 
-	DBCounter = promauto.NewCounter(prometheus.CounterOpts{
+	StoreCounter = promauto.NewCounter(prometheus.CounterOpts{
 		Name: "counts stock stored on db",
 	})
 
 	MQCounter = promauto.NewCounter(prometheus.CounterOpts{
 		Name: "counts stock sended to kafka",
 	})
+
+	RequestCounter = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "counts grpc request",
+	})	
 }
