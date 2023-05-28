@@ -4,6 +4,7 @@ import (
 	"github.com/Goboolean/shared-packages/pkg/broker"
 	"github.com/Goboolean/stock-fetch-server/internal/domain/port"
 	"github.com/Goboolean/stock-fetch-server/internal/domain/value"
+	"github.com/Goboolean/stock-fetch-server/internal/infrastructure/prometheus"
 )
 
 
@@ -16,6 +17,8 @@ type TransmissionAdapter struct {
 
 
 func (a *TransmissionAdapter) TransmitStockBatch(tx port.Transactioner, stock string, batch []value.StockAggregate) error {
+
+	prometheus.MQCounter.Add(float64(len(batch)))
 
 	converted := make([]broker.StockAggregate, len(batch))
 
