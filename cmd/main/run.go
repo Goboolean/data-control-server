@@ -2,42 +2,46 @@ package main
 
 import (
 	"context"
-	"log"
 	"os"
 	"os/signal"
-	"sync"
 	"syscall"
 
-	"github.com/Goboolean/stock-fetch-server/internal/infrastructure/grpc"
 	"github.com/joho/godotenv"
 )
 
-func main() {
-	err := godotenv.Load()
 
+
+func main() {
+
+	err := godotenv.Load()
 	if err != nil {
 		panic(err)
 	}
+
 
 	signalCh := make(chan os.Signal, 1)
 	errCh := make(chan error, 1)
 	signal.Notify(signalCh, syscall.SIGINT, syscall.SIGTERM)
 
-	var wg sync.WaitGroup
+	/*
+	 write constructor code here
+	*/
 	ctx, cancel := context.WithCancel(context.Background())
 
-	wg.Add(1)
-	go server.Run(ctx, errCh, nil)
+	/*
+	 run handler with ctxx argument
+	*/
+
+	defer func () {
+		// every fatel error will be catched here
+		// call cancelFunc to cease all process
+		if r := recover(); r != nil {
+			cancel()		
+		}
+	}()
 
 	select {
-	case <- ctx.Done():
-		if err := ctx.Err(); err != nil {
-			log.Fatal(err)
-		}
-		cancel()
-		wg.Wait()
-	case <- signalCh:
-		cancel()
-		wg.Wait()
+	case <- errCh:
+	case <- ctx.Done():		
 	}
 }
