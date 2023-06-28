@@ -1,13 +1,16 @@
 package stock
 
 import (
+	"github.com/Goboolean/shared-packages/pkg/mongo"
 	"github.com/Goboolean/stock-fetch-server/internal/adapter/transaction"
 	"github.com/Goboolean/stock-fetch-server/internal/domain/port"
 	"github.com/Goboolean/stock-fetch-server/internal/domain/value"
-	"github.com/Goboolean/shared-packages/pkg/mongo"
+	"github.com/Goboolean/stock-fetch-server/internal/infrastructure/prometheus"
 )
 
 func (a *StockAdapter) StoreStock(tx port.Transactioner, stockId string, stockData []value.StockAggregate) error {
+
+	prometheus.StoreCounter.Add(float64(len(stockData)))
 
 	dataBatch := make([]mongo.StockAggregate, 0)
 
