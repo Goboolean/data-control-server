@@ -18,10 +18,18 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.PORT }}
           source: "."
-          target: ${{ secrets.PATH }}
+          target: ${{ secrets.PATH }}/test
 
       - name: Test
-        run: go test ./...
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.PORT }}
+          script: |
+            cd test
+            make test
 
       - name: Deploy
         uses: appleboy/ssh-action@master
