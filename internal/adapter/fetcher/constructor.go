@@ -3,11 +3,9 @@ package fetcher
 import (
 	"sync"
 
-	"github.com/Goboolean/stock-fetch-server/internal/infrastructure/buycycle"
-	"github.com/Goboolean/stock-fetch-server/internal/infrastructure/polygon"
+	"github.com/Goboolean/fetch-server/internal/infrastructure/buycycle"
+	"github.com/Goboolean/fetch-server/internal/infrastructure/polygon"
 )
-
-
 
 type StockFetchAdapter struct {
 	b buycycle.Fetcher
@@ -16,9 +14,8 @@ type StockFetchAdapter struct {
 
 var (
 	instance *StockFetchAdapter
-	once sync.Once
+	once     sync.Once
 )
-
 
 func New(b buycycle.Fetcher, p polygon.Fetcher) *StockFetchAdapter {
 

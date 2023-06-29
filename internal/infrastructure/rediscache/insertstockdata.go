@@ -1,7 +1,7 @@
 package rediscache
 
 import (
-	"github.com/Goboolean/shared-packages/pkg/resolver"
+	"github.com/Goboolean/shared/pkg/resolver"
 	"google.golang.org/protobuf/proto"
 )
 

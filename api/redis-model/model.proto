@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package api;
 
-option go_package = "github.com/Goboolean/stock-fetch-server/internal/infrastructure/rediscache";
+option go_package = "github.com/Goboolean/fetch-server/internal/infrastructure/rediscache";
 
 message StockAggregate {
   string stockId = 1;

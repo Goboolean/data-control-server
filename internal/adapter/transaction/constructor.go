@@ -3,15 +3,15 @@ package transaction
 import (
 	"context"
 
-	"github.com/Goboolean/shared-packages/pkg/resolver"
+	"github.com/Goboolean/shared/pkg/resolver"
 )
 
 type Transaction struct {
-	M resolver.Transactioner
-	P resolver.Transactioner
-	R resolver.Transactioner
-	K resolver.Transactioner
-	ctx   context.Context
+	M   resolver.Transactioner
+	P   resolver.Transactioner
+	R   resolver.Transactioner
+	K   resolver.Transactioner
+	ctx context.Context
 }
 
 func (t *Transaction) Commit() error {
@@ -43,8 +43,6 @@ func (t *Transaction) Commit() error {
 	return nil
 }
 
-
-
 func (t *Transaction) Rollback() error {
 
 	if t.M != nil {
@@ -74,13 +72,9 @@ func (t *Transaction) Rollback() error {
 	return nil
 }
 
-
-
 func (t *Transaction) Context() context.Context {
 	return t.ctx
 }
-
-
 
 type Option struct {
 	Mongo    bool
@@ -92,32 +86,32 @@ type Option struct {
 func New(ctx context.Context, o *Option) (instance *Transaction, err error) {
 
 	f := NewFactory()
-	
+
 	if o.Mongo {
 		instance.M, err = newM(ctx, f)
 		if err != nil {
-			return 
+			return
 		}
 	}
 
 	if o.Postgres {
 		instance.P, err = newP(ctx, f)
 		if err != nil {
-			return 
+			return
 		}
 	}
 
 	if o.Redis {
 		instance.R, err = newR(ctx, f)
 		if err != nil {
-			return 
+			return
 		}
 	}
 
 	if o.Kafka {
 		instance.K, err = newK(ctx, f)
 		if err != nil {
-			return 
+			return
 		}
 	}
 

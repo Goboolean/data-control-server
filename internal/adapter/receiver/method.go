@@ -1,13 +1,11 @@
 package receiver
 
 import (
-	"github.com/Goboolean/stock-fetch-server/internal/domain/value"
-	"github.com/Goboolean/stock-fetch-server/internal/infrastructure/buycycle"
-	"github.com/Goboolean/stock-fetch-server/internal/infrastructure/prometheus"
+	"github.com/Goboolean/fetch-server/internal/domain/value"
+	"github.com/Goboolean/fetch-server/internal/infrastructure/buycycle"
+	"github.com/Goboolean/fetch-server/internal/infrastructure/prometheus"
 	"github.com/polygon-io/client-go/websocket/models"
 )
-
-
 
 func (s *StockReceiveAdapter) OnReceiveBuycycle(batch []buycycle.StockAggregate) error {
 
@@ -16,8 +14,6 @@ func (s *StockReceiveAdapter) OnReceiveBuycycle(batch []buycycle.StockAggregate)
 	data := value.StockAggregateForm{}
 	return s.port.PlaceStockFormBatch([]value.StockAggregateForm{data})
 }
-
-
 
 func (s *StockReceiveAdapter) OnReceivePolygonStockAggs(batch []models.EquityAgg) error {
 

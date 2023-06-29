@@ -6,13 +6,9 @@ import (
 	"strconv"
 	"sync"
 
-	"github.com/Goboolean/shared-packages/pkg/resolver"
+	"github.com/Goboolean/shared/pkg/resolver"
 	"github.com/go-redis/redis/v8"
 )
-
-
-
-
 
 type Redis struct {
 	*redis.Client
@@ -20,10 +16,8 @@ type Redis struct {
 
 var (
 	instance *Redis
-	once sync.Once
+	once     sync.Once
 )
-
-
 
 func NewInstance(c *resolver.Config) *Redis {
 
@@ -62,7 +56,7 @@ func NewInstance(c *resolver.Config) *Redis {
 			Username: c.User,
 			DB:       database,
 		})
-	
+
 		if err := rdb.Ping(context.TODO()).Err(); err != nil {
 			panic(err)
 		}
@@ -75,7 +69,6 @@ func (r *Redis) Close() error {
 	if err := r.Close(); err != nil {
 		return err
 	}
-	
+
 	return nil
 }
-

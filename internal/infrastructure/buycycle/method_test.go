@@ -6,27 +6,22 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Goboolean/shared-packages/pkg/resolver"
-	"github.com/Goboolean/stock-fetch-server/internal/infrastructure/buycycle"
+	"github.com/Goboolean/fetch-server/internal/infrastructure/buycycle"
+	"github.com/Goboolean/shared/pkg/resolver"
 )
-
-
 
 var (
 	instance *buycycle.Subscriber
-	counter = 0
-	stock = "test"
+	counter  = 0
+	stock    = "test"
 )
 
-
-type TestReceiver struct {}
+type TestReceiver struct{}
 
 func (r *TestReceiver) OnReceiveBuycycleStockAggs(buycycle.StockAggregate) error {
 	counter++
 	return nil
 }
-
-
 
 func TestMain(m *testing.M) {
 
@@ -49,9 +44,6 @@ func TestMain(m *testing.M) {
 
 	os.Exit(code)
 }
-
-
-
 
 func TestSubscribeStockAggs(t *testing.T) {
 	if err := instance.SubscribeStockAggs(stock); err != nil {

@@ -3,9 +3,9 @@ package config
 import (
 	"sync"
 
-	"github.com/Goboolean/stock-fetch-server/internal/domain/service/persistence"
-	"github.com/Goboolean/stock-fetch-server/internal/domain/service/relayer"
-	"github.com/Goboolean/stock-fetch-server/internal/domain/service/transmission"
+	"github.com/Goboolean/fetch-server/internal/domain/service/persistence"
+	"github.com/Goboolean/fetch-server/internal/domain/service/relayer"
+	"github.com/Goboolean/fetch-server/internal/domain/service/transmission"
 )
 
 type ConfigurationManager struct {
@@ -16,16 +16,14 @@ type ConfigurationManager struct {
 
 var (
 	instance *ConfigurationManager
-	once sync.Once
+	once     sync.Once
 )
-
-
 
 func New(r *relayer.RelayerManager, p *persistence.PersistenceManager, t *transmission.Transmitter) *ConfigurationManager {
 
 	once.Do(func() {
 		instance = &ConfigurationManager{
-			relayer: r,
+			relayer:     r,
 			persistence: p,
 			transmitter: t,
 		}

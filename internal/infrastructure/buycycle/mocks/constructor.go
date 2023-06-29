@@ -5,20 +5,18 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Goboolean/stock-fetch-server/internal/infrastructure/buycycle"
+	"github.com/Goboolean/fetch-server/internal/infrastructure/buycycle"
 )
 
-
 type MockSubscriber struct {
-
-	ctx context.Context
+	ctx    context.Context
 	cancel context.CancelFunc
-	r buycycle.Receiver
+	r      buycycle.Receiver
 }
 
 var (
 	instance *MockSubscriber
-	once sync.Once
+	once     sync.Once
 )
 
 // Create arbitary data with a period of given duration, and call r.OnReceiveBuycycle() method
@@ -28,16 +26,14 @@ func New(duration time.Duration, r buycycle.Receiver) *MockSubscriber {
 		ctx, cancel := context.WithCancel(context.Background())
 
 		instance = &MockSubscriber{
-			ctx: ctx,
+			ctx:    ctx,
 			cancel: cancel,
-			r: r,
+			r:      r,
 		}
 	})
 
 	return instance
 }
-
-
 
 func (s *MockSubscriber) Close() error {
 	if err := s.Close(); err != nil {
@@ -47,4 +43,3 @@ func (s *MockSubscriber) Close() error {
 	s.cancel()
 	return nil
 }
-

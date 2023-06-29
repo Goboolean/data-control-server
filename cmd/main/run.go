@@ -4,12 +4,9 @@ import (
 	"context"
 	"log"
 
-	"github.com/Goboolean/stock-fetch-server/internal/infrastructure/prometheus"
+	"github.com/Goboolean/fetch-server/internal/infrastructure/prometheus"
 	"github.com/joho/godotenv"
 )
-
-
-
 
 func main() {
 
@@ -42,5 +39,5 @@ func main() {
 		cancel()
 	}()
 
-	<- ctx.Done()
+	<-ctx.Done()
 }

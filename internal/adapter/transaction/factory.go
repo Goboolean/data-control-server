@@ -4,13 +4,11 @@ import (
 	"os"
 	"sync"
 
-	"github.com/Goboolean/shared-packages/pkg/mongo"
-	"github.com/Goboolean/shared-packages/pkg/rdbms"
-	"github.com/Goboolean/shared-packages/pkg/resolver"
-	"github.com/Goboolean/stock-fetch-server/internal/infrastructure/rediscache"
+	"github.com/Goboolean/fetch-server/internal/infrastructure/rediscache"
+	"github.com/Goboolean/shared/pkg/mongo"
+	"github.com/Goboolean/shared/pkg/rdbms"
+	"github.com/Goboolean/shared/pkg/resolver"
 )
-
-
 
 type Factory struct {
 	m *mongo.DB
@@ -20,7 +18,7 @@ type Factory struct {
 
 var (
 	factory *Factory
-	once sync.Once
+	once    sync.Once
 )
 
 func NewFactory() *Factory {

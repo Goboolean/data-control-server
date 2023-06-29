@@ -7,22 +7,19 @@ import (
 	"os"
 	"sync"
 
-	api "github.com/Goboolean/stock-fetch-server/api/grpc"
-	adapter "github.com/Goboolean/stock-fetch-server/internal/adapter/grpc"
+	api "github.com/Goboolean/fetch-server/api/grpc"
+	adapter "github.com/Goboolean/fetch-server/internal/adapter/grpc"
 	"google.golang.org/grpc"
 )
 
-
-
 type Host struct {
 	server *grpc.Server
-	impl *adapter.StockConfiguratorAdapter
+	impl   *adapter.StockConfiguratorAdapter
 }
-
 
 var (
 	instance *Host
-	once sync.Once
+	once     sync.Once
 )
 
 func New(adapter *adapter.StockConfiguratorAdapter) *Host {
@@ -34,9 +31,6 @@ func New(adapter *adapter.StockConfiguratorAdapter) *Host {
 
 	return instance
 }
-
-
-
 
 func (h *Host) Run(ctx context.Context) {
 
@@ -61,8 +55,6 @@ func (h *Host) Run(ctx context.Context) {
 		}
 	}()
 }
-
-
 
 func (s *Host) Close() {
 	s.server.GracefulStop()

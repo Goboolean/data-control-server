@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"sync"
 
-	api "github.com/Goboolean/stock-fetch-server/api/grpc"
-	"github.com/Goboolean/stock-fetch-server/internal/domain/port/in"
-	"github.com/Goboolean/stock-fetch-server/internal/domain/service/config"
-	"github.com/Goboolean/stock-fetch-server/internal/infrastructure/prometheus"
+	api "github.com/Goboolean/fetch-server/api/grpc"
+	"github.com/Goboolean/fetch-server/internal/domain/port/in"
+	"github.com/Goboolean/fetch-server/internal/domain/service/config"
+	"github.com/Goboolean/fetch-server/internal/infrastructure/prometheus"
 )
 
 type StockConfiguratorAdapter struct {
@@ -18,10 +18,8 @@ type StockConfiguratorAdapter struct {
 
 var (
 	instance *StockConfiguratorAdapter
-	once sync.Once
+	once     sync.Once
 )
-
-
 
 func New(s *config.ConfigurationManager) *StockConfiguratorAdapter {
 

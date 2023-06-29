@@ -1,11 +1,11 @@
 package stock
 
 import (
-	"github.com/Goboolean/shared-packages/pkg/mongo"
-	"github.com/Goboolean/stock-fetch-server/internal/adapter/transaction"
-	"github.com/Goboolean/stock-fetch-server/internal/domain/port"
-	"github.com/Goboolean/stock-fetch-server/internal/domain/value"
-	"github.com/Goboolean/stock-fetch-server/internal/infrastructure/prometheus"
+	"github.com/Goboolean/fetch-server/internal/adapter/transaction"
+	"github.com/Goboolean/fetch-server/internal/domain/port"
+	"github.com/Goboolean/fetch-server/internal/domain/value"
+	"github.com/Goboolean/fetch-server/internal/infrastructure/prometheus"
+	"github.com/Goboolean/shared/pkg/mongo"
 )
 
 func (a *StockAdapter) StoreStock(tx port.Transactioner, stockId string, stockData []value.StockAggregate) error {

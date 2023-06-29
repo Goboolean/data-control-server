@@ -1,6 +1,6 @@
 services:
   server:
-    container_name: stock-fetch-server
+    container_name: fetch-server
     image: golang
     volumes:
       - .:/go/src/app
