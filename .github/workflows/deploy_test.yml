@@ -28,7 +28,7 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.PORT }}
           script: |
-            cd test
+            cd ${{ secrets.PATH }}/test
             make test
 
       - name: Deploy
