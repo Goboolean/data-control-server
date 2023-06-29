@@ -4,7 +4,7 @@
 // 	protoc        v3.21.12
 // source: api/redis-model/model.proto
 
-package rediscache
+package redis
 
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
