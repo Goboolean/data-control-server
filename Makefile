@@ -1,9 +1,7 @@
 APP=fetch-server
 
-DOCKERABLE=$(shell id -Gn | grep -c docker)
-
 MAIN_PATH=cmd/main/run.go
-DOCKER_COMPOSE_PATH = ./build/docker-compose.yml
+
 SQLC_PATH = ./api/sqlc/sqlc.yml
 
 GRPC_PROTO_PATH = ./api/grpc/fetch-server.proto
@@ -12,40 +10,16 @@ GRPC_GEN_PATH = ./internal/infrastructure/grpc/config
 REDIS_MODEL_PROTO_PATH = ./api/redis-model/model.proto
 REDIS_MODEL_GEN_PATH = ./internal/infrastructure/redis
 
+build-app:
+	docker-compose -f ./build/docker-compose.yml up --build -d
 
+clean-app:
+	docker compose -f ./proxy-server/docker-compose.yml down
 
-build:
-
-ifeq ($(DOCKERABLE), 1)
-	docker run $(APP) -f $(DOCKER_COMPOSE_PATH) --build -d
-else
-	go build -o $(APP) $(MAIN_PATH)
-	./$(APP)
-endif
-
-
-run:
-
-ifeq ($(DOCKERABLE), 1)
-	docker run $(APP) -f $(DOCKER_COMPOSE_PATH) --build
-else
-	go run $(MAIN_PATH)
-endif
-
-
-clean:
-
-ifeq ($(DOCKERABLE), 1)
-	docker rmi $(APP)
-else
-	pkill $(APP)
-	rm ./$(APP)
-endif
-
-
-test:
-
-
+test-app:
+	if docker-compose -f ./build/docker-compose-test.yml up --build ; then \
+		docker-compose -f ./build/docker-compose-test.yml down ; \
+	fi
 
 sqlc-generate:
 	sqlc generate -f $(SQLC_PATH)
