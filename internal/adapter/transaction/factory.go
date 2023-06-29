@@ -25,11 +25,11 @@ func NewFactory() *Factory {
 
 	once.Do(func() {
 		factory = &Factory{
-			r: rediscache.NewInstance(&resolver.Config{
-				Host:     os.Getenv("REDIS_HOST"),
-				Port:     os.Getenv("REDIS_PORT"),
-				User:     os.Getenv("REDIS_USER"),
-				Password: os.Getenv("REDIS_PASS"),
+			r: rediscache.NewInstance(&resolver.ConfigMap{
+				"HOST":     os.Getenv("REDIS_HOST"),
+				"PORT":     os.Getenv("REDIS_PORT"),
+				"USER":     os.Getenv("REDIS_USER"),
+				"PASSWORD": os.Getenv("REDIS_PASS"),
 			}),
 
 			m: mongo.NewDB(&resolver.ConfigMap{

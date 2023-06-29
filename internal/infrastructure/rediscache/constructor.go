@@ -3,7 +3,6 @@ package rediscache
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"sync"
 
 	"github.com/Goboolean/shared/pkg/resolver"
@@ -19,31 +18,35 @@ var (
 	once     sync.Once
 )
 
-func NewInstance(c *resolver.Config) *Redis {
+func NewInstance(c *resolver.ConfigMap) *Redis {
 
-	if err := c.ShouldHostExist(); err != nil {
+	user, err := c.GetStringKey("USER")
+	if err != nil {
 		panic(err)
 	}
 
-	if err := c.ShouldPortExist(); err != nil {
+	password, err := c.GetStringKey("PASSWORD")
+	if err != nil {
 		panic(err)
 	}
 
-	if err := c.ShouldUserExist(); err != nil {
+	host, err := c.GetStringKey("HOST")
+	if err != nil {
 		panic(err)
 	}
 
-	if err := c.ShouldPWExist(); err != nil {
+	port, err := c.GetStringKey("PORT")
+	if err != nil {
 		panic(err)
 	}
 
-	if err := c.ShouldDBExist(); err != nil {
+	database, err := c.GetIntKey("DATABASE")
+	if err != nil {
 		panic(err)
 	}
 
-	c.Address = fmt.Sprintf("%s:%s", c.Host, c.Port)
+	address := fmt.Sprintf("%s:%s", host, port)
 
-	database, err := strconv.Atoi(c.Database)
 	if err != nil {
 		panic(err)
 	}
@@ -51,9 +54,9 @@ func NewInstance(c *resolver.Config) *Redis {
 	once.Do(func() {
 
 		rdb := redis.NewClient(&redis.Options{
-			Addr:     c.Address,
-			Password: c.Password,
-			Username: c.User,
+			Addr:     address,
+			Password: password,
+			Username: user,
 			DB:       database,
 		})
 
@@ -71,4 +74,12 @@ func (r *Redis) Close() error {
 	}
 
 	return nil
+}
+
+func (r *Redis) Ping() error {
+	return r.Ping()
+}
+
+func (r *Redis) NewTx(ctx context.Context) (resolver.Transactioner, error) {
+	return NewTransaction(r.Pipeline(), ctx), nil
 }
