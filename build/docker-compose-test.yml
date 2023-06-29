@@ -7,4 +7,4 @@ services:
     working_dir: /go/src/app
     ports:
       - "7001:8080"
-    command: ["go", "run", "cmd/main/run.go"]
+    command: ["go", "test", "./..."]
