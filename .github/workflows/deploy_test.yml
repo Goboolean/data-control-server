@@ -29,7 +29,7 @@ jobs:
           port: ${{ secrets.PORT }}
           script: |
             cd ${{ secrets.PATH }}/test
-            make test
+            make test-app
 
       - name: Deploy
         uses: appleboy/ssh-action@master
@@ -40,4 +40,4 @@ jobs:
           port: ${{ secrets.PORT }}
           script: |
             cd ${{ secrets.PATH }}
-            make build
+            make build-app
