@@ -32,18 +32,18 @@ func NewFactory() *Factory {
 				Password: os.Getenv("REDIS_PASS"),
 			}),
 
-			m: mongo.NewDB(&resolver.Config{
-				Host:     os.Getenv("MONGO_HOST"),
-				Port:     os.Getenv("MONGO_PORT"),
-				User:     os.Getenv("MONGO_USER"),
-				Password: os.Getenv("MONGO_PASS"),
+			m: mongo.NewDB(&resolver.ConfigMap{
+				"HOST":     os.Getenv("MONGO_HOST"),
+				"PORT":     os.Getenv("MONGO_PORT"),
+				"USER":     os.Getenv("MONGO_USER"),
+				"PASSWORD": os.Getenv("MONGO_PASS"),
 			}),
 
-			p: rdbms.NewDB(&resolver.Config{
-				Host:     os.Getenv("PSQL_HOST"),
-				Port:     os.Getenv("PSQL_PORT"),
-				User:     os.Getenv("PSQL_USER"),
-				Password: os.Getenv("PSQL_PASS"),
+			p: rdbms.NewDB(&resolver.ConfigMap{
+				"HOST":     os.Getenv("PSQL_HOST"),
+				"PORT":     os.Getenv("PSQL_PORT"),
+				"USER":     os.Getenv("PSQL_USER"),
+				"PASSWORD": os.Getenv("PSQL_PASS"),
 			}),
 		}
 	})
