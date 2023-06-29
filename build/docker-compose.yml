@@ -1,10 +1,9 @@
 services:
   server:
     container_name: stock-fetch-server
-    image: golang
-    volumes:
-      - ..:/go/src/app
-    working_dir: /go/src/app
+    build:
+      context: ../
+      dockerfile: ./build/Dockerfile
     ports:
       - "7001:8080"
     command: ["go", "run", "cmd/main/run.go"]
