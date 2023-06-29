@@ -17,8 +17,13 @@ clean-app:
 	docker compose -f ./proxy-server/docker-compose.yml down
 
 test-app:
-	if docker-compose -f ./build/docker-compose-test.yml up --build ; then \
-		docker-compose -f ./build/docker-compose-test.yml down ; \
+	docker-compose -f ./build/docker-compose-test.yml up redis --build -d
+	if docker-compose -f ./build/docker-compose-test.yml up server --build ; then \
+		docker-compose -f ./build/docker-compose-test.yml down; \
+		exit 1; \
+	else \
+		docker-compose -f ./build/docker-compose-test.yml down; \
+		exit 0; \
 	fi
 
 sqlc-generate:
