@@ -1,9 +1,23 @@
 services:
   server:
-    container_name: stock-fetch-server
+    container_name: fetch-server
     build:
       context: ../
       dockerfile: ./build/Dockerfile
     ports:
       - "7001:8080"
     command: ["go", "test", "./..."]
+    networks:
+      - fetch-server-test-network
+
+  redis:
+    container_name: fetch-redis
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    networks:
+      - fetch-server-test-network
+
+networks:
+  fetch-server-test-network:
+    driver: bridge
