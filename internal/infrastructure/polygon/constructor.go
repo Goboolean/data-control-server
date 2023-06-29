@@ -3,6 +3,7 @@ package polygon
 import (
 	"context"
 	"sync"
+	"time"
 
 	"github.com/Goboolean/shared-packages/pkg/resolver"
 	polygonws "github.com/polygon-io/client-go/websocket"
@@ -13,11 +14,10 @@ var DEFAULT_BUFFER_SIZE = 1000
 
 
 type Subscriber struct {
-	*polygonws.Client
+	conn *polygonws.Client
 
 	r Receiver
 	ctx context.Context
-	cancel context.CancelFunc
 }
 
 var (
@@ -44,35 +44,43 @@ func New(c *resolver.Config, r Receiver) *Subscriber {
 			panic(err)
 		}
 	
-		if err := conn.Connect(); err != nil {
-			panic(err)
-		}
-	
-		ctx, cancel := context.WithCancel(context.Background())
-	
-		instance := &Subscriber{
-			Client: conn,
+		instance = &Subscriber{
+			conn: conn,
 			r: r,
-			ctx: ctx,
-			cancel: cancel,
 		}
 	
-		go RelayMessageToReceiver(instance)
 	})
-
-
 
 	return instance
 }
 
 
+func (p *Subscriber) tryRun() error {
+	if err := p.conn.Connect(); err != nil {
+		return err
+	}
+
+	go RelayMessageToReceiver(p)
+	return nil
+}
+
+
+func (s *Subscriber) Run() {
+	go func() {
+		for {
+			if err := s.tryRun(); err != nil {
+				time.Sleep(time.Hour)
+			} else {
+				break
+			}
+		}
+	}()
+}
 
 func (s *Subscriber) Close() error {
 	if err := s.Close(); err != nil {
 		return err
 	}
-
-	s.cancel()
 
 	return nil
 }
