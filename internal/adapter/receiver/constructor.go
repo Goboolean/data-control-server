@@ -3,10 +3,8 @@ package receiver
 import (
 	"sync"
 
-	"github.com/Goboolean/stock-fetch-server/internal/domain/port/in"
+	"github.com/Goboolean/fetch-server/internal/domain/port/in"
 )
-
-
 
 type StockReceiveAdapter struct {
 	port in.RelayerPort
@@ -14,7 +12,7 @@ type StockReceiveAdapter struct {
 
 var (
 	instance *StockReceiveAdapter
-	once sync.Once
+	once     sync.Once
 )
 
 func New(port in.RelayerPort) *StockReceiveAdapter {
@@ -22,7 +20,7 @@ func New(port in.RelayerPort) *StockReceiveAdapter {
 		instance = &StockReceiveAdapter{
 			port: port,
 		}
-	})	
-	
+	})
+
 	return instance
 }

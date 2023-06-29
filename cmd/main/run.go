@@ -3,41 +3,41 @@ package main
 import (
 	"context"
 	"log"
-	"os"
-	"os/signal"
-	"sync"
-	"syscall"
 
-	"github.com/Goboolean/stock-fetch-server/internal/infrastructure/grpc"
+	"github.com/Goboolean/fetch-server/internal/infrastructure/prometheus"
 	"github.com/joho/godotenv"
 )
 
 func main() {
-	err := godotenv.Load()
 
+	err := godotenv.Load()
 	if err != nil {
 		panic(err)
 	}
 
-	signalCh := make(chan os.Signal, 1)
-	errCh := make(chan error, 1)
-	signal.Notify(signalCh, syscall.SIGINT, syscall.SIGTERM)
-
-	var wg sync.WaitGroup
+	/*
+	 write constructor code here
+	*/
 	ctx, cancel := context.WithCancel(context.Background())
 
-	wg.Add(1)
-	go server.Run(ctx, errCh, nil)
+	/*
+	 run handler giving ctx argument
 
-	select {
-	case <- ctx.Done():
-		if err := ctx.Err(); err != nil {
+	 prometheus / grpc
+	 buycycle / polygon
+	*/
+
+	prometheus.Run(ctx)
+
+	defer func() {
+		// every fatel error will be catched here
+		// call cancelFunc to cease all process
+		if err := recover(); err != nil {
 			log.Fatal(err)
 		}
+
 		cancel()
-		wg.Wait()
-	case <- signalCh:
-		cancel()
-		wg.Wait()
-	}
+	}()
+
+	<-ctx.Done()
 }

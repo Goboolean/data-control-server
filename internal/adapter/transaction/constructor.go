@@ -3,15 +3,14 @@ package transaction
 import (
 	"context"
 
-	"github.com/Goboolean/shared-packages/pkg/resolver"
+	"github.com/Goboolean/shared/pkg/resolver"
 )
 
 type Transaction struct {
-	M resolver.Transactioner
-	P resolver.Transactioner
-	R resolver.Transactioner
-	K resolver.Transactioner
-	ctx   context.Context
+	M   resolver.Transactioner
+	P   resolver.Transactioner
+	R   resolver.Transactioner
+	ctx context.Context
 }
 
 func (t *Transaction) Commit() error {
@@ -34,15 +33,8 @@ func (t *Transaction) Commit() error {
 		}
 	}
 
-	if t.R != nil {
-		if err := t.K.Commit(); err != nil {
-			return err
-		}
-	}
-
 	return nil
 }
-
 
 
 func (t *Transaction) Rollback() error {
@@ -65,16 +57,8 @@ func (t *Transaction) Rollback() error {
 		}
 	}
 
-	if t.K != nil {
-		if err := t.K.Rollback(); err != nil {
-			return err
-		}
-	}
-
 	return nil
 }
-
-
 
 func (t *Transaction) Context() context.Context {
 	return t.ctx
@@ -86,38 +70,38 @@ type Option struct {
 	Mongo    bool
 	Postgres bool
 	Redis    bool
-	Kafka    bool
 }
 
 func New(ctx context.Context, o *Option) (instance *Transaction, err error) {
 
 	f := NewFactory()
-	
+
+	if o != nil {
+		o = &Option{
+			Mongo: true,
+			Postgres: true,
+			Redis: true,
+		}	
+	}
+
 	if o.Mongo {
-		instance.M, err = newM(ctx, f)
+		instance.M, err = f.m.NewTx(ctx)
 		if err != nil {
-			return 
+			return
 		}
 	}
 
 	if o.Postgres {
-		instance.P, err = newP(ctx, f)
+		instance.P, err = f.p.NewTx(ctx)
 		if err != nil {
-			return 
+			return
 		}
 	}
 
 	if o.Redis {
-		instance.R, err = newR(ctx, f)
+		instance.R, err = f.r.NewTx(ctx)
 		if err != nil {
-			return 
-		}
-	}
-
-	if o.Kafka {
-		instance.K, err = newK(ctx, f)
-		if err != nil {
-			return 
+			return
 		}
 	}
 

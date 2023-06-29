@@ -6,28 +6,23 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Goboolean/shared-packages/pkg/resolver"
-	"github.com/Goboolean/stock-fetch-server/internal/infrastructure/polygon"
+	"github.com/Goboolean/fetch-server/internal/infrastructure/polygon"
+	"github.com/Goboolean/shared/pkg/resolver"
 	"github.com/polygon-io/client-go/websocket/models"
 )
 
-
-
 var (
 	instance *polygon.Subscriber
-	counter = 0
-	stock = "test"
+	counter  = 0
+	stock    = "test"
 )
 
-
-type TestReceiver struct {}
+type TestReceiver struct{}
 
 func (r *TestReceiver) OnReceivePolygonStockAggs(models.EquityAgg) error {
 	counter++
 	return nil
 }
-
-
 
 func TestMain(m *testing.M) {
 
@@ -49,9 +44,6 @@ func TestMain(m *testing.M) {
 
 	os.Exit(code)
 }
-
-
-
 
 func TestSubscribeStockAggs(t *testing.T) {
 	if err := instance.SubscribeStocksSecAggs(stock); err != nil {

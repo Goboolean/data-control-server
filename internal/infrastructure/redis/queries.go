@@ -1,6 +1,4 @@
-package rediscache
-
-
+package redis
 
 type Queries struct {
 	rds *Redis
@@ -9,5 +7,3 @@ type Queries struct {
 func New() *Queries {
 	return &Queries{}
 }
-
-

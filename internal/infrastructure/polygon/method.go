@@ -11,9 +11,9 @@ import (
 
 
 
-func (p *Subscriber) SubscribeStocksSecAggs(stock string) error {
+func (s *Subscriber) SubscribeStocksSecAggs(stock string) error {
 
-	if err := p.Subscribe(polygonws.StocksSecAggs, stock); err != nil {
+	if err := s.conn.Subscribe(polygonws.StocksSecAggs, stock); err != nil {
 		return err
 	}
 
@@ -26,10 +26,10 @@ func RelayMessageToReceiver(c *Subscriber) {
 		select {
 		case <- c.ctx.Done():
 			return
-		case err := <-c.Error():
+		case err := <-c.conn.Error():
 			log.Fatal("error: ", err)
 			return
-		case out, more := <-c.Output():
+		case out, more := <-c.conn.Output():
 			if !more {
 				return
 			}

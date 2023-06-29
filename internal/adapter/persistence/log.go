@@ -3,8 +3,8 @@ package stock
 import (
 	"database/sql"
 
-	"github.com/Goboolean/stock-fetch-server/internal/adapter/transaction"
-	"github.com/Goboolean/stock-fetch-server/internal/domain/port"
+	"github.com/Goboolean/fetch-server/internal/adapter/transaction"
+	"github.com/Goboolean/fetch-server/internal/domain/port"
 )
 
 func (a *StockAdapter) CreateStoreLog(tx port.Transactioner, stock string) error {

@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"sync"
 
-	api "github.com/Goboolean/stock-fetch-server/api/grpc"
-	"github.com/Goboolean/stock-fetch-server/internal/domain/port/in"
-	"github.com/Goboolean/stock-fetch-server/internal/domain/service/config"
+	api "github.com/Goboolean/fetch-server/api/grpc"
+	"github.com/Goboolean/fetch-server/internal/domain/port/in"
+	"github.com/Goboolean/fetch-server/internal/domain/service/config"
+	"github.com/Goboolean/fetch-server/internal/infrastructure/prometheus"
 )
 
 type StockConfiguratorAdapter struct {
@@ -17,10 +18,8 @@ type StockConfiguratorAdapter struct {
 
 var (
 	instance *StockConfiguratorAdapter
-	once sync.Once
+	once     sync.Once
 )
-
-
 
 func New(s *config.ConfigurationManager) *StockConfiguratorAdapter {
 
@@ -32,6 +31,9 @@ func New(s *config.ConfigurationManager) *StockConfiguratorAdapter {
 }
 
 func (c *StockConfiguratorAdapter) UpdateStockConfiguration(ctx context.Context, in *api.StockConfigUpdateRequest) (nil *api.StockConfigUpdateResponse, err error) {
+
+	prometheus.RequestCounter.Inc()
+
 	stock, optionType, status := in.StockName, in.OptionType, in.OptionStatus
 
 	switch int(optionType) {
@@ -46,17 +48,17 @@ func (c *StockConfiguratorAdapter) UpdateStockConfiguration(ctx context.Context,
 
 	case int(api.StockReal):
 		if status {
-			err = c.service.SetStockRelayableTrue(stock)
+			err = c.service.SetStockTransmittableTrue(stock)
 		} else {
-			err = c.service.SetStockRelayableFalse(stock)
+			err = c.service.SetStockTransmittableFalse(stock)
 		}
 		return
 
 	case int(api.StockPersistance):
 		if status {
-			err = c.service.SetStockRelayableTrue(stock)
+			err = c.service.SetStockStoreableTrue(stock)
 		} else {
-			err = c.service.SetStockRelayableFalse(stock)
+			err = c.service.SetStockStoreableFalse(stock)
 		}
 		return
 
