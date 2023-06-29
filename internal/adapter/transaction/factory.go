@@ -4,7 +4,7 @@ import (
 	"os"
 	"sync"
 
-	"github.com/Goboolean/fetch-server/internal/infrastructure/rediscache"
+	"github.com/Goboolean/fetch-server/internal/infrastructure/redis"
 	"github.com/Goboolean/shared/pkg/mongo"
 	"github.com/Goboolean/shared/pkg/rdbms"
 	"github.com/Goboolean/shared/pkg/resolver"
@@ -13,7 +13,7 @@ import (
 type Factory struct {
 	m *mongo.DB
 	p *rdbms.PSQL
-	r *rediscache.Redis
+	r *redis.Redis
 }
 
 var (
@@ -25,7 +25,7 @@ func NewFactory() *Factory {
 
 	once.Do(func() {
 		factory = &Factory{
-			r: rediscache.NewInstance(&resolver.ConfigMap{
+			r: redis.NewInstance(&resolver.ConfigMap{
 				"HOST":     os.Getenv("REDIS_HOST"),
 				"PORT":     os.Getenv("REDIS_PORT"),
 				"USER":     os.Getenv("REDIS_USER"),

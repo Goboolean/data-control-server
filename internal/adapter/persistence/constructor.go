@@ -3,14 +3,14 @@ package stock
 import (
 	"sync"
 
-	"github.com/Goboolean/fetch-server/internal/infrastructure/rediscache"
+	"github.com/Goboolean/fetch-server/internal/infrastructure/redis"
 	"github.com/Goboolean/shared/pkg/mongo"
 	"github.com/Goboolean/shared/pkg/rdbms"
 )
 
 type StockAdapter struct {
 	mongo    *mongo.Queries
-	redis    *rediscache.Queries
+	redis    *redis.Queries
 	postgres *rdbms.Queries
 }
 
@@ -19,7 +19,7 @@ var (
 	once     sync.Once
 )
 
-func NewStockAdapter(mongo *mongo.Queries, redis *rediscache.Queries, postgres *rdbms.Queries) *StockAdapter {
+func NewStockAdapter(mongo *mongo.Queries, redis *redis.Queries, postgres *rdbms.Queries) *StockAdapter {
 
 	once.Do(func() {
 		instance = &StockAdapter{

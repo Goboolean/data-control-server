@@ -10,7 +10,7 @@ GRPC_PROTO_PATH = ./api/grpc/fetch-server.proto
 GRPC_GEN_PATH = ./internal/infrastructure/grpc/config
 
 REDIS_MODEL_PROTO_PATH = ./api/redis-model/model.proto
-REDIS_MODEL_GEN_PATH = ./internal/infrastructure/rediscache
+REDIS_MODEL_GEN_PATH = ./internal/infrastructure/redis
 
 
 
@@ -65,6 +65,6 @@ proto-generate:
 		--go_out=$(REDIS_MODEL_GEN_PATH) \
 		--go_opt=paths=source_relative \
 		$(REDIS_MODEL_PROTO_PATH)
-	rm ./internal/infrastructure/rediscache/model.pb.go
-	mv ./internal/infrastructure/rediscache/api/redis-model/model.pb.go ./internal/infrastructure/rediscache
-	rm -rf ./internal/infrastructure/rediscache/api
+	rm ./internal/infrastructure/redis/model.pb.go
+	mv ./internal/infrastructure/redis/api/redis-model/model.pb.go ./internal/infrastructure/redis
+	rm -rf ./internal/infrastructure/redis/api

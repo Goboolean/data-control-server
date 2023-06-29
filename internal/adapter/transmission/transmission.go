@@ -16,10 +16,10 @@ func (a *TransmissionAdapter) TransmitStockBatch(tx port.Transactioner, stock st
 
 	prometheus.MQCounter.Add(float64(len(batch)))
 
-	converted := make([]broker.StockAggregate, len(batch))
+	converted := make([]*broker.StockAggregate, len(batch))
 
 	for idx := range converted {
-		converted[idx] = broker.StockAggregate{
+		converted[idx] = &broker.StockAggregate{
 			EventType: batch[idx].EventType,
 			Average:   float32(batch[idx].Average),
 			Min:       float32(batch[idx].Min),
