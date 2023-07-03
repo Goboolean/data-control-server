@@ -1,7 +1,7 @@
 on:
   push:
     branches:
-      - feature/cicd
+      - develop
 
 jobs:
   deploy:
@@ -28,16 +28,5 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.PORT }}
           script: |
-            cd test
-            make test
-
-      - name: Deploy
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.SSH_KEY }}
-          port: ${{ secrets.PORT }}
-          script: |
-            cd ${{ secrets.PATH }}
-            make build
+            cd ${{ secrets.PATH }}/test
+            make test-app
