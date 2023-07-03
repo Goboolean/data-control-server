@@ -20,14 +20,14 @@ test-app:
 	docker-compose -f ./build/docker-compose-test.yml up redis --build -d
 	if docker-compose -f ./build/docker-compose-test.yml up server --build ; then \
 		docker-compose -f ./build/docker-compose-test.yml down; \
-		cd ../ \
-		rm -r test \
+		cd ../; \
+		rm -r test; \
 		exit 1; \
 	else \
 		docker-compose -f ./build/docker-compose-test.yml down; \
-		cp -r ./* ../ \
-		cd ../ \
-		rm -r test \
+		cp -r ./* ../; \
+		cd ../; \
+		rm -r test; \
 		exit 0; \
 	fi
 
