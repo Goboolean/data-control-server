@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.30.0
 // 	protoc        v3.21.12
-// source: api/grpc/stock-fetch-server.proto
+// source: api/grpc/fetch-server.proto
 
 package grpcapi
 

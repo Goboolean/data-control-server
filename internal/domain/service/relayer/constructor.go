@@ -4,25 +4,22 @@ import (
 	"context"
 	"sync"
 
-	"github.com/Goboolean/stock-fetch-server/internal/domain/port/out"
-	"github.com/Goboolean/stock-fetch-server/internal/domain/value"
+	"github.com/Goboolean/fetch-server/internal/domain/port/out"
+	"github.com/Goboolean/fetch-server/internal/domain/value"
 )
-
 
 type RelayerManager struct {
 	*store
 	*subscriber
 	*pipe
 
-	ctx context.Context
+	ctx    context.Context
 	cancel context.CancelFunc
 }
 
-
-
 var (
 	instance *RelayerManager
-	once sync.Once
+	once     sync.Once
 )
 
 func New(db out.StockPersistencePort, meta out.StockMetadataPort, ws out.RelayerPort) *RelayerManager {
@@ -32,13 +29,13 @@ func New(db out.StockPersistencePort, meta out.StockMetadataPort, ws out.Relayer
 		ctx, cancel := context.WithCancel(context.Background())
 
 		startPoint := make(chan value.StockAggregateForm)
-		endPoint := make(map[string] chan []value.StockAggregate)
+		endPoint := make(map[string]chan []value.StockAggregate)
 
 		instance = &RelayerManager{
 			ctx: ctx, cancel: cancel,
-			store: &store{},
+			store:      &store{},
 			subscriber: newSubscriber(ws, meta),
-			pipe: newPipe(startPoint, endPoint),
+			pipe:       newPipe(startPoint, endPoint),
 		}
 
 		go instance.pipe.ExecPipe(ctx)
@@ -47,10 +44,7 @@ func New(db out.StockPersistencePort, meta out.StockMetadataPort, ws out.Relayer
 	return instance
 }
 
-
-
 func (m *RelayerManager) Close() error {
 	m.cancel()
 	return nil
 }
-

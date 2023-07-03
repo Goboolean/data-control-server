@@ -1,14 +1,11 @@
 package transmission
 
-
 import (
 	"context"
 	"log"
 
-	"github.com/Goboolean/stock-fetch-server/internal/adapter/transaction"
+	"github.com/Goboolean/fetch-server/internal/adapter/transaction"
 )
-
-
 
 func (t *Transmitter) SubscribeRelayer(stock string) error {
 	ch, err := t.relayer.Subscribe(stock)
@@ -24,7 +21,7 @@ func (t *Transmitter) SubscribeRelayer(stock string) error {
 				return
 
 			case data := <-ch:
-				tx, err := transaction.New(context.TODO(), &transaction.Option{Kafka: true})
+				tx, err := transaction.New(context.TODO(), nil)
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -43,4 +40,3 @@ func (t *Transmitter) UnsubscribeRelayer(stock string) error {
 	delete(t.closed, stock)
 	return nil
 }
-

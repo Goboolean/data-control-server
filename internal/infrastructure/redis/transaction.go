@@ -1,9 +1,9 @@
-package rediscache
+package redis
 
 import (
 	"context"
 
-	"github.com/Goboolean/shared-packages/pkg/resolver"
+	"github.com/Goboolean/shared/pkg/resolver"
 	"github.com/go-redis/redis/v8"
 )
 

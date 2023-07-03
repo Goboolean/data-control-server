@@ -3,7 +3,7 @@ package persistence
 import (
 	"context"
 
-	"github.com/Goboolean/stock-fetch-server/internal/adapter/transaction"
+	"github.com/Goboolean/fetch-server/internal/adapter/transaction"
 )
 
 func (m *PersistenceManager) SynchronizeDatabase(ctx context.Context, stock string) error {

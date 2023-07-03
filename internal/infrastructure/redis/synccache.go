@@ -1,7 +1,7 @@
-package rediscache
+package redis
 
 import (
-	"github.com/Goboolean/shared-packages/pkg/resolver"
+	"github.com/Goboolean/shared/pkg/resolver"
 	"github.com/go-redis/redis/v8"
 	"google.golang.org/protobuf/proto"
 )

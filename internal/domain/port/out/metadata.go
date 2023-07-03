@@ -1,9 +1,11 @@
 package out
 
-import "github.com/Goboolean/stock-fetch-server/internal/domain/value"
-
+import (
+	"github.com/Goboolean/fetch-server/internal/domain/port"
+	"github.com/Goboolean/fetch-server/internal/domain/value"
+)
 
 type StockMetadataPort interface {
-	GetStockType(string) (value.StockType, error)
-	StockExists(string) (bool, error)
+	GetStockType(port.Transactioner, string) (value.StockType, error)
+	StockExists(port.Transactioner, string) (bool, error)
 }

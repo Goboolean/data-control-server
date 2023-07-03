@@ -4,7 +4,7 @@ import (
 	"context"
 	"log"
 
-	"github.com/Goboolean/stock-fetch-server/internal/adapter/transaction"
+	"github.com/Goboolean/fetch-server/internal/adapter/transaction"
 )
 
 func (m *PersistenceManager) SubscribeRelayer(stock string) error {

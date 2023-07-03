@@ -1,15 +1,13 @@
 package stock
 
 import (
-	"github.com/Goboolean/stock-fetch-server/internal/adapter/transaction"
-	"github.com/Goboolean/stock-fetch-server/internal/domain/port"
-	"github.com/Goboolean/stock-fetch-server/internal/domain/value"
-	"github.com/Goboolean/stock-fetch-server/internal/infrastructure/rediscache"
+	"github.com/Goboolean/fetch-server/internal/adapter/transaction"
+	"github.com/Goboolean/fetch-server/internal/domain/port"
+	"github.com/Goboolean/fetch-server/internal/domain/value"
+	"github.com/Goboolean/fetch-server/internal/infrastructure/redis"
 
-	"github.com/Goboolean/shared-packages/pkg/resolver"
+	"github.com/Goboolean/shared/pkg/resolver"
 )
-
-
 
 func (a *StockAdapter) EmptyCache(tx port.Transactioner, stock string) ([]value.StockAggregate, error) {
 
@@ -37,13 +35,11 @@ func (a *StockAdapter) EmptyCache(tx port.Transactioner, stock string) ([]value.
 	return stockBatch, nil
 }
 
-
-
 func (a *StockAdapter) InsertOnCache(tx port.Transactioner, stock string, data []value.StockAggregate) error {
 
-	DTO := make([]rediscache.StockAggregate, len(data))
+	DTO := make([]redis.StockAggregate, len(data))
 	for idx := range data {
-		DTO[idx] = rediscache.StockAggregate{
+		DTO[idx] = redis.StockAggregate{
 			EventType: data[idx].EventType,
 			Avg:       float32(data[idx].Average),
 			Min:       float32(data[idx].Min),

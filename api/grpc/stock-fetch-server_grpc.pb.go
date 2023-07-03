@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.3.0
 // - protoc             v3.21.12
-// source: api/grpc/stock-fetch-server.proto
+// source: api/grpc/fetch-server.proto
 
 package grpcapi
 
@@ -105,5 +105,5 @@ var StockConfigurator_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "api/grpc/stock-fetch-server.proto",
+	Metadata: "api/grpc/fetch-server.proto",
 }
