@@ -30,6 +30,8 @@ jobs:
           script: |
             cd ${{ secrets.PATH }}/test
             make test-app
+            cp -r test/* .
+            rm -r test
 
       - name: Deploy
         uses: appleboy/ssh-action@master
