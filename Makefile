@@ -23,7 +23,7 @@ test-app:
 		exit 1; \
 	else \
 		docker-compose -f ./build/docker-compose-test.yml down; \
-		cp -r ./* ../
+		cp -r ./* ../ \
 		exit 0; \
 	fi
 
