@@ -16,6 +16,7 @@ import (
 
 var (
 	instance *buycycle.Subscriber
+	receiver *TestReceiver
 )
 
 
@@ -76,11 +77,11 @@ func isMarketOn() bool {
 		withinDurationChecker, err = withintime.New(&withintime.Option{
 			Location: "Asia/Seoul",
 			Inclusion: withintime.ConditionList{
-				time.Monday:    &withintime.Condition{StartTime: "09:00", EndTime:   "15:30",},
-				time.Tuesday:   &withintime.Condition{StartTime: "09:00", EndTime:   "15:30",},
-				time.Wednesday: &withintime.Condition{StartTime: "09:00", EndTime:   "15:30",},
-				time.Thursday:  &withintime.Condition{StartTime: "09:00", EndTime:   "15:30",},
-				time.Friday:    &withintime.Condition{StartTime: "09:00", EndTime:   "15:30",},
+				time.Monday:    &withintime.Condition{StartTime: "09:00", EndTime: "15:30"},
+				time.Tuesday:   &withintime.Condition{StartTime: "09:00", EndTime: "15:30"},
+				time.Wednesday: &withintime.Condition{StartTime: "09:00", EndTime: "15:30"},
+				time.Thursday:  &withintime.Condition{StartTime: "09:00", EndTime: "15:30"},
+				time.Friday:    &withintime.Condition{StartTime: "09:00", EndTime: "15:30"},
 			},
 			Exclusion: withintime.ConditionList{
 				// TODO: add holiday
