@@ -23,15 +23,16 @@ var (
 	once     sync.Once
 )
 
-func New(c *resolver.Config, r Receiver) *Subscriber {
+func New(c *resolver.ConfigMap, r Receiver) *Subscriber {
 
-	if err := c.ShouldPWExist(); err != nil {
+	key, err := c.GetStringKey("KEY")
+	if err != nil {
 		panic(err)
 	}
 
 	once.Do(func() {
 		conn, err := polygonws.New(polygonws.Config{
-			APIKey: c.Password,
+			APIKey: key,
 			Feed:   polygonws.RealTime,
 			Market: polygonws.Stocks,
 		})
@@ -44,7 +45,6 @@ func New(c *resolver.Config, r Receiver) *Subscriber {
 			conn: conn,
 			r:    r,
 		}
-
 	})
 
 	return instance
@@ -71,10 +71,14 @@ func (s *Subscriber) Run() {
 	}()
 }
 
-func (s *Subscriber) Close() error {
-	if err := s.Close(); err != nil {
-		return err
-	}
+func (s *Subscriber) Close() {
+	s.conn.Close()
+}
 
-	return nil
+
+func (s *Subscriber) Ping() error {
+	// Ping() does not use directly *polygon.Client.
+	// TODO: Find a way to check connection is alive.
+
+	return nil	
 }
