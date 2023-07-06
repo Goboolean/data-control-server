@@ -19,26 +19,29 @@ type Subscriber struct {
 	r      Receiver
 }
 
-func New(c *resolver.Config, r Receiver) *Subscriber {
+func New(c *resolver.ConfigMap, r Receiver) *Subscriber {
 
-	if err := c.ShouldHostExist(); err != nil {
+	host, err := c.GetStringKey("HOST")
+	if err != nil {
 		panic(err)
 	}
 
-	if err := c.ShouldPortExist(); err != nil {
+	port, err := c.GetStringKey("PORT")
+	if err != nil {
 		panic(err)
 	}
 
-	if err := c.ShouldPathExist(); err != nil {
+	path, err := c.GetStringKey("PATH")
+	if err != nil {
 		panic(err)
 	}
 
-	c.Address = fmt.Sprintf("%s:%s", c.Host, c.Port)
+	address := fmt.Sprintf("%s:%s", host, port)
 
 	u := url.URL{
 		Scheme: "ws",
-		Host:   c.Address,
-		Path:   c.Path,
+		Host:   address,
+		Path:   path,
 	}
 
 	conn, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
@@ -62,8 +65,9 @@ func New(c *resolver.Config, r Receiver) *Subscriber {
 }
 
 func (s *Subscriber) Close() error {
+	
 
-	if err := s.Close(); err != nil {
+	if err := s.Conn.Close(); err != nil {
 		return err
 	}
 
