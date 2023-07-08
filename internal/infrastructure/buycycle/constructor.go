@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/url"
 
+	"github.com/Goboolean/fetch-server/internal/infrastructure/ws"
 	"github.com/Goboolean/shared/pkg/resolver"
 	"github.com/gorilla/websocket"
 )
@@ -16,10 +17,10 @@ type Subscriber struct {
 
 	ctx    context.Context
 	cancel context.CancelFunc
-	r      Receiver
+	r      ws.Receiver
 }
 
-func New(c *resolver.ConfigMap, r Receiver) *Subscriber {
+func New(c *resolver.ConfigMap, r ws.Receiver) *Subscriber {
 
 	host, err := c.GetStringKey("HOST")
 	if err != nil {
@@ -64,13 +65,19 @@ func New(c *resolver.ConfigMap, r Receiver) *Subscriber {
 	return instance
 }
 
+
 func (s *Subscriber) Close() error {
 	
-
 	if err := s.Conn.Close(); err != nil {
 		return err
 	}
 
 	s.cancel()
 	return nil
+}
+
+
+func (s *Subscriber) Ping() error {
+	handler := s.Conn.PingHandler()
+	return handler("")
 }

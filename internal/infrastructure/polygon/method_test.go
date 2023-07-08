@@ -26,7 +26,7 @@ func TestSubscribeStockAggs(t *testing.T) {
 		t.Skip()
 	}
 
-	if err := instance.SubscribeStocksSecAggs(stock); err != nil {
+	if err := instance.SubscribeStockAggs(stock); err != nil {
 		t.Errorf("SubscrbeStockAggs() = %v", err)
 		return
 	}

@@ -5,6 +5,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Goboolean/fetch-server/internal/infrastructure/ws"
 	"github.com/Goboolean/shared/pkg/resolver"
 	polygonws "github.com/polygon-io/client-go/websocket"
 )
@@ -14,7 +15,7 @@ var DEFAULT_BUFFER_SIZE = 1000
 type Subscriber struct {
 	conn *polygonws.Client
 
-	r   Receiver
+	r   ws.Receiver
 	ctx context.Context
 }
 
@@ -23,7 +24,7 @@ var (
 	once     sync.Once
 )
 
-func New(c *resolver.ConfigMap, r Receiver) *Subscriber {
+func New(c *resolver.ConfigMap, r ws.Receiver) *Subscriber {
 
 	key, err := c.GetStringKey("KEY")
 	if err != nil {
@@ -71,8 +72,9 @@ func (s *Subscriber) Run() {
 	}()
 }
 
-func (s *Subscriber) Close() {
+func (s *Subscriber) Close() error {
 	s.conn.Close()
+	return nil
 }
 
 

@@ -3,6 +3,7 @@ package polygon
 import (
 	"log"
 
+	"github.com/Goboolean/fetch-server/internal/infrastructure/ws"
 	polygonws "github.com/polygon-io/client-go/websocket"
 	"github.com/polygon-io/client-go/websocket/models"
 )
@@ -11,7 +12,7 @@ import (
 
 
 
-func (s *Subscriber) SubscribeStocksSecAggs(stock string) error {
+func (s *Subscriber) SubscribeStockAggs(stock string) error {
 
 	if err := s.conn.Subscribe(polygonws.StocksSecAggs, stock); err != nil {
 		return err
@@ -34,7 +35,23 @@ func RelayMessageToReceiver(c *Subscriber) {
 				return
 			}
 
-			if err := c.r.OnReceivePolygonStockAggs(out.(models.EquityAgg)); err != nil {
+			data, ok := out.(models.EquityAgg)
+			if !ok {
+				log.Fatal("failed to cast data")
+				return
+			}
+
+			stockAggs := &ws.StockAggregate{
+				EventType: data.EventType.EventType,
+				Min: 		   data.Low,
+				Max: 		   data.High,
+				Start:     data.Open,
+				End:       data.Close,
+				StartTime: data.StartTimestamp,
+				EndTime:   data.EndTimestamp,
+			}
+
+			if err := c.r.OnReceiveStockAggs(stockAggs); err != nil {
 				log.Fatal(err)
 			}
 		}

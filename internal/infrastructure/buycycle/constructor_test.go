@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/Goboolean/fetch-server/internal/infrastructure/buycycle"
+	"github.com/Goboolean/fetch-server/internal/infrastructure/ws"
 	"github.com/Goboolean/fetch-server/internal/util/withintime"
 	"github.com/Goboolean/shared/pkg/resolver"
 	"github.com/joho/godotenv"
@@ -15,8 +16,8 @@ import (
 
 
 var (
-	instance *buycycle.Subscriber
-	receiver *TestReceiver
+	instance ws.Fetcher
+	receiver ws.Receiver
 )
 
 

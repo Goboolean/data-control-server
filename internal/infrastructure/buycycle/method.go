@@ -1,6 +1,10 @@
 package buycycle
 
-import "log"
+import (
+	"log"
+
+	"github.com/Goboolean/fetch-server/internal/infrastructure/ws"
+)
 
 
 
@@ -26,7 +30,9 @@ func RelayMessageToReceiver(s *Subscriber) {
 				continue
 			}
 
-			if err := s.r.OnReceiveBuycycleStockAggs(data); err != nil {
+			stockAggs := &ws.StockAggregate{}
+
+			if err := s.r.OnReceiveStockAggs(stockAggs); err != nil {
 				log.Fatalf("failed to process data: %v", err)
 				continue
 			}
