@@ -1,13 +1,14 @@
 package polygon_test
 
 import (
+	"context"
 	"os"
 	"sync"
 	"testing"
 	"time"
 
-	"github.com/Goboolean/fetch-server/internal/infrastructure/ws/polygon"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws"
+	"github.com/Goboolean/fetch-server/internal/infrastructure/ws/polygon"
 	"github.com/Goboolean/fetch-server/internal/util/withintime"
 	"github.com/Goboolean/shared/pkg/resolver"
 	"github.com/joho/godotenv"
@@ -24,7 +25,7 @@ var (
 func SetupPolygon() {
 	instance = polygon.New(&resolver.ConfigMap{
 		"KEY":  os.Getenv("POLYGON_API_KEY"),
-	}, receiver)
+	}, context.Background(), receiver)
 }
 
 func TeardownPolygon() {

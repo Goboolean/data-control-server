@@ -10,8 +10,6 @@ import (
 
 
 
-
-
 func (s *Subscriber) SubscribeStockAggs(stock string) error {
 
 	if err := s.conn.Subscribe(polygonws.StocksSecAggs, stock); err != nil {
@@ -22,15 +20,16 @@ func (s *Subscriber) SubscribeStockAggs(stock string) error {
 }
 
 
-func RelayMessageToReceiver(c *Subscriber) {
+func (s *Subscriber) Run() {
+
 	for {
 		select {
-		case <- c.ctx.Done():
+		case <- s.ctx.Done():
 			return
-		case err := <-c.conn.Error():
+		case err := <-s.conn.Error():
 			log.Fatal("error: ", err)
 			return
-		case out, more := <-c.conn.Output():
+		case out, more := <-s.conn.Output():
 			if !more {
 				return
 			}
@@ -51,7 +50,7 @@ func RelayMessageToReceiver(c *Subscriber) {
 				EndTime:   data.EndTimestamp,
 			}
 
-			if err := c.r.OnReceiveStockAggs(stockAggs); err != nil {
+			if err := s.r.OnReceiveStockAggs(stockAggs); err != nil {
 				log.Fatal(err)
 			}
 		}

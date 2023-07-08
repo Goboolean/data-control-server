@@ -3,7 +3,6 @@ package polygon
 import (
 	"context"
 	"sync"
-	"time"
 
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws"
 	"github.com/Goboolean/shared/pkg/resolver"
@@ -17,6 +16,7 @@ type Subscriber struct {
 
 	r   ws.Receiver
 	ctx context.Context
+	cancel context.CancelFunc
 }
 
 var (
@@ -24,7 +24,7 @@ var (
 	once     sync.Once
 )
 
-func New(c *resolver.ConfigMap, r ws.Receiver) *Subscriber {
+func New(c *resolver.ConfigMap, ctx context.Context, r ws.Receiver) *Subscriber {
 
 	key, err := c.GetStringKey("KEY")
 	if err != nil {
@@ -42,37 +42,22 @@ func New(c *resolver.ConfigMap, r ws.Receiver) *Subscriber {
 			panic(err)
 		}
 
+		ctx, cancel := context.WithCancel(ctx)
+
 		instance = &Subscriber{
 			conn: conn,
 			r:    r,
+			ctx:  ctx,
+			cancel: cancel,
 		}
 	})
 
 	return instance
 }
 
-func (p *Subscriber) tryRun() error {
-	if err := p.conn.Connect(); err != nil {
-		return err
-	}
-
-	go RelayMessageToReceiver(p)
-	return nil
-}
-
-func (s *Subscriber) Run() {
-	go func() {
-		for {
-			if err := s.tryRun(); err != nil {
-				time.Sleep(time.Hour)
-			} else {
-				break
-			}
-		}
-	}()
-}
 
 func (s *Subscriber) Close() error {
+	s.cancel()
 	s.conn.Close()
 	return nil
 }
@@ -82,5 +67,5 @@ func (s *Subscriber) Ping() error {
 	// Ping() does not use directly *polygon.Client.
 	// TODO: Find a way to check connection is alive.
 
-	return nil	
+	return nil
 }
