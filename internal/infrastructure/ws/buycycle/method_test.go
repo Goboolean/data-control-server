@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Goboolean/fetch-server/internal/infrastructure/buycycle"
+	"github.com/Goboolean/fetch-server/internal/infrastructure/ws/buycycle"
 )
 
 var (

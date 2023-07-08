@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Goboolean/fetch-server/internal/infrastructure/buycycle"
+	"github.com/Goboolean/fetch-server/internal/infrastructure/ws/buycycle"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws"
 	"github.com/Goboolean/fetch-server/internal/util/withintime"
 	"github.com/Goboolean/shared/pkg/resolver"
