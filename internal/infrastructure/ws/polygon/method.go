@@ -56,3 +56,9 @@ func (s *Subscriber) Run() {
 		}
 	}
 }
+
+
+
+func (s *Subscriber) UnsubscribeStockAggs(stock string) error {
+	return nil
+}

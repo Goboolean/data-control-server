@@ -17,6 +17,7 @@ package ws
 // Every stock fetcher must implement this interface.
 type Fetcher interface {
 	SubscribeStockAggs(stock string) error
+	UnsubscribeStockAggs(stock string) error
 	Close() error
 	Ping() error
 }

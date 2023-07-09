@@ -8,9 +8,6 @@ import (
 
 
 
-
-
-
 func (s *Subscriber) SubscribeStockAggs(stock string) error {
 	return s.WriteJSON(stock);
 }
@@ -38,4 +35,10 @@ func RelayMessageToReceiver(s *Subscriber) {
 			}
 		}
 	}
+}
+
+
+
+func (s *Subscriber) UnsubscribeStockAggs(stock string) error {
+	return nil
 }
