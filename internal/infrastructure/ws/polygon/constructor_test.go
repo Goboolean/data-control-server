@@ -9,6 +9,7 @@ import (
 
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws/polygon"
+	"github.com/Goboolean/fetch-server/internal/util/env"
 	"github.com/Goboolean/fetch-server/internal/util/withintime"
 	"github.com/Goboolean/shared/pkg/resolver"
 	"github.com/joho/godotenv"
@@ -35,7 +36,7 @@ func TeardownPolygon() {
 
 func TestMain(m *testing.M) {
 
-	if err := os.Chdir("../../../"); err != nil {
+	if err := os.Chdir(env.Root); err != nil {
 		panic(err)
 	}
 
