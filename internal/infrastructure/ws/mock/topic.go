@@ -66,6 +66,7 @@ func newMockGenerater(topic string, ctx context.Context, ch chan<- *ws.StockAggr
 }
 
 
+// this function will be called by constructor, so no need to call it again.
 func (m *mockGenerater) run() {
 
 	go func() {
