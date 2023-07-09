@@ -20,7 +20,7 @@ type Subscriber struct {
 	r      ws.Receiver
 }
 
-func New(c *resolver.ConfigMap, r ws.Receiver) *Subscriber {
+func New(c *resolver.ConfigMap, ctx context.Context, r ws.Receiver) *Subscriber {
 
 	host, err := c.GetStringKey("HOST")
 	if err != nil {
@@ -51,7 +51,7 @@ func New(c *resolver.ConfigMap, r ws.Receiver) *Subscriber {
 		panic(err)
 	}
 
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(ctx)
 
 	instance := &Subscriber{
 		Conn:   conn,

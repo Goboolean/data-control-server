@@ -1,13 +1,14 @@
 package buycycle_test
 
 import (
+	"context"
 	"os"
 	"sync"
 	"testing"
 	"time"
 
-	"github.com/Goboolean/fetch-server/internal/infrastructure/ws/buycycle"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws"
+	"github.com/Goboolean/fetch-server/internal/infrastructure/ws/buycycle"
 	"github.com/Goboolean/fetch-server/internal/util/withintime"
 	"github.com/Goboolean/shared/pkg/resolver"
 	"github.com/joho/godotenv"
@@ -25,7 +26,7 @@ func SetupBuycycle() {
 	instance = buycycle.New(&resolver.ConfigMap{
 		"HOST": os.Getenv("BUYCYCLE_HOST"),
 		"PORT": os.Getenv("BUYCYCLE_PORT"),
-	}, receiver)
+	}, context.Background(), receiver)
 }
 
 func TeardownBuycycle() {
