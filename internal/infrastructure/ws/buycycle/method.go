@@ -8,8 +8,14 @@ import (
 
 
 
-func (s *Subscriber) SubscribeStockAggs(stock string) error {
-	return s.WriteJSON(stock);
+func (s *Subscriber) SubscribeStockAggs(stocks ...string) error {
+	for _, stock := range stocks {
+		if err := s.WriteJSON(stock); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 
@@ -39,6 +45,6 @@ func RelayMessageToReceiver(s *Subscriber) {
 
 
 
-func (s *Subscriber) UnsubscribeStockAggs(stock string) error {
+func (s *Subscriber) UnsubscribeStockAggs(stock ...string) error {
 	return nil
 }

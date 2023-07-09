@@ -16,8 +16,10 @@ package ws
 // Fetcher is an infrastructure interface for receiving data.
 // Every stock fetcher must implement this interface.
 type Fetcher interface {
-	SubscribeStockAggs(stock string) error
-	UnsubscribeStockAggs(stock string) error
+	// Subscribing several topic at once is allowed, but atomicity is not guaranteed.
+	SubscribeStockAggs(...string) error
+	// Unscribing several topic at once is allowed, but atomicity is not guaranteed.
+	UnsubscribeStockAggs(...string) error
 	Close() error
 	Ping() error
 }
