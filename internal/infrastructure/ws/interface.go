@@ -1,10 +1,11 @@
 package ws
 
-// There are several infras that fetches stock data from external sources
-// Here are the list of fetchers:
-// 1. Polygon
+// ws package is an infrastructure that fetches stock data from external sources.
+
+// There are several implements:
+// 1. Buycycle
 //   a. kor stocks
-// 2. Buycycle
+// 2. Polygon
 //   a. usa stocks
 //   b. crypto
 // 3. KIS
