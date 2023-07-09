@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws"
-	"github.com/Goboolean/fetch-server/internal/util/math"
 )
 
 // MockFetcher is a mock implementation of Fetcher.
@@ -18,14 +17,32 @@ type MockFetcher struct {
 	
 	ctx context.Context
 	cancel context.CancelFunc
-}
 
+	ch chan *ws.StockAggregate
+
+	stocks map[string]*mockGenerater
+}
 
 
 func New(ctx context.Context, d time.Duration, r ws.Receiver) *MockFetcher {
 	rand.Seed(time.Now().UnixNano())
 
 	ctx, cancel := context.WithCancel(ctx)
+
+	stockChan := make(chan *ws.StockAggregate, 1000)
+
+	go func() {
+		for {
+			select {
+			case <- ctx.Done():
+				return
+			case agg := <- stockChan:
+				if err := r.OnReceiveStockAggs(agg); err != nil {
+					log.Fatal(err)
+				}
+			}
+		}
+	}()
 
 	return &MockFetcher{
 		d: d,
@@ -37,64 +54,30 @@ func New(ctx context.Context, d time.Duration, r ws.Receiver) *MockFetcher {
 
 
 func (f *MockFetcher) SubscribeStockAggs(stock string) error {
+	if _, ok := f.stocks[stock]; ok {
+		return errTopicAlreadyExists
+	}
+
+	f.stocks[stock] = newMockGenerater(stock, f.ctx, f.ch, f.d)
 	return nil
 }
 
 
-
-var (
-	lastTime time.Time = time.Now()
-	lastPrice float64 = 1000
-)
-
-func (f *MockFetcher) generateRandomStockAggs() *ws.StockAggregate {
-
-	curTime := time.Now()
-	curPrice := lastPrice * (rand.Float64() * 0.2 + 0.9)
-
-	stockAggs := &ws.StockAggregate{
-		StartTime: lastTime.UnixNano(),
-		EndTime: curTime.UnixNano(),
-		Average: (lastPrice + curPrice) / 2,
-		Min: math.MinFloat(lastPrice, curPrice),
-		Max: math.MaxFloat(lastPrice, curPrice),
-		Start: lastPrice,
-		End: curPrice,
+func (f *MockFetcher) UnsubscribeStockAggs(stock string) error {
+	if _, ok := f.stocks[stock]; !ok {
+		return errTopicNotFound
 	}
 
-	lastTime = curTime
-	lastPrice = curPrice
-
-	return stockAggs
-}
-
-
-func (f *MockFetcher) Run() {
-
-	go func() {
-		for {
-			newDuration := time.Duration(rand.Int63n(2 * int64(f.d)))
-
-			select {
-			
-			case <- f.ctx.Done():
-				return
-
-			case <- time.After(newDuration):
-				stockAggs := f.generateRandomStockAggs()
-				if err := f.r.OnReceiveStockAggs(stockAggs); err != nil {
-					log.Fatal(err)
-				}
-			}
-		}
-	}()
-
-	return
+	f.stocks[stock].cancel()
+	delete(f.stocks, stock)
+	return nil
 }
 
 
 func (f *MockFetcher) Close() error {
 	f.cancel()
+	close(f.ch)
+
 	return nil
 }
 
