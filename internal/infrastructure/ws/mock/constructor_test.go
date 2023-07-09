@@ -62,6 +62,10 @@ func Test_SubscribeStockAggs(t *testing.T) {
 		t.Errorf("SubscribeStockAggs() = %v", err)
 	}
 
+	if err := instance.SubscribeStockAggs("test"); err == nil {
+		t.Errorf("SubscribeStockAggs() = %v, want %v", err, mock.ErrTopicAlreadyExists)
+	}
+
 	time.Sleep(100 * time.Millisecond)
 
 	if !(5 <= count) {
@@ -71,6 +75,10 @@ func Test_SubscribeStockAggs(t *testing.T) {
 
 
 func Test_UnsubscribeStockAggs(t *testing.T) {
+
+	if err := instance.UnsubscribeStockAggs("unsubscribed"); err == nil {
+		t.Errorf("UnsubscribeStockAggs() = %v, want %v", err, mock.ErrTopicNotFound)
+	}
 
 	if err := instance.SubscribeStockAggs("test"); err != nil {
 		t.Errorf("SubscribeStockAggs() = %v", err)

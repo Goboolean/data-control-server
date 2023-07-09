@@ -63,7 +63,7 @@ func (f *MockFetcher) SubscribeStockAggs(stocks ...string) error {
 
 	for _, stock := range stocks {
 		if _, ok := f.stocks[stock]; ok {
-			return errTopicAlreadyExists
+			return ErrTopicAlreadyExists
 		}
 
 		f.stocks[stock] = newMockGenerater(stock, f.ctx, f.ch, f.d)
@@ -76,7 +76,7 @@ func (f *MockFetcher) UnsubscribeStockAggs(stocks ...string) error {
 
 	for _, stock := range stocks {
 		if _, ok := f.stocks[stock]; !ok {
-			return errTopicNotFound
+			return ErrTopicNotFound
 		}
 
 		f.stocks[stock].Close()
@@ -101,7 +101,7 @@ func (f *MockFetcher) Close() error {
 // Calling Ping() after Close() will cause error
 func (f *MockFetcher) Ping() error {
 	if flag := f.isClosed; flag {
-		return errConnectionClosed
+		return ErrConnectionClosed
 	}
 	return nil
 }

@@ -2,8 +2,8 @@ package mock
 
 import "errors"
 
-var errTopicNotFound = errors.New("topic not found")
+var ErrTopicNotFound = errors.New("topic not found")
 
-var errTopicAlreadyExists = errors.New("topic already exist")
+var ErrTopicAlreadyExists = errors.New("topic already exist")
 
-var errConnectionClosed = errors.New("connection closed")
+var ErrConnectionClosed = errors.New("connection closed")
