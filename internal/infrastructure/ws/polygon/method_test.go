@@ -25,6 +25,7 @@ func Test_SubscribeStockAggs(t *testing.T) {
 
 	if flag	:= isMarketOn(); !flag {
 		t.Skip()
+		return
 	}
 
 	if err := instance.SubscribeStockAggs(stock1, stock2); err != nil {
@@ -48,6 +49,7 @@ func Test_UnsubscribeStockAggs(t *testing.T) {
 
 	if flag	:= isMarketOn(); !flag {
 		t.Skip()
+		return
 	}
 
 	if err := instance.SubscribeStockAggs(stock1, stock2); err != nil {

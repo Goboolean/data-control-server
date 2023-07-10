@@ -41,6 +41,7 @@ func Test_generateRandomStockAggs(t *testing.T) {
 	agg := generater.generateRandomStockAggs()
 	if same := reflect.DeepEqual(agg, ws.StockAggregate{}); same {
 		t.Errorf("generateRandomStockAggs() = %v, want not empty", agg)
+		return
 	}
 
 	TeardownMockGenerater()
@@ -52,6 +53,7 @@ func Test_generateRandomStockAggs(t *testing.T) {
 func Test_newMockGenerater(t *testing.T) {
 	
 	SetupMockGenerater()
+	defer TeardownMockGenerater()
 
 	ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(time.Second))
 	defer cancel()
@@ -60,6 +62,7 @@ func Test_newMockGenerater(t *testing.T) {
 		select {
 		case <- ctx.Done():
 			t.Errorf("newMockGenerater() got timeout")
+			return
 		case <- ch:
 			continue
 		}
@@ -75,9 +78,8 @@ func Test_newMockGenerater(t *testing.T) {
 	select {
 	case <- ch:
 		t.Errorf("newMockGenerater got data after closing")
+		return
 	case <- time.After(time.Second / 10):
 		break
-	}
-
-	TeardownMockGenerater()
+	}	
 }

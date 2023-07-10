@@ -12,6 +12,7 @@ func Test_SubscribeStockAggs(t *testing.T) {
 
 	if flag := isMarketOn(); flag {
 		t.Skip()
+		return
 	}
 
 	if err := instance.SubscribeStockAggs(stockName); err != nil {

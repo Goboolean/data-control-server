@@ -13,7 +13,7 @@ import (
 var instance ws.Fetcher
 	
 var (
-	receiver ws.Receiver 
+	receiver ws.Receiver
 	count int = 0
 )
 
