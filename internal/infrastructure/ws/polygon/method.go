@@ -10,19 +10,7 @@ import (
 
 
 
-func (s *Subscriber) SubscribeStockAggs(stocks ...string) error {
-
-	for _, stock := range stocks {
-		if err := s.conn.Subscribe(polygonws.StocksSecAggs, stock); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-
-func (s *Subscriber) Run() {
+func (s *Subscriber) run() {
 
 	for {
 		select {
@@ -60,7 +48,10 @@ func (s *Subscriber) Run() {
 }
 
 
+func (s *Subscriber) SubscribeStockAggs(stocks ...string) error {
+	return s.conn.Subscribe(polygonws.StocksSecAggs, stocks...)
+}
 
 func (s *Subscriber) UnsubscribeStockAggs(stock ...string) error {
-	return nil
+	return s.conn.Unsubscribe(polygonws.StocksSecAggs, stock...)
 }

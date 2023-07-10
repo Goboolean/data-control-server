@@ -17,11 +17,7 @@ import (
 
 
 
-var (
-	instance ws.Fetcher
-	receiver ws.Receiver
-)
-
+var instance ws.Fetcher
 
 func SetupPolygon() {
 	instance = polygon.New(&resolver.ConfigMap{

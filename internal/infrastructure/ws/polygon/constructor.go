@@ -2,7 +2,6 @@ package polygon
 
 import (
 	"context"
-	"sync"
 
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws"
 	"github.com/Goboolean/shared/pkg/resolver"
@@ -19,10 +18,7 @@ type Subscriber struct {
 	cancel context.CancelFunc
 }
 
-var (
-	instance *Subscriber
-	once     sync.Once
-)
+
 
 func New(c *resolver.ConfigMap, ctx context.Context, r ws.Receiver) *Subscriber {
 
@@ -31,27 +27,26 @@ func New(c *resolver.ConfigMap, ctx context.Context, r ws.Receiver) *Subscriber 
 		panic(err)
 	}
 
-	once.Do(func() {
-		conn, err := polygonws.New(polygonws.Config{
-			APIKey: key,
-			Feed:   polygonws.RealTime,
-			Market: polygonws.Stocks,
-		})
-
-		if err != nil {
-			panic(err)
-		}
-
-		ctx, cancel := context.WithCancel(ctx)
-
-		instance = &Subscriber{
-			conn: conn,
-			r:    r,
-			ctx:  ctx,
-			cancel: cancel,
-		}
+	conn, err := polygonws.New(polygonws.Config{
+		APIKey: key,
+		Feed:   polygonws.RealTime,
+		Market: polygonws.Stocks,
 	})
 
+	if err != nil {
+		panic(err)
+	}
+
+	ctx, cancel := context.WithCancel(ctx)
+
+	instance := &Subscriber{
+		conn: conn,
+		r:    r,
+		ctx:  ctx,
+		cancel: cancel,
+	}
+
+	go instance.run()
 	return instance
 }
 
