@@ -22,6 +22,9 @@ type Fetcher interface {
 	UnsubscribeStockAggs(...string) error
 	Close() error
 	Ping() error
+	// It is need to distinguish between different fetchers,
+	// and to subscribe/unsubscribe stock on appropraite platform.
+	PlatformName() string
 }
 
 // Receiver is an interface for adapter that .

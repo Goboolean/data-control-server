@@ -8,7 +8,9 @@ import (
 	polygonws "github.com/polygon-io/client-go/websocket"
 )
 
-var DEFAULT_BUFFER_SIZE = 1000
+const platformName = "polygon"
+
+
 
 type Subscriber struct {
 	conn *polygonws.Client
@@ -48,6 +50,11 @@ func New(c *resolver.ConfigMap, ctx context.Context, r ws.Receiver) *Subscriber 
 
 	go instance.run()
 	return instance
+}
+
+
+func (s *Subscriber) PlatformName() string {
+	return platformName
 }
 
 

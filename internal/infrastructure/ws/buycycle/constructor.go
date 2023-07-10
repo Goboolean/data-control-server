@@ -10,7 +10,10 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-var DEFAULT_BUFFER_SIZE = 1000
+
+const platformName = "buycycle"
+
+
 
 type Subscriber struct {
 	conn *websocket.Conn
@@ -63,6 +66,11 @@ func New(c *resolver.ConfigMap, ctx context.Context, r ws.Receiver) *Subscriber 
 	}
 
 	return instance
+}
+
+
+func (s *Subscriber) PlatformName() string {
+	return platformName
 }
 
 

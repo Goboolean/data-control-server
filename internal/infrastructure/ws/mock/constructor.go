@@ -9,8 +9,14 @@ import (
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws"
 )
 
+
+
+const platformName = "mock"
+
 // MockFetcher is a mock implementation of Fetcher.
 // It generates stock aggeregates data at an ramdom time with average of given duration.
+// It does not fetch some data from external api, only generates.
+// It is used for load test, performance test.
 type MockFetcher struct {
 	r ws.Receiver
 	d time.Duration
@@ -24,7 +30,6 @@ type MockFetcher struct {
 
 	isClosed bool
 }
-
 
 
 func New(ctx context.Context, d time.Duration, r ws.Receiver) *MockFetcher {
@@ -44,6 +49,11 @@ func New(ctx context.Context, d time.Duration, r ws.Receiver) *MockFetcher {
 
 	go instance.run()
 	return instance
+}
+
+
+func (s *MockFetcher) PlatformName() string {
+	return platformName
 }
 
 
