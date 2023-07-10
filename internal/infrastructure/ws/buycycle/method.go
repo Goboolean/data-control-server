@@ -6,11 +6,44 @@ import (
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws"
 )
 
+// It is not sure whether rolling back subscription is provided on buycycle opensource.
+// Therefore, this package is not implemented yet.
+
+func (s *Subscriber) run() {
+	for {
+		select {
+		case <-s.ctx.Done():
+			return
+		default:
+			
+		}
+
+		var agg *ws.StockAggregate
+		if err := s.conn.ReadJSON(agg); err != nil {
+			log.Fatal(err)
+		}
+
+		if err := s.r.OnReceiveStockAggs(agg); err != nil {
+			log.Fatal(err)
+		}
+	}
+}
+
 
 
 func (s *Subscriber) SubscribeStockAggs(stocks ...string) error {
 	for _, stock := range stocks {
-		if err := s.WriteJSON(stock); err != nil {
+		req := &RequestJson{
+			Header: HeaderJson{},
+			Body: RequestBodyJson{	
+				Query: struct {Shcode string `json:"shcode"`} {
+					Shcode: stock,
+				},
+				// TODO: Add more fields
+			},
+		}
+
+		if err := s.conn.WriteJSON(req); err != nil {
 			return err
 		}
 	}
@@ -19,32 +52,8 @@ func (s *Subscriber) SubscribeStockAggs(stocks ...string) error {
 }
 
 
-func RelayMessageToReceiver(s *Subscriber) {
-	var data StockAggregate
-
-	for {
-		select {
-		case <- s.ctx.Done():
-			return
-		default:
-
-			if err := s.ReadJSON(&data); err != nil {
-				log.Fatalf("failed to read json data: %v", err)
-				continue
-			}
-
-			stockAggs := &ws.StockAggregate{}
-
-			if err := s.r.OnReceiveStockAggs(stockAggs); err != nil {
-				log.Fatalf("failed to process data: %v", err)
-				continue
-			}
-		}
-	}
-}
-
-
 
 func (s *Subscriber) UnsubscribeStockAggs(stock ...string) error {
+	// TODO: check how Unsubscribe works on buycycle than implement it.
 	return nil
 }

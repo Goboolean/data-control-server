@@ -13,12 +13,14 @@ import (
 var DEFAULT_BUFFER_SIZE = 1000
 
 type Subscriber struct {
-	*websocket.Conn
+	conn *websocket.Conn
 
 	ctx    context.Context
 	cancel context.CancelFunc
 	r      ws.Receiver
 }
+
+
 
 func New(c *resolver.ConfigMap, ctx context.Context, r ws.Receiver) *Subscriber {
 
@@ -54,13 +56,11 @@ func New(c *resolver.ConfigMap, ctx context.Context, r ws.Receiver) *Subscriber 
 	ctx, cancel := context.WithCancel(ctx)
 
 	instance := &Subscriber{
-		Conn:   conn,
+		conn:   conn,
 		ctx:    ctx,
 		cancel: cancel,
 		r:      r,
 	}
-
-	go RelayMessageToReceiver(instance)
 
 	return instance
 }
@@ -68,7 +68,7 @@ func New(c *resolver.ConfigMap, ctx context.Context, r ws.Receiver) *Subscriber 
 
 func (s *Subscriber) Close() error {
 	
-	if err := s.Conn.Close(); err != nil {
+	if err := s.conn.Close(); err != nil {
 		return err
 	}
 
@@ -78,6 +78,6 @@ func (s *Subscriber) Close() error {
 
 
 func (s *Subscriber) Ping() error {
-	handler := s.Conn.PingHandler()
+	handler := s.conn.PingHandler()
 	return handler("")
 }
