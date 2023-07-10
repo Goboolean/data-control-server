@@ -26,6 +26,7 @@ type MockFetcher struct {
 }
 
 
+
 func New(ctx context.Context, d time.Duration, r ws.Receiver) *MockFetcher {
 	rand.Seed(time.Now().UnixNano())
 
@@ -41,20 +42,22 @@ func New(ctx context.Context, d time.Duration, r ws.Receiver) *MockFetcher {
 	instance.ch = make(chan *ws.StockAggregate, 1000)
 	instance.stocks = make(map[string]*mockGenerater)
 
-	go func() {
-		for {
-			select {
-			case <- ctx.Done():
-				return
-			case agg := <- instance.ch:
-				if err := r.OnReceiveStockAggs(agg); err != nil {
-					log.Fatal(err)
-				}
+	go instance.run()
+	return instance
+}
+
+
+func (f *MockFetcher) run() {
+	for {
+		select {
+		case <- f.ctx.Done():
+			return
+		case agg := <- f.ch:
+			if err := f.r.OnReceiveStockAggs(agg); err != nil {
+				log.Fatal(err)
 			}
 		}
-	}()
-
-	return instance
+	}
 }
 
 
