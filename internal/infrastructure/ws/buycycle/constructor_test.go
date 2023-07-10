@@ -9,6 +9,7 @@ import (
 
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws/buycycle"
+	"github.com/Goboolean/fetch-server/internal/infrastructure/ws/mock"
 	"github.com/Goboolean/fetch-server/internal/util/env"
 	"github.com/Goboolean/fetch-server/internal/util/withintime"
 	"github.com/Goboolean/shared/pkg/resolver"
@@ -17,10 +18,17 @@ import (
 
 
 
+var instance ws.Fetcher
+
 var (
-	instance ws.Fetcher
-	receiver ws.Receiver
+	count int = 0
+	receiver ws.Receiver = mock.NewMockReceiver(func() {
+		count++
+	})
 )
+
+
+
 
 
 func SetupBuycycle() {

@@ -3,39 +3,32 @@ package buycycle_test
 import (
 	"testing"
 	"time"
-
-	"github.com/Goboolean/fetch-server/internal/infrastructure/ws/buycycle"
 )
 
-var (
-	counter  = 0
-	stock    = "test"
-)
 
-type TestReceiver struct{}
+var stockName = "005930"
 
-func (r *TestReceiver) OnReceiveBuycycleStockAggs(buycycle.StockAggregate) error {
-	counter++
-	return nil
-}
-
-
-
-func TestSubscribeStockAggs(t *testing.T) {
+func Test_SubscribeStockAggs(t *testing.T) {
 
 	if flag := isMarketOn(); flag {
 		t.Skip()
 	}
 
-	if err := instance.SubscribeStockAggs(stock); err != nil {
+	if err := instance.SubscribeStockAggs(stockName); err != nil {
 		t.Errorf("SubscrbeStockAggs() = %v", err)
 		return
 	}
 
 	time.Sleep(1 * time.Second)
 
-	if counter == 0 {
-		t.Errorf(" received %d, want many", counter)
+	if count == 0 {
+		t.Errorf(" received %d, want many", count)
 		return
 	}
+}
+
+
+// UnsubscribeStockAggs is not implemented yet, so this test is skipped.
+func Test_UnsubscribeStockAggs(t *testing.T) {
+	t.Skip()
 }
