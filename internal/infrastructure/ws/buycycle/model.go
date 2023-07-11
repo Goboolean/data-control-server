@@ -61,7 +61,7 @@ type StockDetail struct {
 	Status     string `json:"status"`
 }
 
-func (s *StockDetail) ToStockAggregate() (*ws.StockAggregate, error) {
+func (s *StockDetail) ToStockAggsDetail() (*ws.StockAggsDetail, error) {
 
 	avg, err := strconv.ParseFloat(s.W_avrg, 64)
 	if err != nil {
@@ -98,7 +98,7 @@ func (s *StockDetail) ToStockAggregate() (*ws.StockAggregate, error) {
 		return nil, err
 	}
 
-	return &ws.StockAggregate{
+	return &ws.StockAggsDetail{
 		Average: avg,
 		Min: min,
 		Max: max,

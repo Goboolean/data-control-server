@@ -31,13 +31,20 @@ func (s *Subscriber) run() {
 			}
 
 			stockAggs := &ws.StockAggregate{
-				EventType: data.EventType.EventType,
-				Min: 		   data.Low,
-				Max: 		   data.High,
-				Start:     data.Open,
-				End:       data.Close,
-				StartTime: data.StartTimestamp,
-				EndTime:   data.EndTimestamp,
+				StockAggsMeta: ws.StockAggsMeta{
+					Platform: platformName,
+					Symbol:   data.Symbol,
+				},
+
+				StockAggsDetail: ws.StockAggsDetail{
+					EventType: data.EventType.EventType,
+					Min: 		   data.Low,
+					Max: 		   data.High,
+					Start:     data.Open,
+					End:       data.Close,
+					StartTime: data.StartTimestamp,
+					EndTime:   data.EndTimestamp,
+				},
 			}
 
 			if err := s.r.OnReceiveStockAggs(stockAggs); err != nil {

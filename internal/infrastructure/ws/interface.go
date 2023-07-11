@@ -16,9 +16,9 @@ package ws
 // Fetcher is an infrastructure interface for receiving data.
 // Every stock fetcher must implement this interface.
 type Fetcher interface {
-	// Subscribing several topic at once is allowed, but atomicity is not guaranteed.
+	// Subscribing several topic at once is allowed, but atomicity may depend on each implementation.
 	SubscribeStockAggs(...string) error
-	// Unscribing several topic at once is allowed, but atomicity is not guaranteed.
+	// Unsubscribing several topic at once is allowed, but atomicity may depend on each implementation.
 	UnsubscribeStockAggs(...string) error
 	Close() error
 	Ping() error
@@ -34,8 +34,23 @@ type Receiver interface {
 }
 
 
+
 // A stock aggs structure that every implementation shares.
 type StockAggregate struct {
+	StockAggsDetail
+	StockAggsMeta
+}
+
+
+type StockAggsMeta struct {
+	Platform  string
+	Symbol    string
+	// Only a concept of Symbol, not Stock, deals with each infrastructure,
+	// as Stock is a concept of domain.
+	// Role of changing Symbol to Stock is at adapter layer.
+}
+
+type StockAggsDetail struct {
 	EventType string	
 	Average   float64
 	Min       float64

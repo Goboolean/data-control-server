@@ -31,13 +31,13 @@ func (s *Subscriber) run() {
 
 
 
-func (s *Subscriber) SubscribeStockAggs(stocks ...string) error {
-	for _, stock := range stocks {
+func (s *Subscriber) SubscribeStockAggs(symbols ...string) error {
+	for _, symbol := range symbols {
 		req := &RequestJson{
 			Header: HeaderJson{},
 			Body: RequestBodyJson{	
 				Query: struct {Shcode string `json:"shcode"`} {
-					Shcode: stock,
+					Shcode: symbol,
 				},
 				// TODO: Add more fields
 			},

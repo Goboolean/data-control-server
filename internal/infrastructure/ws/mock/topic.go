@@ -12,6 +12,8 @@ import (
 
 
 type mockGenerater struct {
+	symbol string
+
 	ctx context.Context
 	cancel context.CancelFunc
 	ch chan<- *ws.StockAggregate
@@ -31,13 +33,19 @@ func (m *mockGenerater) generateRandomStockAggs() *ws.StockAggregate {
 	curPrice := m.curPrice * (rand.Float64() * 0.2 + 0.9)
 
 	stockAggs := &ws.StockAggregate{
-		StartTime: lastTime.UnixNano(),
-		EndTime: curTime.UnixNano(),
-		Average: (lastPrice + curPrice) / 2,
-		Min: math.Min(lastPrice, curPrice),
-		Max: math.Max(lastPrice, curPrice),
-		Start: lastPrice,
-		End: curPrice,
+		StockAggsMeta: ws.StockAggsMeta{
+			Platform: platformName,
+			Symbol:  m.symbol,
+		},
+		StockAggsDetail: ws.StockAggsDetail{
+			StartTime: lastTime.UnixNano(),
+			EndTime: curTime.UnixNano(),
+			Average: (lastPrice + curPrice) / 2,
+			Min: math.Min(lastPrice, curPrice),
+			Max: math.Max(lastPrice, curPrice),
+			Start: lastPrice,
+			End: curPrice,
+		},
 	}
 
 	m.curTime  = curTime
@@ -47,7 +55,7 @@ func (m *mockGenerater) generateRandomStockAggs() *ws.StockAggregate {
 }
 
 
-func newMockGenerater(topic string, ctx context.Context, ch chan<- *ws.StockAggregate, d time.Duration) *mockGenerater {
+func newMockGenerater(symbol string, ctx context.Context, ch chan<- *ws.StockAggregate, d time.Duration) *mockGenerater {
 	ctx, cancel := context.WithCancel(ctx)
 
 	instance := &mockGenerater{
@@ -55,6 +63,7 @@ func newMockGenerater(topic string, ctx context.Context, ch chan<- *ws.StockAggr
 		cancel: cancel,
 		ch: ch,
 		d: d,
+		symbol: symbol,
 	}
 
 	instance.curTime = time.Now()
