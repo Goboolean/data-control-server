@@ -1,52 +1,41 @@
 package relayer
 
 import (
-	"context"
-	"fmt"
-
-	"github.com/Goboolean/fetch-server/internal/adapter/transaction"
+	"github.com/Goboolean/fetch-server/internal/domain/port"
 	"github.com/Goboolean/fetch-server/internal/domain/port/out"
-	"github.com/Goboolean/fetch-server/internal/domain/value"
 )
 
 type subscriber struct {
 	ws   out.RelayerPort
 	meta out.StockMetadataPort
+	tx port.TX
 }
 
-func newSubscriber(ws out.RelayerPort, meta out.StockMetadataPort) *subscriber {
+
+func newSubscriber(ws out.RelayerPort, meta out.StockMetadataPort, tx port.TX) *subscriber {
 	return &subscriber{ws: ws, meta: meta}
 }
 
-func (s *subscriber) fetchStock(stock string) error {
 
-	ctx := context.Background()
+func (s *subscriber) fetchStock(tx port.Transactioner, stockId string) error {
 
-	tx, err := transaction.New(ctx, &transaction.Option{})
-
-	flag, err := s.meta.StockExists(tx, stock)
+	exists, err := s.meta.CheckStockExists(tx, stockId)
 	if err != nil {
 		return err
 	}
-	if !flag {
-		return fmt.Errorf("stock not exists")
+	if !exists {
+		return ErrStockNotExists
 	}
 
-	types, err := s.meta.GetStockType(tx, stock)
+	meta, err := s.meta.GetStockMetadata(tx, stockId)
 	if err != nil {
 		return err
 	}
 
-	switch types {
-	case value.Domestic:
-		return s.ws.FetchDomesticStock(stock)
-	case value.International:
-		return s.ws.FetchInternationalStock(stock)
-	default:
-		return fmt.Errorf("asdf")
-	}
+	return s.ws.FetchStock(stockId, meta)
 }
 
+
 func (s *subscriber) unfetchStock(stock string) error {
-	return nil
+	return s.ws.StopFetchingStock(stock)
 }
