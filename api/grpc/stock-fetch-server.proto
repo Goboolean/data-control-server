@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package api;
+package grpcapi;
 
 option go_package = "github.com/Goboolean/fetch-server/api/grpc;grpcapi";
 
