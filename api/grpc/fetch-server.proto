@@ -30,9 +30,9 @@ message OptionStatus {
 }
 
 message StockConfig {
-  string stock_id = 1;
+  string       stock_id = 1;
   OptionStatus relayable = 2;
-  OptionStatus fetchable = 3;
+  OptionStatus transmittable = 3;
   OptionStatus storeable = 4;
 }
 
