@@ -1,8 +1,10 @@
 package out
 
+import "github.com/Goboolean/fetch-server/internal/domain/entity"
+
 
 
 type RelayerPort interface {
-	FetchDomesticStock(string) error
-	FetchInternationalStock(string) error
+	FetchStock(stockId string, stockMeta entity.StockAggsMeta) error
+	StopFetchingStock(stockId string) error
 }
