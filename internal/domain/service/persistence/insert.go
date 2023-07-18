@@ -3,11 +3,10 @@ package persistence
 import (
 	"context"
 	"log"
-
-	"github.com/Goboolean/fetch-server/internal/adapter/transaction"
 )
 
 func (m *PersistenceManager) SubscribeRelayer(stock string) error {
+
 	ch, err := m.relayer.Subscribe(stock)
 
 	if err != nil {
@@ -22,9 +21,9 @@ func (m *PersistenceManager) SubscribeRelayer(stock string) error {
 				return
 
 			case data := <-ch:
-				tx, err := transaction.New(context.TODO(), &transaction.Option{
-					Redis: true,
-				})
+				ctx := context.Background()
+
+				tx, err := m.tx.Transaction(ctx)
 				if err != nil {
 					log.Fatal(err)
 				}

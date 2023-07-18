@@ -3,12 +3,11 @@ package persistence
 import (
 	"context"
 
-	"github.com/Goboolean/fetch-server/internal/adapter/transaction"
 )
 
 func (m *PersistenceManager) SynchronizeDatabase(ctx context.Context, stock string) error {
 
-	tx, err := transaction.New(ctx, &transaction.Option{Mongo: true, Postgres: true})
+	tx, err := m.tx.Transaction(ctx)
 	if err != nil {
 		return err
 	}
