@@ -15,26 +15,26 @@ func (s *Subscriber) run() {
 		default:
 
 		}
-
 		_, message, err := s.conn.ReadMessage()
 		if err != nil {
-			log.Fatal(err)
+			log.Println("Error while reading message")
+			continue
 		}
 
 		receivedString := string(message)
 
-		agg, err := ToStockDetail(receivedString)
+		agg, err := ToStockDetail_USA(receivedString)
 		if err != nil {
-			log.Fatal(err)
+			log.Println("Error while converting to StockDetail_USA")
+			continue
 		}
-
-		data, err := ToStockAggsDetail(agg)
+		data, err := ToStockAggsDetail_USA(agg)
 		if err != nil {
-			log.Fatal(err)
+			log.Println("Error while converting to StockAggsDetail_USA")
 		}
 
 		if err := s.r.OnReceiveStockAggs(data); err != nil {
-			log.Fatal(err)
+			log.Println("Error in OnReceiveStockAggs")
 		}
 	}
 }
@@ -50,8 +50,8 @@ func (s *Subscriber) SubscribeStockAggs(symbols ...string) error {
 			},
 			Body: RequestBodyJson{
 				Input: RequestInputJson{
-					TrId:   "H0STCNT0",
-					TrCode: symbol,
+					TrId:  "HDFSCNT0",
+					TrKey: symbol,
 				},
 			},
 		}

@@ -11,20 +11,48 @@ type HeaderJson struct {
 	ApprovalKey string `json:"approval_key"` // 실시간 접속키
 	Custtype    string `json:"custtype"`     // 고객 타입 (P: 개인, B: 법인)
 	TrType      string `json:"tr_type"`      // 거래 타입 (1. 등록, 2. 해제)
-	ContentType string `json:"content_type"` // 컨텐츠 타입 (utf-8 고정)
+	ContentType string `json:"content-type"` // 컨텐츠 타입 (utf-8 고정)
 }
 type RequestBodyJson struct {
 	Input RequestInputJson `json:"input"`
 }
 
 type RequestInputJson struct {
-	TrId   string `json:"tr_id"`   // 거래 ID (H0STCNT0: 실시간 주식 체결가, H0STASP0: 주식 호가)
-	TrCode string `json:"tr_code"` // 종목코드
+	TrId  string `json:"tr_id"`  // 거래 ID (H0STCNT0: 실시간 주식 체결가, H0STASP0: 주식 호가, HDFSCNT0: 실시간 미국장)
+	TrKey string `json:"tr_key"` // 종목코드
 }
 
 type RequestJson struct {
 	Header HeaderJson      `json:"header"`
 	Body   RequestBodyJson `json:"body"`
+}
+type StockDetail_USA struct {
+	RSYM string // 실시간 종목코드
+	SYMB string // 종목코드
+	ZDIV string // 수수점자리수
+	TYMD string // 현지영업일자
+	XYMD string // 현지 일자
+	XHMS string // 현지 시간
+	KYMD string // 한국 일자
+	KHMS string // 한국 시간
+	OPEN string // 시가
+	HIGH string // 고가
+	LOW  string // 저가
+	LAST string // 현재가
+	SIGN string // 대비 구분
+	DIFF string // 전일 대비
+	RATE string // 등락율
+	PBID string // 매수호가
+	PASK string // 매도호가
+	VBID string // 매수잔량
+	VASK string // 매도잔량
+	EVOL string // 체결량
+	TVOL string // 거래량
+	TAMT string // 거래대금
+	BIVL string // 매도체결량
+	ASVL string // 매수체결량
+	STRN string // 체결강도
+	MTYP string // 시간구분
 }
 
 type StockDetail struct {
@@ -74,6 +102,42 @@ type StockDetail struct {
 	HOUR_CLS_CODE                string // 시간 구분 코드
 	MRKT_TRTM_CLS_CODE           string // 임의종료구분코드
 	VI_STND_PRC                  string // 정적 VI 발동 기준가
+}
+
+func ToStockDetail_USA(receivedString string) (*StockDetail_USA, error) {
+	data := strings.Split(receivedString, "^")
+	if len(data) != 26 {
+		return nil, errors.New("incorrect number of fields in response")
+	}
+	slicedRSYM := strings.Split(data[0], "|")
+	return &StockDetail_USA{
+		RSYM: slicedRSYM[3],
+		SYMB: data[1],
+		ZDIV: data[2],
+		TYMD: data[3],
+		XYMD: data[4],
+		XHMS: data[5],
+		KYMD: data[6],
+		KHMS: data[7],
+		OPEN: data[8],
+		HIGH: data[9],
+		LOW:  data[10],
+		LAST: data[11],
+		SIGN: data[12],
+		DIFF: data[13],
+		RATE: data[14],
+		PBID: data[15],
+		PASK: data[16],
+		VBID: data[17],
+		VASK: data[18],
+		EVOL: data[19],
+		TVOL: data[20],
+		TAMT: data[21],
+		BIVL: data[22],
+		ASVL: data[23],
+		STRN: data[24],
+		MTYP: data[25],
+	}, nil
 }
 
 func ToStockDetail(receivedString string) (*StockDetail, error) {
@@ -132,5 +196,9 @@ func ToStockDetail(receivedString string) (*StockDetail, error) {
 }
 
 func ToStockAggsDetail(s *StockDetail) (*ws.StockAggregate, error) {
+	return &ws.StockAggregate{}, nil
+}
+
+func ToStockAggsDetail_USA(s *StockDetail_USA) (*ws.StockAggregate, error) {
 	return &ws.StockAggregate{}, nil
 }

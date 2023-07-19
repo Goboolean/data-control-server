@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-var stockName = "005930"
+var stockName = "DNASAAPL"
 
 func Test_SubscribeStockAggs(t *testing.T) {
 	/*
