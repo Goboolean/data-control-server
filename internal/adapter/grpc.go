@@ -1,19 +1,42 @@
-package config
+package adapter
+
+
 
 import (
 	"context"
 	"errors"
 	"fmt"
+	"sync"
 
 	api "github.com/Goboolean/fetch-server/api/grpc"
+	"github.com/Goboolean/fetch-server/internal/domain/port/in"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/prometheus"
-	"google.golang.org/grpc"
 )
 
 
 
+type StockConfiguratorAdapter struct {
+	service in.ConfiguratorPort
+	api.UnimplementedStockConfiguratorServer
+}
 
-func (c *StockConfiguratorAdapter) UpdateStockConfigOne(ctx context.Context, in *api.StockConfig, opts ...grpc.CallOption) (*api.ReturnMessage, error) {
+var (
+	instance *StockConfiguratorAdapter
+	once     sync.Once
+)
+
+func New(s in.ConfiguratorPort) api.StockConfiguratorServer {
+
+	once.Do(func() {
+		instance = &StockConfiguratorAdapter{service: s}
+	})
+
+	return instance
+}
+
+
+
+func (c *StockConfiguratorAdapter) UpdateStockConfigOne(ctx context.Context, in *api.StockConfig) (*api.ReturnMessage, error) {
 
 	prometheus.RequestCounter.Inc()
 
@@ -80,7 +103,7 @@ func (c *StockConfiguratorAdapter) UpdateStockConfigOne(ctx context.Context, in 
 
 
 
-func (c *StockConfiguratorAdapter) UpdateStockConfigMany(ctx context.Context, in *api.StockConfigList, opts ...grpc.CallOption) (*api.ReturnMessageList, error) {
+func (c *StockConfiguratorAdapter) UpdateStockConfigMany(ctx context.Context, in *api.StockConfigList) (*api.ReturnMessageList, error) {
 
 	length := len(in.GetStockConfig())
 
@@ -165,9 +188,9 @@ func (c *StockConfiguratorAdapter) UpdateStockConfigMany(ctx context.Context, in
 
 
 
-func (c *StockConfiguratorAdapter) GetStockConfigOne(ctx context.Context, in *api.StockId, opts ...grpc.CallOption) (*api.StockConfig, error) {
+func (c *StockConfiguratorAdapter) GetStockConfigOne(ctx context.Context, in *api.StockId) (*api.StockConfig, error) {
 
-	conf, err := c.service.GetStockConfigOne(ctx, in.GetStockId())
+	conf, err := c.service.GetStockConfiguration(ctx, in.GetStockId())
 	if err != nil {
 		return nil, err
 	}
@@ -205,9 +228,9 @@ func (c *StockConfiguratorAdapter) GetStockConfigOne(ctx context.Context, in *ap
 }
 
 
-func (c *StockConfiguratorAdapter) GetStockConfigAll(ctx context.Context, in *api.Null, opts ...grpc.CallOption) (*api.StockConfigList, error) {
+func (c *StockConfiguratorAdapter) GetStockConfigAll(ctx context.Context, in *api.Null) (*api.StockConfigList, error) {
 
-	confList, err := c.service.GetStockConfigAll(ctx)
+	confList, err := c.service.GetAllStockConfiguration(ctx)
 	if err != nil {
 		return nil, err
 	}
