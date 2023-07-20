@@ -8,4 +8,5 @@ import (
 type StockMetadataPort interface {
 	CheckStockExists(port.Transactioner, string) (bool, error)
 	GetStockMetadata(port.Transactioner, string) (entity.StockAggsMeta, error)
+	GetAllStockMetadata(port.Transactioner) ([]entity.StockAggsMeta, error)
 }

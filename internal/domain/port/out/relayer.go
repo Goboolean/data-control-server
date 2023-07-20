@@ -1,10 +1,14 @@
 package out
 
-import "github.com/Goboolean/fetch-server/internal/domain/entity"
+import (
+	"context"
+
+	"github.com/Goboolean/fetch-server/internal/domain/entity"
+)
 
 
 
 type RelayerPort interface {
-	FetchStock(stockId string, stockMeta entity.StockAggsMeta) error
-	StopFetchingStock(stockId string) error
+	FetchStock(ctx context.Context, stockId string, stockMeta entity.StockAggsMeta) error
+	StopFetchingStock(ctx context.Context, stockId string) error
 }
