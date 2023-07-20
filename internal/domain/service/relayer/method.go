@@ -13,13 +13,42 @@ func (m *RelayerManager) FetchStock(ctx context.Context, stockId string) error {
 	if err != nil {
 		return err
 	}
+	defer tx.Rollback()
 
-	if err := m.store.storeStock(stockId); err != nil {
+	if err := m.s.StoreStock(stockId); err != nil {
 		return err
 	}
 
-	if err := m.subscriber.fetchStock(tx, stockId); err != nil {
-		m.store.unstoreStock(stockId)
+	exists, err := m.meta.CheckStockExists(tx, stockId)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		return ErrStockNotExists
+	}
+
+	meta, err := m.meta.GetStockMetadata(tx, stockId)
+	if err != nil {
+		return err
+	}
+
+	if err := m.ws.FetchStock(tx.Context(), stockId, meta); err != nil {
+		m.s.UnstoreStock(stockId)
+		return err
+	}
+
+	return tx.Commit()
+}
+
+
+func (m *RelayerManager) StopFetchingStock(ctx context.Context, stockId string) error {
+
+	if err := m.s.UnstoreStock(stockId); err != nil {
+		return err
+	}
+
+	if err := m.ws.StopFetchingStock(ctx, stockId); err != nil {
+		m.s.StoreStock(stockId)
 		return err
 	}
 
@@ -27,17 +56,8 @@ func (m *RelayerManager) FetchStock(ctx context.Context, stockId string) error {
 }
 
 
-func (m *RelayerManager) StopFetchingStock(stockId string) error {
-	if err := m.store.unstoreStock(stockId); err != nil {
-		return err
-	}
-
-	if err := m.subscriber.unfetchStock(stockId); err != nil {
-		m.store.storeStock(stockId)
-		return err
-	}
-
-	return nil
+func (m *RelayerManager) IsStockRelayable(stockId string) bool {
+	return m.s.StockExists(stockId)
 }
 
 

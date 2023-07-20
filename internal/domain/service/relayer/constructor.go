@@ -7,11 +7,14 @@ import (
 	"github.com/Goboolean/fetch-server/internal/domain/entity"
 	"github.com/Goboolean/fetch-server/internal/domain/port"
 	"github.com/Goboolean/fetch-server/internal/domain/port/out"
+	"github.com/Goboolean/fetch-server/internal/domain/service/store"
 )
 
 type RelayerManager struct {
-	*store
-	*subscriber
+	s *store.Store
+	ws   out.RelayerPort
+	meta out.StockMetadataPort
+
 	*pipe
 
 	ctx    context.Context
@@ -35,10 +38,12 @@ func New(db out.StockPersistencePort, tx port.TX, meta out.StockMetadataPort, ws
 		endPoint := make(map[string]chan []*entity.StockAggregate)
 
 		instance = &RelayerManager{
-			ctx: ctx, cancel: cancel,
-			store:      &store{},
-			subscriber: newSubscriber(ws, meta, tx),
-			pipe:       newPipe(startPoint, endPoint),
+			ctx:    ctx,
+			cancel: cancel,
+			s:      store.New(ctx),
+			ws:     ws,
+			meta:   meta,
+			pipe:   newPipe(startPoint, endPoint),
 		}
 
 		go instance.pipe.ExecPipe(ctx)
