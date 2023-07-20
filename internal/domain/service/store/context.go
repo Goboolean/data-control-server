@@ -9,6 +9,19 @@ type contextController struct {
 	cancel context.CancelFunc
 }
 
+
+func (c *contextController) Context() context.Context {
+	return c.ctx
+}
+
+func (c *contextController) Done() <- chan struct{} {
+	return c.ctx.Done()
+}
+
+func (c *contextController) Cancel() {
+	c.cancel()
+}
+
 func new_ctx(ctx context.Context) *contextController {
 	ctx, cancel := context.WithCancel(ctx)
 	return &contextController{ctx: ctx, cancel: cancel}
