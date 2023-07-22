@@ -14,13 +14,13 @@ type StockAggregate struct {
 }
 
 type StockAggsMeta struct {
+	StockID string
 	Platform  string
 	Symbol    string
 }
 
 
 type StockAggregateForm struct {
-	StockID string
 	StockAggregate
 	StockAggsMeta
 }
