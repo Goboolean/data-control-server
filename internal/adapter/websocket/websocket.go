@@ -1,11 +1,12 @@
 package websocket
 
 import (
-	"errors"
+	"context"
 	"fmt"
 
 	"github.com/Goboolean/fetch-server/internal/domain/entity"
 	"github.com/Goboolean/fetch-server/internal/domain/port/in"
+	"github.com/Goboolean/fetch-server/internal/domain/port/out"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/prometheus"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws"
 )
@@ -25,7 +26,7 @@ type Adapter struct {
 // There are two options to register fetcher:
 // 1. compile time: use New()
 // 2. runtime: use StockFetchAdapter.RegisterFetcher()
-func NewAdapter(port in.RelayerPort, fetchers ...ws.Fetcher) *Adapter {
+func NewAdapter(port in.RelayerPort, fetchers ...ws.Fetcher) out.RelayerPort {
 
 	instance := &Adapter{
 		fetcher: make(map[string]ws.Fetcher),
@@ -119,4 +120,29 @@ func (s *Adapter) OnReceiveStockAggsBatch(aggs []*ws.StockAggregate) error {
 }
 
 
-var ErrStockNotFound = errors.New("stock not found")
+func (s *Adapter) FetchStock(ctx context.Context, stockId string, stockMeta entity.StockAggsMeta) error {
+	platform := stockMeta.Platform
+	fetcher, ok := s.fetcher[platform]
+
+	if !ok {
+		return fmt.Errorf("fetcher %s is not registered", platform)
+	}
+
+	return fetcher.SubscribeStockAggs(stockId)
+}
+
+
+func (s *Adapter) StopFetchingStock(ctx context.Context, stockId string) error {
+	platform, ok := s.symbolToId[stockId]
+	if !ok {
+		return ErrStockNotFound
+	}
+
+	fetcher, ok := s.fetcher[platform]
+	if !ok {
+		return fmt.Errorf("fetcher %s is not registered", platform)
+	}
+
+	return fetcher.UnsubscribeStockAggs(stockId)
+}
+
