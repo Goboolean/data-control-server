@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/Goboolean/fetch-server/internal/infrastructure/redis"
+	"github.com/Goboolean/fetch-server/internal/infrastructure/cache/redis"
 	"github.com/Goboolean/shared/pkg/resolver"
 	"github.com/joho/godotenv"
 )
