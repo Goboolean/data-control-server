@@ -8,11 +8,11 @@ import (
 )
 
 type Adapter struct {
-	conf broker.Configurator
-	pub  broker.Publisher
+	conf *broker.Configurator
+	pub  *broker.Publisher
 }
 
-func NewAdapter(conf broker.Configurator, pub broker.Publisher) *Adapter {
+func NewAdapter(conf *broker.Configurator, pub *broker.Publisher) *Adapter {
 	return &Adapter{
 		conf: conf,
 		pub:  pub,
