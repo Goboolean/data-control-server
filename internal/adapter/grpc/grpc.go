@@ -1,4 +1,4 @@
-package adapter
+package grpc
 
 
 
@@ -6,7 +6,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"sync"
 
 	api "github.com/Goboolean/fetch-server/api/grpc"
 	"github.com/Goboolean/fetch-server/internal/domain/port/in"
@@ -15,28 +14,18 @@ import (
 
 
 
-type StockConfiguratorAdapter struct {
+type Adapter struct {
 	service in.ConfiguratorPort
 	api.UnimplementedStockConfiguratorServer
 }
 
-var (
-	instance *StockConfiguratorAdapter
-	once     sync.Once
-)
-
-func New(s in.ConfiguratorPort) api.StockConfiguratorServer {
-
-	once.Do(func() {
-		instance = &StockConfiguratorAdapter{service: s}
-	})
-
-	return instance
+func NewAdapter(s in.ConfiguratorPort) api.StockConfiguratorServer {
+	return &Adapter{service: s}
 }
 
 
 
-func (c *StockConfiguratorAdapter) UpdateStockConfigOne(ctx context.Context, in *api.StockConfig) (*api.ReturnMessage, error) {
+func (c *Adapter) UpdateStockConfigOne(ctx context.Context, in *api.StockConfig) (*api.ReturnMessage, error) {
 
 	prometheus.RequestCounter.Inc()
 
@@ -103,7 +92,7 @@ func (c *StockConfiguratorAdapter) UpdateStockConfigOne(ctx context.Context, in 
 
 
 
-func (c *StockConfiguratorAdapter) UpdateStockConfigMany(ctx context.Context, in *api.StockConfigList) (*api.ReturnMessageList, error) {
+func (c *Adapter) UpdateStockConfigMany(ctx context.Context, in *api.StockConfigList) (*api.ReturnMessageList, error) {
 
 	length := len(in.GetStockConfig())
 
@@ -188,7 +177,7 @@ func (c *StockConfiguratorAdapter) UpdateStockConfigMany(ctx context.Context, in
 
 
 
-func (c *StockConfiguratorAdapter) GetStockConfigOne(ctx context.Context, in *api.StockId) (*api.StockConfig, error) {
+func (c *Adapter) GetStockConfigOne(ctx context.Context, in *api.StockId) (*api.StockConfig, error) {
 
 	conf, err := c.service.GetStockConfiguration(ctx, in.GetStockId())
 	if err != nil {
@@ -228,7 +217,7 @@ func (c *StockConfiguratorAdapter) GetStockConfigOne(ctx context.Context, in *ap
 }
 
 
-func (c *StockConfiguratorAdapter) GetStockConfigAll(ctx context.Context, in *api.Null) (*api.StockConfigList, error) {
+func (c *Adapter) GetStockConfigAll(ctx context.Context, in *api.Null) (*api.StockConfigList, error) {
 
 	confList, err := c.service.GetAllStockConfiguration(ctx)
 	if err != nil {
