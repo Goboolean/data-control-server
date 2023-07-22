@@ -1,16 +1,21 @@
 package persistence
 
 import (
+	"context"
 	"sync"
 
+	"github.com/Goboolean/fetch-server/internal/domain/port"
 	"github.com/Goboolean/fetch-server/internal/domain/port/out"
 	"github.com/Goboolean/fetch-server/internal/domain/service/relayer"
+	"github.com/Goboolean/fetch-server/internal/domain/service/store"
 )
 
 type PersistenceManager struct {
 	db      out.StockPersistencePort
 	relayer *relayer.RelayerManager
-	closed  map[string]chan struct{}
+	s *store.Store
+
+	tx port.TX
 }
 
 var (
@@ -18,22 +23,22 @@ var (
 	once     sync.Once
 )
 
-func New(db out.StockPersistencePort, r *relayer.RelayerManager) *PersistenceManager {
+
+func New(tx port.TX, ctx context.Context, db out.StockPersistencePort, r *relayer.RelayerManager) *PersistenceManager {
 
 	once.Do(func() {
 		instance = &PersistenceManager{
 			db:      db,
 			relayer: r,
-			closed:  make(map[string]chan struct{}, 1),
+			s:       store.New(ctx),
+			tx:      tx,
 		}
 	})
 
 	return instance
 }
 
+
 func (m *PersistenceManager) Close() {
-	for stock, ch := range m.closed {
-		ch <- struct{}{}
-		delete(m.closed, stock)
-	}
+	m.s.Close()	
 }

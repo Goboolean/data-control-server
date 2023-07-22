@@ -2,108 +2,82 @@ package transaction
 
 import (
 	"context"
+	"os"
+	"sync"
 
+	"github.com/Goboolean/fetch-server/internal/domain/port"
+	"github.com/Goboolean/fetch-server/internal/infrastructure/redis"
+	"github.com/Goboolean/shared/pkg/mongo"
+	"github.com/Goboolean/shared/pkg/rdbms"
 	"github.com/Goboolean/shared/pkg/resolver"
 )
 
-type Transaction struct {
-	M   resolver.Transactioner
-	P   resolver.Transactioner
-	R   resolver.Transactioner
-	ctx context.Context
+
+
+
+type Tx struct {
+	m *mongo.DB
+	p *rdbms.PSQL
+	r *redis.Redis
 }
 
-func (t *Transaction) Commit() error {
+var (
+	once sync.Once
+	instance *Tx
+)
 
-	if t.M != nil {
-		if err := t.M.Commit(); err != nil {
-			return err
+
+func New() port.TX {
+
+	once.Do(func() {
+		instance = &Tx{
+			r: redis.NewInstance(&resolver.ConfigMap{
+				"HOST":     os.Getenv("REDIS_HOST"),
+				"PORT":     os.Getenv("REDIS_PORT"),
+				"USER":     os.Getenv("REDIS_USER"),
+				"PASSWORD": os.Getenv("REDIS_PASS"),
+			}),
+	
+			m: mongo.NewDB(&resolver.ConfigMap{
+				"HOST":     os.Getenv("MONGO_HOST"),
+				"PORT":     os.Getenv("MONGO_PORT"),
+				"USER":     os.Getenv("MONGO_USER"),
+				"PASSWORD": os.Getenv("MONGO_PASS"),
+			}),
+	
+			p: rdbms.NewDB(&resolver.ConfigMap{
+				"HOST":     os.Getenv("PSQL_HOST"),
+				"PORT":     os.Getenv("PSQL_PORT"),
+				"USER":     os.Getenv("PSQL_USER"),
+				"PASSWORD": os.Getenv("PSQL_PASS"),
+			}),
 		}
-	}
+	})
 
-	if t.P != nil {
-		if err := t.P.Commit(); err != nil {
-			return err
-		}
-	}
-
-	if t.R != nil {
-		if err := t.R.Commit(); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-
-func (t *Transaction) Rollback() error {
-
-	if t.M != nil {
-		if err := t.M.Rollback(); err != nil {
-			return err
-		}
-	}
-
-	if t.P != nil {
-		if err := t.P.Rollback(); err != nil {
-			return err
-		}
-	}
-
-	if t.R != nil {
-		if err := t.R.Rollback(); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (t *Transaction) Context() context.Context {
-	return t.ctx
+	return instance
 }
 
 
 
-type Option struct {
-	Mongo    bool
-	Postgres bool
-	Redis    bool
-}
+func (t *Tx) Transaction(ctx context.Context) (port.Transactioner, error) {
 
-func New(ctx context.Context, o *Option) (instance *Transaction, err error) {
 
-	f := NewFactory()
-
-	if o != nil {
-		o = &Option{
-			Mongo: true,
-			Postgres: true,
-			Redis: true,
-		}	
+	m, err := t.m.NewTx(ctx)
+	if err != nil {
+		return nil, err
 	}
 
-	if o.Mongo {
-		instance.M, err = f.m.NewTx(ctx)
-		if err != nil {
-			return
-		}
+	p, err := t.p.NewTx(ctx)
+	if err != nil {
+		return nil, err
 	}
 
-	if o.Postgres {
-		instance.P, err = f.p.NewTx(ctx)
-		if err != nil {
-			return
-		}
+	r, err := t.r.NewTx(ctx)
+	if err != nil {
+		return nil, err
 	}
 
-	if o.Redis {
-		instance.R, err = f.r.NewTx(ctx)
-		if err != nil {
-			return
-		}
-	}
+	var a *TxSession = &TxSession{M: m, P: p, R: r}
 
-	return
+	return a, nil
 }
