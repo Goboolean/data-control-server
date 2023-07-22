@@ -6,14 +6,15 @@ import (
 	"github.com/Goboolean/shared/pkg/resolver"
 )
 
-type Transaction struct {
+type TxSession struct {
 	M   resolver.Transactioner
 	P   resolver.Transactioner
 	R   resolver.Transactioner
 	ctx context.Context
 }
 
-func (t *Transaction) Commit() error {
+
+func (t *TxSession) Commit() error {
 
 	if t.M != nil {
 		if err := t.M.Commit(); err != nil {
@@ -37,7 +38,7 @@ func (t *Transaction) Commit() error {
 }
 
 
-func (t *Transaction) Rollback() error {
+func (t *TxSession) Rollback() error {
 
 	if t.M != nil {
 		if err := t.M.Rollback(); err != nil {
@@ -60,6 +61,6 @@ func (t *Transaction) Rollback() error {
 	return nil
 }
 
-func (t *Transaction) Context() context.Context {
+func (t *TxSession) Context() context.Context {
 	return t.ctx
 }

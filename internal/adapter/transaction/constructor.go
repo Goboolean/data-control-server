@@ -23,14 +23,14 @@ type Tx struct {
 
 var (
 	once sync.Once
-	tx *Tx
+	instance *Tx
 )
 
 
 func New() port.TX {
 
 	once.Do(func() {
-		tx = &Tx{
+		instance = &Tx{
 			r: redis.NewInstance(&resolver.ConfigMap{
 				"HOST":     os.Getenv("REDIS_HOST"),
 				"PORT":     os.Getenv("REDIS_PORT"),
@@ -54,7 +54,7 @@ func New() port.TX {
 		}
 	})
 
-	return tx
+	return instance
 }
 
 
@@ -76,6 +76,8 @@ func (t *Tx) Transaction(ctx context.Context) (port.Transactioner, error) {
 	if err != nil {
 		return nil, err
 	}
-	
-	return &Transaction{M: m, P: p, R: r}, nil
+
+	var a *TxSession = &TxSession{M: m, P: p, R: r}
+
+	return a, nil
 }
