@@ -2,7 +2,6 @@ package websocket
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/Goboolean/fetch-server/internal/domain/entity"
 	"github.com/Goboolean/fetch-server/internal/domain/port/in"
@@ -47,7 +46,7 @@ func (a *Adapter) RegisterFetcher(f ws.Fetcher) error {
 
 	name := f.PlatformName()
 	if _, ok := a.fetcher[name]; ok {
-		return fmt.Errorf("fetcher %s is already registered", name)
+		return ErrFetcherAlreadyRegistered
 	}
 
 	a.fetcher[name] = f
@@ -59,7 +58,7 @@ func (a *Adapter) UnregisterFetcher(f ws.Fetcher) error {
 
 	name := f.PlatformName()
 	if _, ok := a.fetcher[name]; !ok {
-		return fmt.Errorf("fetcher %s is not registered", name)
+		return ErrFetcherNotRegistered
 	}
 
 	delete(a.fetcher, name)
@@ -71,7 +70,7 @@ func (a *Adapter) UnregisterFetcher(f ws.Fetcher) error {
 func (s *Adapter) toDomainEntity(agg *ws.StockAggregate) (*entity.StockAggregateForm, error) {
 	stockId, ok := s.symbolToId[agg.Symbol]
 	if !ok {
-		return nil, ErrStockNotFound
+		return nil, ErrSymbolUnrecognized
 	}
 
 	return &entity.StockAggregateForm{
@@ -125,22 +124,23 @@ func (s *Adapter) FetchStock(ctx context.Context, stockId string, stockMeta enti
 	fetcher, ok := s.fetcher[platform]
 
 	if !ok {
-		return fmt.Errorf("fetcher %s is not registered", platform)
+		return ErrFetcherNotRegistered
 	}
 
 	return fetcher.SubscribeStockAggs(stockId)
 }
 
 
+
 func (s *Adapter) StopFetchingStock(ctx context.Context, stockId string) error {
 	platform, ok := s.symbolToId[stockId]
 	if !ok {
-		return ErrStockNotFound
+		return ErrPlatformNotFoundByStockId
 	}
 
 	fetcher, ok := s.fetcher[platform]
 	if !ok {
-		return fmt.Errorf("fetcher %s is not registered", platform)
+		return ErrFetcherNotFoundByPlatformName
 	}
 
 	return fetcher.UnsubscribeStockAggs(stockId)
