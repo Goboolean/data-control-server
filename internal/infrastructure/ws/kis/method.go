@@ -15,22 +15,25 @@ func (s *Subscriber) run() {
 		default:
 
 		}
+
 		_, message, err := s.conn.ReadMessage()
 		if err != nil {
-			log.Println("Error while reading message")
+			if valid := isResponseValid(message); !valid {
+				log.Println("Error while reading message")
+			}
 			continue
 		}
 
-		receivedString := string(message)
-
-		agg, err := ToStockDetail_USA(receivedString)
+		agg, err := NewStockAggs(string(message))
 		if err != nil {
-			log.Println("Error while converting to StockDetail_USA")
+			log.Println("Error while converting to StockAggs")
 			continue
 		}
-		data, err := ToStockAggsDetail_USA(agg)
+
+		data, err := agg.ToStockAggsDetail()
 		if err != nil {
-			log.Println("Error while converting to StockAggsDetail_USA")
+			log.Println("Error while converting to StockAggsDetail")
+			continue
 		}
 
 		if err := s.r.OnReceiveStockAggs(data); err != nil {
