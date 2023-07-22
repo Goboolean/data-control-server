@@ -6,7 +6,7 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-func (q *Queries) GetAndEmptyCache(tx resolver.Transactioner, stock string) ([]StockAggregate, error) {
+func (q *Queries) GetAndEmptyCache(tx resolver.Transactioner, stock string) ([]*StockAggregate, error) {
 
 	pipe := tx.Transaction().(*redis.Pipeline)
 
@@ -21,12 +21,12 @@ func (q *Queries) GetAndEmptyCache(tx resolver.Transactioner, stock string) ([]S
 	}
 
 	length, _ := getLenCmd.Result()
-	stockBatch := make([]StockAggregate, length)
+	stockBatch := make([]*StockAggregate, length)
 
 	for idx := range stockBatch {
 		data, _ := getListCmd.Result()
 
-		if err := proto.Unmarshal(data.([]byte), &stockBatch[idx]); err != nil {
+		if err := proto.Unmarshal(data.([]byte), stockBatch[idx]); err != nil {
 			return nil, err
 		}
 	}
