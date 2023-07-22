@@ -3,6 +3,8 @@ package persistence
 import (
 	"context"
 	"log"
+
+	"github.com/Goboolean/fetch-server/internal/domain/entity"
 )
 
 func (m *PersistenceManager) SubscribeRelayer(ctx context.Context, stockId string) error {
@@ -18,20 +20,29 @@ func (m *PersistenceManager) SubscribeRelayer(ctx context.Context, stockId strin
 
 	go func() {
 
+		if err := m.db.CreateStoringStartedLog(ctx, stockId); err != nil {
+			log.Println(err)
+		}
+
 		for {
 			select {
 			case <- m.s.Map[stockId].Done():
+				if err := m.db.CreateStoringStoppedLog(ctx, stockId); err != nil {
+					log.Println(err)
+				}
 				return
 
 			case data := <-ch:
 
-				tx, err := m.tx.Transaction(ctx)
-				if err != nil {
-					log.Fatal(err)
-				}
+				ctx := context.Background()
 
-				if err := m.db.InsertOnCache(tx, stockId, data); err != nil {
-					log.Fatal(err)
+				if err := m.InsertStockOnDB(ctx, stockId, data); err != nil {
+					log.Println(err)
+
+					if err := m.db.CreateStoringFailedLog(ctx, stockId); err != nil {
+						log.Println(err)
+					}
+					return
 				}
 			}
 		}
@@ -51,7 +62,8 @@ func (m *PersistenceManager) IsStockStoreable(stockId string) bool {
 }
 
 
-func (m *PersistenceManager) SynchronizeDatabase(ctx context.Context, stock string) error {
+
+func (m *PersistenceManager) InsertStockOnDB(ctx context.Context, stockId string, batch []*entity.StockAggregate) error {
 
 	tx, err := m.tx.Transaction(ctx)
 	if err != nil {
@@ -59,18 +71,10 @@ func (m *PersistenceManager) SynchronizeDatabase(ctx context.Context, stock stri
 	}
 	defer tx.Rollback()
 
-	batch, err := m.db.EmptyCache(tx, stock)
-	if err != nil {
-		return err
-	}
-
-	if err := m.db.StoreStock(tx, stock, batch); err != nil {
-		return err
-	}
-
-	if err := m.db.CreateStoreLog(tx, stock); err != nil {
+	if err := m.db.StoreStockBatch(tx, stockId, batch); err != nil {
 		return err
 	}
 
 	return tx.Commit()
 }
+
