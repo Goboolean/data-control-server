@@ -58,7 +58,7 @@ func (q *Queries) InsertStockDataBatch(ctx context.Context, stock string, stockB
 
 func (q *Queries) GetAndEmptyCache(ctx context.Context, stockId string) ([]*StockAggregate, error) {
 
-	pipe := q.db.client.Pipeline()
+	pipe := q.db.client.TxPipeline()
 
 	getListCmd := pipe.LRange(ctx, stockId, 0, -1)
 	getLenCmd := pipe.LLen(ctx, stockId)
