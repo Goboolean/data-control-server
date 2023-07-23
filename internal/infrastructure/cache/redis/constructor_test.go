@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/Goboolean/fetch-server/internal/infrastructure/cache/redis"
+	"github.com/Goboolean/fetch-server/internal/util/env"
 	"github.com/Goboolean/shared/pkg/resolver"
 	"github.com/joho/godotenv"
 )
@@ -32,7 +33,7 @@ func Setup() {
 		"DATABASE": database,
 	})
 
-	queries = redis.New()
+	queries = redis.New(instance)
 }
 
 
@@ -43,7 +44,7 @@ func Teardown() {
 
 func TestMain(m *testing.M) {
 
-	if err := os.Chdir("../../../"); err != nil {
+	if err := os.Chdir(env.Root); err != nil {
 		panic(err)
 	}
 

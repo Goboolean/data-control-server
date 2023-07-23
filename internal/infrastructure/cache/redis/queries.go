@@ -9,11 +9,11 @@ import (
 
 
 type Queries struct {
-	rds *Redis
+	db *Redis
 }
 
-func New() *Queries {
-	return &Queries{}
+func New(db *Redis) *Queries {
+	return &Queries{db: db}
 }
 
 
@@ -26,7 +26,8 @@ func (q *Queries) InsertStockData(tx resolver.Transactioner, stock string, stock
 		return err
 	}
 
-	return q.rds.client.RPush(tx.Context(), stock, &data).Err()
+	result := q.db.client.RPush(tx.Context(), stock, data)
+	return result.Err()
 }
 
 
@@ -44,7 +45,7 @@ func (q *Queries) InsertStockDataBatch(tx resolver.Transactioner, stock string, 
 		dataBatch[idx] = data
 	}
 
-	return q.rds.client.RPush(tx.Context(), stock, dataBatch...).Err()
+	return q.db.client.RPush(tx.Context(), stock, dataBatch...).Err()
 }
 
 
@@ -52,7 +53,7 @@ func (q *Queries) GetAndEmptyCache(tx resolver.Transactioner, stock string) ([]*
 
 	pipe := tx.Transaction().(*redis.Pipeline)
 
-	getListCmd := pipe.Do(tx.Context(), "LRANGE", stock, 0, -1)
+	getListCmd := pipe.LRange(tx.Context(), stock, 0, -1)
 	getLenCmd := pipe.LLen(tx.Context(), stock)
 	pipe.Del(tx.Context(), stock)
 
@@ -63,14 +64,17 @@ func (q *Queries) GetAndEmptyCache(tx resolver.Transactioner, stock string) ([]*
 	}
 
 	length, _ := getLenCmd.Result()
+	data, _ := getListCmd.Result()
+
 	stockBatch := make([]*StockAggregate, length)
 
-	for idx := range stockBatch {
-		data, _ := getListCmd.Result()
+	for idx := range data {
+		var stockItem StockAggregate
 
-		if err := proto.Unmarshal(data.([]byte), stockBatch[idx]); err != nil {
+		if err := proto.Unmarshal([]byte(data[idx]), &stockItem); err != nil {
 			return nil, err
 		}
+		stockBatch[idx] = &stockItem
 	}
 
 	return stockBatch, nil
