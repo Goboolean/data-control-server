@@ -56,7 +56,6 @@ func NewInstance(c *resolver.ConfigMap) *Redis {
 		rdb := redis.NewClient(&redis.Options{
 			Addr:     address,
 			Password: password,
-			//Username: user,
 			DB:       database,
 		})
 
@@ -71,7 +70,7 @@ func NewInstance(c *resolver.ConfigMap) *Redis {
 }
 
 func (r *Redis) Close() error {
-	if err := r.Close(); err != nil {
+	if err := r.client.Close(); err != nil {
 		return err
 	}
 

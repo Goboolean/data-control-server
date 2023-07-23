@@ -18,7 +18,7 @@ func New(db *Redis) *Queries {
 
 
 
-func (q *Queries) InsertStockData(ctx context.Context, stock string, stockItem *StockAggregate) error {
+func (q *Queries) InsertStockData(ctx context.Context, stockId string, stockItem *StockAggregate) error {
 
 	data, err := proto.Marshal(stockItem)
 
@@ -26,9 +26,16 @@ func (q *Queries) InsertStockData(ctx context.Context, stock string, stockItem *
 		return err
 	}
 
-	result := q.db.client.RPush(ctx, stock, data)
+	result := q.db.client.RPush(ctx, stockId, data)
 	return result.Err()
 }
+
+
+func (q *Queries) GetStockBatchStoredLength(ctx context.Context, stockId string) (int, error) {
+	result := q.db.client.LLen(ctx, stockId)
+	return int(result.Val()), result.Err()
+}
+
 
 
 func (q *Queries) InsertStockDataBatch(ctx context.Context, stock string, stockBatch []*StockAggregate) error {
@@ -49,13 +56,13 @@ func (q *Queries) InsertStockDataBatch(ctx context.Context, stock string, stockB
 }
 
 
-func (q *Queries) GetAndEmptyCache(ctx context.Context, stock string) ([]*StockAggregate, error) {
+func (q *Queries) GetAndEmptyCache(ctx context.Context, stockId string) ([]*StockAggregate, error) {
 
 	pipe := q.db.client.Pipeline()
 
-	getListCmd := pipe.LRange(ctx, stock, 0, -1)
-	getLenCmd := pipe.LLen(ctx, stock)
-	pipe.Del(ctx, stock)
+	getListCmd := pipe.LRange(ctx, stockId, 0, -1)
+	getLenCmd := pipe.LLen(ctx, stockId)
+	pipe.Del(ctx, stockId)
 
 	_, err := pipe.Exec(ctx)
 
