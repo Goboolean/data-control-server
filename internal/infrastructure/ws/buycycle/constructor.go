@@ -65,6 +65,8 @@ func New(c *resolver.ConfigMap, ctx context.Context, r ws.Receiver) *Subscriber 
 		r:      r,
 	}
 
+	go instance.run()
+
 	return instance
 }
 

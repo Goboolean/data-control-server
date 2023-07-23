@@ -8,13 +8,13 @@ import (
 	"sync"
 
 	api "github.com/Goboolean/fetch-server/api/grpc"
-	adapter "github.com/Goboolean/fetch-server/internal/adapter/grpc"
+	grpcadapter "github.com/Goboolean/fetch-server/internal/adapter/grpc"
 	"google.golang.org/grpc"
 )
 
 type Host struct {
 	server *grpc.Server
-	impl   *adapter.StockConfiguratorAdapter
+	impl   *grpcadapter.Adapter
 }
 
 var (
@@ -22,7 +22,7 @@ var (
 	once     sync.Once
 )
 
-func New(adapter *adapter.StockConfiguratorAdapter) *Host {
+func New(adapter *grpcadapter.Adapter) *Host {
 	once.Do(func() {
 		instance = &Host{
 			impl: adapter,

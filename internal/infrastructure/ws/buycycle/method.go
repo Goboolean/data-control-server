@@ -18,12 +18,21 @@ func (s *Subscriber) run() {
 			
 		}
 
-		var agg *ws.StockAggregate
+		var agg *StockDetail = &StockDetail{}
 		if err := s.conn.ReadJSON(agg); err != nil {
 			log.Fatal(err)
 		}
 
-		if err := s.r.OnReceiveStockAggs(agg); err != nil {
+		var data = &ws.StockAggregate{
+			StockAggsMeta: ws.StockAggsMeta{
+				Symbol: agg.Sign,				
+			},
+			StockAggsDetail: ws.StockAggsDetail{
+				
+			},
+		}
+
+		if err := s.r.OnReceiveStockAggs(data); err != nil {
 			log.Fatal(err)
 		}
 	}

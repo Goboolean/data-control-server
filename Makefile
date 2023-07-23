@@ -8,7 +8,7 @@ GRPC_PROTO_PATH = ./api/grpc/fetch-server.proto
 GRPC_GEN_PATH = .
 
 REDIS_MODEL_PROTO_PATH = ./api/redis-model/model.proto
-REDIS_MODEL_GEN_PATH = ./internal/infrastructure/redis
+REDIS_MODEL_GEN_PATH = ./internal/infrastructure/cache/redis
 
 build-app:
 	docker-compose -f ./build/docker-compose.yml up --build -d
@@ -45,6 +45,5 @@ proto-generate:
 		--go_out=$(REDIS_MODEL_GEN_PATH) \
 		--go_opt=paths=source_relative \
 		$(REDIS_MODEL_PROTO_PATH)
-	rm ./internal/infrastructure/redis/model.pb.go
-	mv ./internal/infrastructure/redis/api/redis-model/model.pb.go ./internal/infrastructure/redis
-	rm -rf ./internal/infrastructure/redis/api
+	mv $(REDIS_MODEL_GEN_PATH)/api/redis-model/model.pb.go $(REDIS_MODEL_GEN_PATH)
+	rm -rf $(REDIS_MODEL_GEN_PATH)/api

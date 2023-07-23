@@ -6,7 +6,6 @@ import (
 	"sync"
 
 	"github.com/Goboolean/fetch-server/internal/domain/port"
-	"github.com/Goboolean/fetch-server/internal/infrastructure/redis"
 	"github.com/Goboolean/shared/pkg/mongo"
 	"github.com/Goboolean/shared/pkg/rdbms"
 	"github.com/Goboolean/shared/pkg/resolver"
@@ -18,7 +17,6 @@ import (
 type Tx struct {
 	m *mongo.DB
 	p *rdbms.PSQL
-	r *redis.Redis
 }
 
 var (
@@ -30,14 +28,7 @@ var (
 func New() port.TX {
 
 	once.Do(func() {
-		instance = &Tx{
-			r: redis.NewInstance(&resolver.ConfigMap{
-				"HOST":     os.Getenv("REDIS_HOST"),
-				"PORT":     os.Getenv("REDIS_PORT"),
-				"USER":     os.Getenv("REDIS_USER"),
-				"PASSWORD": os.Getenv("REDIS_PASS"),
-			}),
-	
+		instance = &Tx{	
 			m: mongo.NewDB(&resolver.ConfigMap{
 				"HOST":     os.Getenv("MONGO_HOST"),
 				"PORT":     os.Getenv("MONGO_PORT"),
@@ -72,12 +63,7 @@ func (t *Tx) Transaction(ctx context.Context) (port.Transactioner, error) {
 		return nil, err
 	}
 
-	r, err := t.r.NewTx(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	var a *TxSession = &TxSession{M: m, P: p, R: r}
+	var a *TxSession = &TxSession{M: m, P: p}
 
 	return a, nil
 }

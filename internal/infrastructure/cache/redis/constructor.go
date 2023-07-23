@@ -10,7 +10,7 @@ import (
 )
 
 type Redis struct {
-	*redis.Client
+	client *redis.Client
 }
 
 var (
@@ -20,7 +20,7 @@ var (
 
 func NewInstance(c *resolver.ConfigMap) *Redis {
 
-	user, err := c.GetStringKey("USER")
+	_, err := c.GetStringKey("USER")
 	if err != nil {
 		panic(err)
 	}
@@ -56,20 +56,21 @@ func NewInstance(c *resolver.ConfigMap) *Redis {
 		rdb := redis.NewClient(&redis.Options{
 			Addr:     address,
 			Password: password,
-			Username: user,
 			DB:       database,
 		})
 
 		if err := rdb.Ping(context.TODO()).Err(); err != nil {
 			panic(err)
 		}
+
+		instance = &Redis{client: rdb}
 	})
 
 	return instance
 }
 
 func (r *Redis) Close() error {
-	if err := r.Close(); err != nil {
+	if err := r.client.Close(); err != nil {
 		return err
 	}
 
@@ -77,9 +78,6 @@ func (r *Redis) Close() error {
 }
 
 func (r *Redis) Ping() error {
-	return r.Ping()
-}
-
-func (r *Redis) NewTx(ctx context.Context) (resolver.Transactioner, error) {
-	return NewTransaction(r.Pipeline(), ctx), nil
+	_, err := r.client.Ping(context.Background()).Result()
+	return err
 }

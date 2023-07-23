@@ -1,6 +1,7 @@
 package kis
 
 import (
+	"encoding/json"
 	"errors"
 	"strings"
 
@@ -13,6 +14,7 @@ type HeaderJson struct {
 	TrType      string `json:"tr_type"`      // 거래 타입 (1. 등록, 2. 해제)
 	ContentType string `json:"content-type"` // 컨텐츠 타입 (utf-8 고정)
 }
+
 type RequestBodyJson struct {
 	Input RequestInputJson `json:"input"`
 }
@@ -26,7 +28,81 @@ type RequestJson struct {
 	Header HeaderJson      `json:"header"`
 	Body   RequestBodyJson `json:"body"`
 }
-type StockDetail_USA struct {
+
+
+type ResponseJson struct {
+	Header ResponseHeaderJson     `json:"header"`
+	Body   ResponseBodyJson `json:"body"`
+}
+
+type ResponseHeaderJson struct {
+	TrID    string `json:"tr_id"`
+	TrKey   string `json:"tr_key"`
+	Encrypt string `json:"encrypt"`
+}
+
+type ResponseBodyJson struct {
+	RtCd  string `json:"rt_cd"`
+	MsgCd string `json:"msg_cd"`
+	Msg1  string `json:"msg1"`
+	Output struct {
+		Iv  string `json:"iv"`
+		Key string `json:"key"`
+	}            `json:"output"`
+}
+
+func isResponseValid(data []byte) bool {
+
+	var res ResponseJson
+	if err := json.Unmarshal([]byte(data), &res); err != nil {
+		return false
+	}
+	if res.Header.TrID != "" && res.Header.TrKey != "" && res.Header.Encrypt != "" {
+		return false
+	}
+
+	return true
+}
+
+
+type StockAggs struct {
+	data []string
+	origin string
+}
+
+func NewStockAggs(str string) (*StockAggs, error) {
+
+	data := strings.Split(str, "^")
+	instance := &StockAggs{data: data}
+
+	switch len(data) {
+		case 26:
+			instance.origin = "usa"
+			return instance, nil
+		case 52:
+			instance.origin = "kor"
+			return instance, nil
+		default:
+			return nil, errors.New("incorrect number of fields in response")
+	}
+}
+
+func (s *StockAggs) ToStockAggsDetail() (*ws.StockAggregate, error) {
+	switch s.origin {
+		case "usa":
+			usas := s.parseToUSAStockDetail()
+			return usas.ToStockAggsDetail()
+		case "kor":
+			kors := s.parseToKORStockDetail()
+			return kors.ToStockAggsDetail()
+		default:
+			return nil, errors.New("incorrect origin")
+	}
+}
+
+
+
+type USAStockDetail struct {
 	RSYM string // 실시간 종목코드
 	SYMB string // 종목코드
 	ZDIV string // 수수점자리수
@@ -55,7 +131,8 @@ type StockDetail_USA struct {
 	MTYP string // 시간구분
 }
 
-type StockDetail struct {
+
+type KORStockDetail struct {
 	MKSC_SHRN_ISCD               string // 유가증권 단축 종목코드
 	STCK_CNTG_HOUR               string // 주식 체결 시간
 	STCK_PRPR                    string // 주식 현재가
@@ -104,13 +181,13 @@ type StockDetail struct {
 	VI_STND_PRC                  string // 정적 VI 발동 기준가
 }
 
-func ToStockDetail_USA(receivedString string) (*StockDetail_USA, error) {
-	data := strings.Split(receivedString, "^")
-	if len(data) != 26 {
-		return nil, errors.New("incorrect number of fields in response")
-	}
+
+func (s *StockAggs) parseToUSAStockDetail() *USAStockDetail {
+
+	data := s.data
 	slicedRSYM := strings.Split(data[0], "|")
-	return &StockDetail_USA{
+
+	return &USAStockDetail{
 		RSYM: slicedRSYM[3],
 		SYMB: data[1],
 		ZDIV: data[2],
@@ -137,15 +214,14 @@ func ToStockDetail_USA(receivedString string) (*StockDetail_USA, error) {
 		ASVL: data[23],
 		STRN: data[24],
 		MTYP: data[25],
-	}, nil
+	}
 }
 
-func ToStockDetail(receivedString string) (*StockDetail, error) {
-	data := strings.Split(receivedString, "^")
-	if len(data) != 52 {
-		return nil, errors.New("incorrect number of fields in response")
-	}
-	return &StockDetail{
+
+func (s *StockAggs) parseToKORStockDetail() *KORStockDetail {
+	data := s.data
+
+	return &KORStockDetail{
 		MKSC_SHRN_ISCD:               data[0],
 		STCK_CNTG_HOUR:               data[1],
 		STCK_PRPR:                    data[2],
@@ -192,13 +268,14 @@ func ToStockDetail(receivedString string) (*StockDetail, error) {
 		HOUR_CLS_CODE:                data[43],
 		MRKT_TRTM_CLS_CODE:           data[44],
 		VI_STND_PRC:                  data[45],
-	}, nil
+	}
 }
 
-func ToStockAggsDetail(s *StockDetail) (*ws.StockAggregate, error) {
+
+func (s *KORStockDetail) ToStockAggsDetail() (*ws.StockAggregate, error) {
 	return &ws.StockAggregate{}, nil
 }
 
-func ToStockAggsDetail_USA(s *StockDetail_USA) (*ws.StockAggregate, error) {
+func (s *USAStockDetail) ToStockAggsDetail() (*ws.StockAggregate, error) {
 	return &ws.StockAggregate{}, nil
 }
