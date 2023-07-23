@@ -7,11 +7,11 @@ option go_package = "github.com/Goboolean/fetch-server/internal/infrastructure/r
 message StockAggregate {
   string stockId = 1;
   string eventType = 2;
-  float avg = 3;
-  float min = 4;
-  float max = 5;
-  float start = 6;
-  float end = 7;
+  double avg = 3;
+  double min = 4;
+  double max = 5;
+  double start = 6;
+  double end = 7;
   int64 startTime = 8;
   int64 endTime = 9;
 }
