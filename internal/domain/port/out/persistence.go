@@ -14,3 +14,9 @@ type StockPersistencePort interface {
 	CreateStoringFailedLog(context.Context, string) error
 	CreateStoringStoppedLog(context.Context, string) error
 }
+
+type StockPersistenceCachePort interface {
+	StoreStockOnCache(context.Context, string, *entity.StockAggregate) error
+	StoreStockBatchOnCache(context.Context, string, []*entity.StockAggregate) error
+	GetAndEmptyCache(context.Context, string) ([]*entity.StockAggregate, error)
+}

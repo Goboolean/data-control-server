@@ -62,7 +62,6 @@ func (m *PersistenceManager) IsStockStoreable(stockId string) bool {
 }
 
 
-
 func (m *PersistenceManager) InsertStockOnDB(ctx context.Context, stockId string, batch []*entity.StockAggregate) error {
 
 	tx, err := m.tx.Transaction(ctx)
@@ -78,3 +77,17 @@ func (m *PersistenceManager) InsertStockOnDB(ctx context.Context, stockId string
 	return tx.Commit()
 }
 
+
+func (m *PersistenceManager) InsertStockOnCache(ctx context.Context, stockId string, batch []*entity.StockAggregate) error {
+	return m.cache.StoreStockBatchOnCache(ctx, stockId, batch)
+}
+
+
+func (m *PersistenceManager) SynchronizeCache(ctx context.Context, stockId string) error {
+	stockBatch, err := m.cache.GetAndEmptyCache(ctx, stockId)
+	if err != nil {
+		return err
+	}
+
+	return m.InsertStockOnDB(ctx, stockId, stockBatch)
+}

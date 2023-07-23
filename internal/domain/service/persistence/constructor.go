@@ -12,8 +12,9 @@ import (
 
 type PersistenceManager struct {
 	db      out.StockPersistencePort
+	cache   out.StockPersistenceCachePort
 	relayer *relayer.RelayerManager
-	s *store.Store
+	s       *store.Store
 
 	tx port.TX
 }
@@ -24,11 +25,12 @@ var (
 )
 
 
-func New(tx port.TX, ctx context.Context, db out.StockPersistencePort, r *relayer.RelayerManager) *PersistenceManager {
+func New(tx port.TX, ctx context.Context, db out.StockPersistencePort, cache out.StockPersistenceCachePort, r *relayer.RelayerManager) *PersistenceManager {
 
 	once.Do(func() {
 		instance = &PersistenceManager{
 			db:      db,
+			cache:   cache,
 			relayer: r,
 			s:       store.New(ctx),
 			tx:      tx,
