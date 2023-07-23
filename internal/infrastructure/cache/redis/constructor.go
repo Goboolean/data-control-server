@@ -82,7 +82,3 @@ func (r *Redis) Ping() error {
 	_, err := r.client.Ping(context.Background()).Result()
 	return err
 }
-
-func (r *Redis) NewTx(ctx context.Context) (resolver.Transactioner, error) {
-	return NewTransaction(r.client.Pipeline(), ctx), nil
-}

@@ -1,8 +1,8 @@
 package redis
 
 import (
-	"github.com/Goboolean/shared/pkg/resolver"
-	"github.com/go-redis/redis/v8"
+	"context"
+
 	"google.golang.org/protobuf/proto"
 )
 
@@ -18,7 +18,7 @@ func New(db *Redis) *Queries {
 
 
 
-func (q *Queries) InsertStockData(tx resolver.Transactioner, stock string, stockItem *StockAggregate) error {
+func (q *Queries) InsertStockData(ctx context.Context, stock string, stockItem *StockAggregate) error {
 
 	data, err := proto.Marshal(stockItem)
 
@@ -26,12 +26,12 @@ func (q *Queries) InsertStockData(tx resolver.Transactioner, stock string, stock
 		return err
 	}
 
-	result := q.db.client.RPush(tx.Context(), stock, data)
+	result := q.db.client.RPush(ctx, stock, data)
 	return result.Err()
 }
 
 
-func (q *Queries) InsertStockDataBatch(tx resolver.Transactioner, stock string, stockBatch []*StockAggregate) error {
+func (q *Queries) InsertStockDataBatch(ctx context.Context, stock string, stockBatch []*StockAggregate) error {
 
 	dataBatch := make([]interface{}, len(stockBatch))
 
@@ -45,19 +45,19 @@ func (q *Queries) InsertStockDataBatch(tx resolver.Transactioner, stock string, 
 		dataBatch[idx] = data
 	}
 
-	return q.db.client.RPush(tx.Context(), stock, dataBatch...).Err()
+	return q.db.client.RPush(ctx, stock, dataBatch...).Err()
 }
 
 
-func (q *Queries) GetAndEmptyCache(tx resolver.Transactioner, stock string) ([]*StockAggregate, error) {
+func (q *Queries) GetAndEmptyCache(ctx context.Context, stock string) ([]*StockAggregate, error) {
 
-	pipe := tx.Transaction().(*redis.Pipeline)
+	pipe := q.db.client.Pipeline()
 
-	getListCmd := pipe.LRange(tx.Context(), stock, 0, -1)
-	getLenCmd := pipe.LLen(tx.Context(), stock)
-	pipe.Del(tx.Context(), stock)
+	getListCmd := pipe.LRange(ctx, stock, 0, -1)
+	getLenCmd := pipe.LLen(ctx, stock)
+	pipe.Del(ctx, stock)
 
-	_, err := pipe.Exec(tx.Context())
+	_, err := pipe.Exec(ctx)
 
 	if err != nil {
 		return nil, err
