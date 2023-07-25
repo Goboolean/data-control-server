@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/Goboolean/fetch-server/internal/domain/entity"
+	"github.com/Goboolean/fetch-server/internal/domain/port/out"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/cache/redis"
 )
 
@@ -14,7 +15,7 @@ type Adapter struct {
 }
 
 
-func NewAdapter(r *redis.Redis) *Adapter {
+func NewAdapter(r *redis.Redis) out.StockPersistenceCachePort {
 	return &Adapter{
 		redis: redis.New(r),
 	}
