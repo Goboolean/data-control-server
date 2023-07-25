@@ -2,13 +2,21 @@ package transmission
 
 import (
 	"context"
+	"errors"
 	"log"
+
+	"github.com/Goboolean/fetch-server/internal/domain/entity"
 )
 
 
 func (t *Transmitter) SubscribeRelayer(ctx context.Context, stockId string) error {
-	
-	ch, err := t.relayer.Subscribe(stockId)
+	received := make([]*entity.StockAggregate, 0)
+
+	if exists := t.s.StockExists(stockId); exists {
+		return errors.New("stock already exists")
+	}
+
+	ch, err := t.relayer.Subscribe(ctx, stockId)
 	if err != nil {
 		return err
 	}
@@ -23,14 +31,27 @@ func (t *Transmitter) SubscribeRelayer(ctx context.Context, stockId string) erro
 			case <- t.s.Ctx.Done():
 				return
 
-			case data := <-ch:
-				if err != nil {
-					log.Fatal(err)
+			case data, ok := <-ch:
+
+				if !ok {
+					return
 				}
 
-				if err := t.broker.TransmitStockBatch(ctx, stockId, data); err != nil {
-					log.Fatal(err)
+				received = append(received, data)
+
+				if len(received) % t.batchSize == 0 {
+					ctx, cancel := context.WithCancel(t.s.Ctx.Context())
+					defer cancel()
+
+					if err := t.broker.TransmitStockBatch(ctx, stockId, received); err != nil {
+						log.Println(err)
+
+						continue
+					}
+
+					received = received[:0]
 				}
+
 			}
 		}
 	}()
@@ -39,7 +60,7 @@ func (t *Transmitter) SubscribeRelayer(ctx context.Context, stockId string) erro
 }
 
 
-func (t *Transmitter) UnsubscribeRelayer(ctx context.Context, stockId string) error {
+func (t *Transmitter) UnsubscribeRelayer(stockId string) error {
 	return t.s.UnstoreStock(stockId)
 }
 

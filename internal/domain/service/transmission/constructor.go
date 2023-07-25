@@ -14,6 +14,8 @@ type Transmitter struct {
 	broker out.TransmissionPort
 
 	s *store.Store
+
+	batchSize int
 }
 
 var (
@@ -21,10 +23,13 @@ var (
 	once     sync.Once
 )
 
-func New(ctx context.Context, broker out.TransmissionPort, relayer *relayer.RelayerManager) *Transmitter {
+func New(ctx context.Context, broker out.TransmissionPort, relayer *relayer.RelayerManager, o Option) *Transmitter {
 	once.Do(func() {
 		instance = &Transmitter{
-
+			relayer:   relayer,
+			broker:    broker,
+			s:         store.New(ctx),
+			batchSize: o.batchSize,
 		}
 	})
 
