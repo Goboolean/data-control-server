@@ -5,7 +5,6 @@ import (
 
 	"github.com/Goboolean/fetch-server/internal/domain/entity"
 	"github.com/Goboolean/fetch-server/internal/domain/port/in"
-	"github.com/Goboolean/fetch-server/internal/domain/port/out"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/prometheus"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws"
 )
@@ -17,6 +16,8 @@ import (
 type Adapter struct {
 	fetcher map[string]ws.Fetcher // stockid -> fetcher
 	symbolToId map[string]string // symbol -> stockid
+	idToPlatform map[string]string // stockid -> platform
+	idToSymnbol map[string]string // stockid -> symbol
 
 	port in.RelayerPort
 }
@@ -25,12 +26,13 @@ type Adapter struct {
 // There are two options to register fetcher:
 // 1. compile time: use New()
 // 2. runtime: use StockFetchAdapter.RegisterFetcher()
-func NewAdapter(port in.RelayerPort, fetchers ...ws.Fetcher) out.RelayerPort {
+func NewAdapter(fetchers ...ws.Fetcher) *Adapter {
 
 	instance := &Adapter{
 		fetcher: make(map[string]ws.Fetcher),
 		symbolToId: make(map[string]string),
-		port: port,
+		idToPlatform: make(map[string]string),
+		idToSymnbol: make(map[string]string),
 	}
 
 	for _, fetcher := range fetchers {
@@ -66,6 +68,10 @@ func (a *Adapter) UnregisterFetcher(f ws.Fetcher) error {
 }
 
 
+func (a *Adapter) RegisterReceiver(port in.RelayerPort) {
+	a.port = port
+}
+
 
 func (s *Adapter) toDomainEntity(agg *ws.StockAggregate) (*entity.StockAggregateForm, error) {
 	stockId, ok := s.symbolToId[agg.Symbol]
@@ -91,18 +97,19 @@ func (s *Adapter) toDomainEntity(agg *ws.StockAggregate) (*entity.StockAggregate
 
 
 func (s *Adapter) OnReceiveStockAggs(agg *ws.StockAggregate) error {
-	prometheus.DomesticStockCounter.Inc()
+	prometheus.StockCounter.Inc()
 
 	data, err := s.toDomainEntity(agg)
 	if err != nil {
 		return err
 	}
 
-	return s.port.PlaceStockFormBatch([]*entity.StockAggregateForm{data})
+	s.port.PlaceStockFormBatch([]*entity.StockAggregateForm{data})
+	return nil
 }
 
 func (s *Adapter) OnReceiveStockAggsBatch(aggs []*ws.StockAggregate) error {
-	prometheus.DomesticStockCounter.Add(float64(len(aggs)))
+	prometheus.StockCounter.Add(float64(len(aggs)))
 
 	batch := make([]*entity.StockAggregateForm, len(aggs))
 
@@ -115,25 +122,34 @@ func (s *Adapter) OnReceiveStockAggsBatch(aggs []*ws.StockAggregate) error {
 		batch = append(batch, data)
 	}
 
-	return s.port.PlaceStockFormBatch(batch)
+	s.port.PlaceStockFormBatch(batch)
+	return nil
 }
 
 
-func (s *Adapter) FetchStock(ctx context.Context, stockId string, stockMeta entity.StockAggsMeta) error {
-	platform := stockMeta.Platform
+func (s *Adapter) FetchStock(ctx context.Context, stockId string, platform string, symbol string) error {
+
 	fetcher, ok := s.fetcher[platform]
 
 	if !ok {
 		return ErrFetcherNotRegistered
 	}
 
-	return fetcher.SubscribeStockAggs(stockId)
+	if err := fetcher.SubscribeStockAggs(symbol); err != nil {
+		return err
+	}
+
+	s.idToPlatform[stockId] = platform
+	s.symbolToId[symbol] = stockId
+	s.idToSymnbol[stockId] = symbol
+
+	return nil
 }
 
 
 
 func (s *Adapter) StopFetchingStock(ctx context.Context, stockId string) error {
-	platform, ok := s.symbolToId[stockId]
+	platform, ok := s.idToPlatform[stockId]
 	if !ok {
 		return ErrPlatformNotFoundByStockId
 	}
@@ -143,6 +159,11 @@ func (s *Adapter) StopFetchingStock(ctx context.Context, stockId string) error {
 		return ErrFetcherNotFoundByPlatformName
 	}
 
-	return fetcher.UnsubscribeStockAggs(stockId)
+	symbol, ok := s.idToSymnbol[stockId]
+	if !ok {
+		return ErrSymbolNotFoundByStockId
+	}
+
+	return fetcher.UnsubscribeStockAggs(symbol)
 }
 

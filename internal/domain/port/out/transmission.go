@@ -8,4 +8,5 @@ import (
 
 type TransmissionPort interface {
 	TransmitStockBatch(ctx context.Context, stockId string, batch []*entity.StockAggregate) error
+	CreateStockBroker(ctx context.Context, stock string) error
 }

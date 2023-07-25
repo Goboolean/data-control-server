@@ -4,6 +4,7 @@ import (
 	"context"
 	"sync"
 
+	"github.com/Goboolean/fetch-server/internal/domain/entity"
 	"github.com/Goboolean/fetch-server/internal/domain/port"
 	"github.com/Goboolean/fetch-server/internal/domain/port/out"
 	"github.com/Goboolean/fetch-server/internal/domain/service/store"
@@ -14,7 +15,7 @@ type RelayerManager struct {
 	ws   out.RelayerPort
 	meta out.StockMetadataPort
 
-	*pipe
+	pipe *pipe
 
 	ctx    context.Context
 	cancel context.CancelFunc
@@ -27,7 +28,7 @@ var (
 	once     sync.Once
 )
 
-func New(buf_size int, db out.StockPersistencePort, tx port.TX, meta out.StockMetadataPort, ws out.RelayerPort) *RelayerManager {
+func New(db out.StockPersistencePort, tx port.TX, meta out.StockMetadataPort, ws out.RelayerPort) *RelayerManager {
 
 	once.Do(func() {
 
@@ -39,10 +40,12 @@ func New(buf_size int, db out.StockPersistencePort, tx port.TX, meta out.StockMe
 			s:      store.New(ctx),
 			ws:     ws,
 			meta:   meta,
-			pipe:   newPipe(),
+			tx:     tx,
 		}
 
-		go instance.pipe.ExecPipe(ctx)
+		instance.pipe = newPipe()
+	  instance.pipe.sinkChan <- &entity.StockAggregateForm{}
+		instance.pipe.ExecPipe(ctx)
 	})
 
 	return instance
