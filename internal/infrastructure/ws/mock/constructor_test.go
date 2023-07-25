@@ -47,6 +47,7 @@ func Test_Constructor(t *testing.T) {
 
 	if err := instance.Ping(); err != nil {
 		t.Errorf("Ping() = %v", err)
+		return
 	}
 }
 
@@ -60,16 +61,21 @@ func Test_SubscribeStockAggs(t *testing.T) {
 
 	if err := instance.SubscribeStockAggs("test"); err != nil {
 		t.Errorf("SubscribeStockAggs() = %v", err)
+		return
 	}
 
 	if err := instance.SubscribeStockAggs("test"); err == nil {
 		t.Errorf("SubscribeStockAggs() = %v, want %v", err, mock.ErrTopicAlreadyExists)
+		return
 	}
 
 	time.Sleep(100 * time.Millisecond)
 
+	t.Logf("count = %v", count)
+
 	if !(5 <= count) {
 		t.Errorf("count = %v, should be at least 5", count)
+		return
 	}
 }
 
@@ -78,16 +84,19 @@ func Test_UnsubscribeStockAggs(t *testing.T) {
 
 	if err := instance.UnsubscribeStockAggs("unsubscribed"); err == nil {
 		t.Errorf("UnsubscribeStockAggs() = %v, want %v", err, mock.ErrTopicNotFound)
+		return
 	}
 
 	if err := instance.SubscribeStockAggs("test"); err != nil {
 		t.Errorf("SubscribeStockAggs() = %v", err)
+		return
 	}
 
 	time.Sleep(100 * time.Millisecond)
 
 	if err := instance.UnsubscribeStockAggs("test"); err != nil {
 		t.Errorf("UnsubscribeStockAggs() = %v", err)
+		return
 	}
 
 	lastCount := count
@@ -96,5 +105,6 @@ func Test_UnsubscribeStockAggs(t *testing.T) {
 
 	if lastCount != count {
 		t.Errorf("lastCount = %v, count = %v", lastCount, count)
+		return
 	}
 }

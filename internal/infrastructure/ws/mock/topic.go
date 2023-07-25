@@ -69,28 +69,21 @@ func newMockGenerater(symbol string, ctx context.Context, ch chan<- *ws.StockAgg
 	instance.curTime = time.Now()
 	instance.curPrice = 1000
 
-	instance.run()
-
-	return instance
-}
-
-
-// this function will be called by constructor, so no need to call it again.
-func (m *mockGenerater) run() {
-
-	go func() {
-		newDuration := time.Duration(rand.Int63n(2 * int64(m.d)))
+	go func(ctx context.Context) {
 
 		for {
 			select {
-			case <-m.ctx.Done():
+			case <-ctx.Done():
 				return
-			case <- time.After(newDuration):
-				agg := m.generateRandomStockAggs()
-				m.ch <- agg
+			case <- time.After(instance.d):
+				agg := instance.generateRandomStockAggs()
+				ch <- agg
+				break
 			}
 		}
-	}()
+	}(ctx)
+
+	return instance
 }
 
 
