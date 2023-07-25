@@ -67,7 +67,8 @@ func (m *RelayerManager) PlaceStockFormBatch(stockBatch []*entity.StockAggregate
 	}
 }
 
-
-func (m *RelayerManager) Subscribe(stockId string) (<-chan []*entity.StockAggregate, error) {
-	return m.pipe.GetEndpointChannel(stockId)
+// 
+// If call side execute ctx.Done(), then subscription of this stock will be cancelled.
+func (m *RelayerManager) Subscribe(ctx context.Context, stockId string) (<-chan *entity.StockAggregate, error) {
+	return m.pipe.RegisterNewSubscriber(ctx, stockId)
 }
