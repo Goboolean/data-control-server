@@ -29,9 +29,13 @@ func New(ctx context.Context, broker out.TransmissionPort, relayer *relayer.Rela
 			relayer:   relayer,
 			broker:    broker,
 			s:         store.New(ctx),
-			batchSize: o.batchSize,
+			batchSize: o.BatchSize,
 		}
 	})
 
 	return instance
+}
+
+func (t *Transmitter) Close() {
+	t.s.Close()
 }

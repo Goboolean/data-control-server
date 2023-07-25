@@ -4,5 +4,5 @@ package transmission
 
 
 type Option struct {
-	batchSize int
+	BatchSize int
 }
