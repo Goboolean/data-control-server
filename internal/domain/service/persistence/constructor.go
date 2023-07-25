@@ -11,10 +11,11 @@ import (
 )
 
 type PersistenceManager struct {
-	db      out.StockPersistencePort
-	cache   out.StockPersistenceCachePort
-	relayer *relayer.RelayerManager
-	s       *store.Store
+	o 			  Option
+	db        out.StockPersistencePort
+	cache     out.StockPersistenceCachePort
+	relayer   *relayer.RelayerManager
+	s         *store.Store
 
 	tx port.TX
 }
@@ -25,10 +26,11 @@ var (
 )
 
 
-func New(tx port.TX, ctx context.Context, db out.StockPersistencePort, cache out.StockPersistenceCachePort, r *relayer.RelayerManager) *PersistenceManager {
+func New(tx port.TX, ctx context.Context, db out.StockPersistencePort, cache out.StockPersistenceCachePort, r *relayer.RelayerManager, o Option) *PersistenceManager {
 
 	once.Do(func() {
 		instance = &PersistenceManager{
+			o:       o,
 			db:      db,
 			cache:   cache,
 			relayer: r,
