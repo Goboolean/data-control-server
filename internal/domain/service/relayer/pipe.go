@@ -22,13 +22,16 @@ type pipe struct {
 
 type conn struct {
 	ctx context.Context
+	cancel context.CancelFunc
 	ch chan *entity.StockAggregate
 }
 
 func newConn(ctx context.Context) conn {
+	ctx, cancel := context.WithCancel(ctx)
 	return conn{
-		ctx: ctx,
-		ch:  make(chan *entity.StockAggregate, DEFAULT_BUFFER_SIZE),
+		ctx:    ctx,
+		cancel: cancel,
+		ch:     make(chan *entity.StockAggregate, DEFAULT_BUFFER_SIZE),
 	}
 }
 
@@ -55,10 +58,11 @@ func (p *pipe) RegisterNewSubscriber(ctx context.Context, stockId string) (<-cha
 			select {
 			case <- ctx.Done():
 				delete(p.connPool[stockId], hash)
+				close(conn.ch)
 				return
 			}
 		}
-	}(ctx)
+	}(conn.ctx)
 
 	return conn.ch, nil
 }
@@ -110,17 +114,6 @@ func (p *pipe) ExecPipe(ctx context.Context) {
 
 	go p.filterBadTick(p.sinkChan, p.filteredChan)
 	go p.classifyStock(p.filteredChan, p.classifiedChanMap)
-/*
-	go func(ctx context.Context) {
-		<-ctx.Done()
-
-		for stock := range p.classifiedChanMap {
-			close(p.classifiedChanMap[stock])
-			delete(p.classifiedChanMap, stock)
-		}
-		close(p.filteredChan)
-	}(ctx)
-*/
 }
 
 func (p *pipe) AddNewPipe(stock string) {
@@ -131,4 +124,11 @@ func (p *pipe) AddNewPipe(stock string) {
 
 func (p *pipe) PlaceOnStartPoint(data *entity.StockAggregateForm) {
 	p.sinkChan <- data
+}
+
+func (p *pipe) RemovePipe(stock string) {
+
+	for sub := range p.connPool[stock] {
+		p.connPool[stock][sub].cancel()
+	}
 }

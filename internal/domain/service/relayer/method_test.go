@@ -17,9 +17,8 @@ import (
 var instance *relayer.RelayerManager
 
 
+func SetUp() {
 
-func NewMock() *relayer.RelayerManager {
-	
 	var (
 		db           = persistence.NewMockAdapter()
 		tx           = transaction.NewMock()
@@ -34,14 +33,6 @@ func NewMock() *relayer.RelayerManager {
 
 	instance = relayer.New(db, tx, meta, ws)
 	ws.RegisterReceiver(instance)
-
-	return instance
-}
-
-
-
-func SetUp() {
-	instance = NewMock()
 }
 
 func TearDown() {
@@ -55,6 +46,8 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
+
+
 func Test_FetchStock(t *testing.T) {
 
 	type args struct {
@@ -67,14 +60,14 @@ func Test_FetchStock(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "existing stock",
+			name: "FetchStock (case:true)",
 			args: args{
 				stockId: "stock.google.usa",
 			},
 			wantErr: false,
 		},
 		{
-			name: "non existing stock",
+			name: "FetchStock (case:false)",
 			args: args{
 				stockId: "stock.tesla.usa",
 			},
@@ -92,20 +85,25 @@ func Test_FetchStock(t *testing.T) {
 
 	var stockId = "stock.google.usa"
 
-	if relayable := instance.IsStockRelayable(stockId); !relayable {
-		t.Errorf("IsStockRelayable() = %v, = %v", relayable, true)
-		return
-	}
+	t.Run("IsStockRelayable (case: true)", func(t *testing.T) {
+		if relayable := instance.IsStockRelayable(stockId); !relayable {
+			t.Errorf("IsStockRelayable() = %v, = %v", relayable, true)
+			return
+		}
+	})
 
-	if err := instance.StopFetchingStock(context.Background(), stockId); err != nil {
-		t.Errorf("StopFetchingStock() = %v", err)
-		return
-	}
+	t.Run("IsStockRelayable (case: false)", func(t *testing.T) {
+		if err := instance.StopFetchingStock(context.Background(), stockId); err != nil {
+			t.Errorf("StopFetchingStock() = %v", err)
+			return
+		}
+	
+		if relayable := instance.IsStockRelayable(stockId); relayable {
+			t.Errorf("IsStockRelayable() = %v, = %v", relayable, false)
+			return
+		}
+	})
 
-	if relayable := instance.IsStockRelayable(stockId); relayable {
-		t.Errorf("IsStockRelayable() = %v, = %v", relayable, false)
-		return
-	}
 }
 
 
@@ -113,38 +111,116 @@ func Test_Subscribe(t *testing.T) {
 
 	var stockId = "stock.apple.usa"
 
-	if err := instance.FetchStock(context.Background(), stockId); err != nil {
-		t.Errorf("FetchStock() = %v", err)
-		return
-	}
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	ch, err := instance.Subscribe(ctx, stockId)
-	if err != nil {
-		t.Errorf("Subscribe() = %v", err)
-		return
-	}
 
 	var count = 0
+	ctx, cancel := context.WithCancel(context.Background())
 
-	go func(ctx context.Context) {
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case <-ch:
-				count++
-				break
-			}
+	t.Run("Subscribe", func(t *testing.T) {
+
+		if err := instance.FetchStock(context.Background(), stockId); err != nil {
+			t.Errorf("FetchStock() = %v", err)
+			return
 		}
-	}(ctx)
 
-	time.Sleep(time.Millisecond * 100)
+		ch, err := instance.Subscribe(ctx, stockId)
+		if err != nil {
+			t.Errorf("Subscribe() = %v", err)
+			return
+		}
 
-	if (count <= 5) {
-		t.Errorf("Subscribe() = %v, want many", count)
-		return
-	}
+		go func(ctx context.Context) {
+			for {
+				select {
+				case <-ctx.Done():
+					return
+				case <-ch:
+					count++
+					break
+				}
+			}
+		}(ctx)
+
+		time.Sleep(time.Millisecond * 100)
+
+		if (count <= 5) {
+			t.Errorf("Subscribe() = %v, want many", count)
+			return
+		}
+	})
+
+
+	t.Run("Unsubscribe", func(t *testing.T) {
+		cancel()
+		var countAfterUnsubscription = count
+
+		time.Sleep(time.Millisecond * 100)
+
+		if countAfterUnsubscription != count {
+			t.Errorf("Unsubscribe failed: before: %v, after: %v", countAfterUnsubscription, count)
+			return
+		}
+	})
+
+
+	t.Run("SubscribeMultiple", func(t *testing.T) {
+
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+
+		ch1, err := instance.Subscribe(ctx, stockId)
+		if err != nil {
+			t.Errorf("Subscribe() = %v", err)
+			return
+		}
+
+		ch2, err := instance.Subscribe(ctx, stockId)
+		if err != nil {
+			t.Errorf("Subscribe() = %v", err)
+			return
+		}
+
+		time.Sleep(time.Millisecond * 100)
+
+		cancel()
+
+		if len(ch1) == 0 || len(ch2) == 0 || len(ch1) != len(ch2) || len(ch1) <= 6 || len(ch2) <= 6 {
+			t.Errorf("SubscribeMultiple failed: ch1: %v, ch2: %v", len(ch1), len(ch2))
+			return
+		}
+	})
+
+	t.Run("SubscribeBeforeFetching", func(t *testing.T) {
+		
+		_, err := instance.Subscribe(context.Background(), "stock.tesla.usa")
+		if err != relayer.ErrStockNotExists {
+			t.Errorf("Subscribe() error = %v, wantErr %v", err, relayer.ErrStockNotExists)
+			return
+		}
+	})
+
+	t.Run("StopFetchingAfterSubscribe", func(t *testing.T) {
+
+		ch, err := instance.Subscribe(context.Background(), stockId)
+		if err != nil {
+			t.Errorf("Subscribe() = %v", err)
+			return
+		}
+
+		if err := instance.StopFetchingStock(context.Background(), stockId); err != nil {
+			t.Errorf("StopFetchingStock() = %v", err)
+			return
+		}
+
+		time.Sleep(time.Millisecond * 100)
+
+		select {
+		case _, ok := <-ch:
+			if ok {
+				t.Errorf("StopFetchingAfterSubscribe failed: channel is not closed")
+				return
+			}
+		default:
+			t.Errorf("StopFetchingAfterSubscribe failed: channel is not closed")
+		}
+	})
 }

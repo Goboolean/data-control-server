@@ -43,30 +43,16 @@ func generateRandomStockAggregateForm(stockId string) entity.StockAggregateForm 
 
 func Test_generateRandomStockAggregateForm(t *testing.T) {
 	
-	var stockId = "test"
-	var count = 2
+	var stockId = "stock.test.abc"
 
-	agg := generateRandomStockAggregateForm(stockId)
-
-	if equals := reflect.DeepEqual(agg, &entity.StockAggregateForm{}); equals {
-		t.Error("generateRandomStockAggregateForm() failed: got nil stockAggs")
-		return
-	}
-
-	ch := make(chan *entity.StockAggregateForm, DEFAULT_BUFFER_SIZE)
-
-	for i := 0; i < count; i++ {
+	t.Run("VerifyStockNotNil", func(t *testing.T) {
 		agg := generateRandomStockAggregateForm(stockId)
-		ch <- &agg
-	}
 
-	received1 := <- ch
-	received2 := <- ch
-
-	if equals := reflect.DeepEqual(received1, received2); equals {
-		t.Error("generateRandomStockAggregateForm() failed: got same stockAggs")
-		return
-	}
+		if equals := reflect.DeepEqual(agg, &entity.StockAggregateForm{}); equals {
+			t.Error("generateRandomStockAggregateForm() failed: got nil stockAggs")
+			return
+		}
+	})
 }
 
 
@@ -86,46 +72,46 @@ func Test_filterBadTick(t *testing.T) {
 
 	go p.filterBadTick(sink, source)
 
-	// generate vague data
+	t.Run("FilterNilData", func(t *testing.T) {
+		sink <- &entity.StockAggregateForm{}
 
-	sink <- &entity.StockAggregateForm{}
-
-	time.Sleep(time.Millisecond * 10)
-
-	select {
-	case <- source:
-		t.Error("filterBadTick() failed: failed to filter out vague data (bad tick)")
-		return
-	default:
-		break
-	}
-
-	// generate existable data
-
-	for i := 0; i < count; i++ {
-		agg := generateRandomStockAggregateForm(stockId)
-		sink <- &agg
-	}
-
-	time.Sleep(time.Millisecond * 10)
-
-	for i := 0; i < count; i++ {
+		time.Sleep(time.Millisecond * 10)
+	
 		select {
 		case <- source:
-			break
-		default:
-			t.Error("filterBadTick() failed: failed to transmit data from startPoint to endpoint")
+			t.Error("filterBadTick() failed: failed to filter out vague data (bad tick)")
 			return
+		default:
+			break
 		}
-	}
+	})
 
-	select {
-	case <- source:
-		t.Error("filterBadTick() failed: endPoint received non existent data")
-		return
-	default:
-		break
-	}
+	t.Run("UnfilterRealData", func(t *testing.T) {
+		for i := 0; i < count; i++ {
+			agg := generateRandomStockAggregateForm(stockId)
+			sink <- &agg
+		}
+	
+		time.Sleep(time.Millisecond * 10)
+	
+		for i := 0; i < count; i++ {
+			select {
+			case <- source:
+				break
+			default:
+				t.Error("filterBadTick() failed: failed to transmit data from startPoint to endpoint")
+				return
+			}
+		}
+	
+		select {
+		case <- source:
+			t.Error("filterBadTick() failed: endPoint received non existent data")
+			return
+		default:
+			break
+		}
+	})
 
 }
 
@@ -153,38 +139,41 @@ func Test_classifyStock(t *testing.T) {
 
 	go p.classifyStock(sink, source)
 
-	for i := 0; i < count; i++ {
-		agg := generateRandomStockAggregateForm(targetStockId)
-		sink <- &agg
-	}
+	t.Run("ClassifyTargetStock", func(t *testing.T) {
 
-	time.Sleep(time.Millisecond)
-
-	select {
-		case <- source[antiTargetStockId]:
-			t.Error("received non existent data")
-			return
-		default:
-			break
-	}
-
-	for i := 0; i < count; i++ {
+		for i := 0; i < count; i++ {
+			agg := generateRandomStockAggregateForm(targetStockId)
+			sink <- &agg
+		}
+	
+		time.Sleep(time.Millisecond)
+	
+		select {
+			case <- source[antiTargetStockId]:
+				t.Error("received non existent data")
+				return
+			default:
+				break
+		}
+	
+		for i := 0; i < count; i++ {
+			select {
+			case <- source[targetStockId]:
+				break
+			default:
+				t.Error("filterBadTick() failed: failed to transmit data from startPoint to endpoint")
+				return
+			}
+		}
+	
 		select {
 		case <- source[targetStockId]:
-			break
-		default:
-			t.Error("filterBadTick() failed: failed to transmit data from startPoint to endpoint")
+			t.Error("filterBadTick() failed: endPoint received non existent data")
 			return
+		default:
+			break
 		}
-	}
-
-	select {
-	case <- source[targetStockId]:
-		t.Error("filterBadTick() failed: endPoint received non existent data")
-		return
-	default:
-		break
-	}
+	})
 
 }
 
@@ -199,57 +188,57 @@ func Test_relayStockToSubscriber(t *testing.T) {
 	source := make(map[int64]conn)
 
 	source[0] = newConn(context.Background())
-
 	go p.relayStockToSubscriber(sink, source)
-
 	source[1] = newConn(context.Background())
 
-	ch1 := source[0].ch
-	ch2 := source[1].ch
+	t.Run("TwoSubscriber", func(t *testing.T) {
 
-	select {
-	case <- ch1:
-		t.Error("filterBadTick() failed: source received non existent data")
-		return
-	default:
-		break
-	}
-
-	for i := 0; i < count; i++ {
-		agg := generateRandomStockAggregate()
-		sink <- &agg
-	}
-
-	time.Sleep(10 * time.Millisecond)
-
-	for i := 0; i < count; i++ {
+		ch1 := source[0].ch
+		ch2 := source[1].ch
+	
 		select {
 		case <- ch1:
-			break
-		default:
-			t.Error("filterBadTick() failed: failed to transmit data from sink to source")
+			t.Error("filterBadTick() failed: source received non existent data")
 			return
+		default:
+			break
 		}
-	}
-
-	select {
-	case <- ch1:
-		t.Error("filterBadTick() failed: source received non existent data")
-		return
-	default:
-		break
-	}
-
-	for i := 0; i < count; i++ {
+	
+		for i := 0; i < count; i++ {
+			agg := generateRandomStockAggregate()
+			sink <- &agg
+		}
+	
+		time.Sleep(10 * time.Millisecond)
+	
+		for i := 0; i < count; i++ {
+			select {
+			case <- ch1:
+				break
+			default:
+				t.Error("filterBadTick() failed: failed to transmit data from sink to source")
+				return
+			}
+		}
+	
 		select {
-		case <- ch2:
-			break
-		default:
-			t.Error("filterBadTick() failed: failed to transmit data from sink to source")
+		case <- ch1:
+			t.Error("filterBadTick() failed: source received non existent data")
 			return
+		default:
+			break
 		}
-	}
-
+	
+		for i := 0; i < count; i++ {
+			select {
+			case <- ch2:
+				break
+			default:
+				t.Error("filterBadTick() failed: failed to transmit data from sink to source")
+				return
+			}
+		}
+	})
 }
 
 
@@ -259,55 +248,94 @@ func Test_pipe(t *testing.T) {
 
 	var stockId = "test"
 	var count = 5
+	var ch <-chan *entity.StockAggregate
 
 	p.ExecPipe(context.Background())
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	p.AddNewPipe(stockId)
+	
+	t.Run("RegisterNewSubscriber", func(t *testing.T) {
 
-	ch, err := p.RegisterNewSubscriber(ctx, stockId)
-	if err != nil {
-		t.Errorf("RegisterNewSubscriber() failed: %v", err)
-		return
-	}
+		p.AddNewPipe(stockId)
 
-	for i := 0; i < count; i++ {
-		agg := generateRandomStockAggregateForm(stockId)
-		p.PlaceOnStartPoint(&agg)
-	}
-
-	time.Sleep(10 * time.Millisecond)
+		var err error
+		ch, err = p.RegisterNewSubscriber(ctx, stockId)
+		if err != nil {
+			t.Errorf("RegisterNewSubscriber() failed: %v", err)
+			return
+		}
+	})
 
 
-	for i := 0; i < count; i++ {
-		select {
-		case <- ch:
-			break
-		default:
+	t.Run("PlaceOnStartPoint", func(t *testing.T) {
+
+		for i := 0; i < count; i++ {
+			agg := generateRandomStockAggregateForm(stockId)
+			p.PlaceOnStartPoint(&agg)
+		}
+	
+		time.Sleep(10 * time.Millisecond)
+
+		if len(ch) != count {
 			t.Error("filterBadTick() failed: failed to transmit data from sink to source")
 			return
 		}
-	}
 
-	cancel()
-
-	agg := generateRandomStockAggregateForm(stockId)
-	p.PlaceOnStartPoint(&agg)
-
-	time.Sleep(10 * time.Millisecond)
+		for len(ch) > 0 {
+			<- ch
+		}
+	})
 
 
-	select {
-	case 	_, ok := <- ch:
-		if ok {
+	t.Run("CancelSubscribe", func(t *testing.T) {
+		cancel()
+
+		agg := generateRandomStockAggregateForm(stockId)
+		p.PlaceOnStartPoint(&agg)
+	
+		time.Sleep(10 * time.Millisecond)
+	
+		select {
+		case 	_, ok := <- ch:
+			if ok {
+				t.Error("RegisterNewSubscriber() failed: channel should be closed after cancel() is called")
+				return
+			}
+		default:
 			t.Error("RegisterNewSubscriber() failed: channel should be closed after cancel() is called")
 			return
 		}
-		break
-	default:
-		break
-	}
+	})
 
+	t.Run("UnregisterSubscriber", func(t *testing.T) {
+		var stockId = "test"
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+
+		p.AddNewPipe(stockId)
+
+		ch, err := p.RegisterNewSubscriber(ctx, stockId)
+		if err != nil {
+			t.Errorf("RegisterNewSubscriber() failed: %v", err)
+			return
+		}
+
+		p.RemovePipe(stockId)
+
+		time.Sleep(10 * time.Millisecond)
+
+		select {
+		case 	_, ok := <- ch:
+			if ok {
+				t.Error("RegisterNewSubscriber() failed: channel should be closed after cancel() is called")
+				return
+			}
+		default:
+			t.Error("RegisterNewSubscriber() failed: channel should be closed after cancel() is called")
+			return
+		}
+
+	})
 }

@@ -54,6 +54,8 @@ func (m *RelayerManager) StopFetchingStock(ctx context.Context, stockId string) 
 		return err
 	}
 
+	m.pipe.RemovePipe(stockId)
+
 	return nil
 }
 
@@ -72,5 +74,10 @@ func (m *RelayerManager) PlaceStockFormBatch(stockBatch []*entity.StockAggregate
 // 
 // If call side execute ctx.Done(), then subscription of this stock will be cancelled.
 func (m *RelayerManager) Subscribe(ctx context.Context, stockId string) (<-chan *entity.StockAggregate, error) {
+
+	if exists := m.s.StockExists(stockId); !exists {
+		return nil, ErrStockNotExists
+	}
+
 	return m.pipe.RegisterNewSubscriber(ctx, stockId)
 }
