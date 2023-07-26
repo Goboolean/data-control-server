@@ -21,6 +21,9 @@ func (m *PersistenceManager) SubscribeRelayer(ctx context.Context, stockId strin
 
 	ch, err := m.relayer.Subscribe(ctx, stockId)
 	if err != nil {
+		if err := m.s.UnstoreStock(stockId); err != nil {
+			log.Println(err)
+		}
 		return err
 	}
 

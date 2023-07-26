@@ -39,6 +39,10 @@ func (t *Transmitter) SubscribeRelayer(ctx context.Context, stockId string) erro
 			case data, ok := <-ch:
 
 				if !ok {
+
+					if err := t.s.UnstoreStock(stockId); err != nil {
+						log.Println(err)
+					}
 					return
 				}
 
