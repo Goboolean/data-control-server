@@ -37,8 +37,13 @@ func New(tx port.TX, ctx context.Context, db out.StockPersistencePort, cache out
 			s:       store.New(ctx),
 			tx:      tx,
 		}
+
+		if o.BatchSize == 0 {
+			o.BatchSize = 1
+		}
 	})
 
+	instance.setUseCache()
 	return instance
 }
 
