@@ -18,7 +18,7 @@ func New(db *Redis) *Queries {
 
 
 
-func (q *Queries) InsertStockData(ctx context.Context, stockId string, stockItem *StockAggregate) error {
+func (q *Queries) InsertStockData(ctx context.Context, stockId string, stockItem *RedisStockAggregate) error {
 
 	data, err := proto.Marshal(stockItem)
 
@@ -38,7 +38,7 @@ func (q *Queries) GetStockBatchStoredLength(ctx context.Context, stockId string)
 
 
 
-func (q *Queries) InsertStockDataBatch(ctx context.Context, stock string, stockBatch []*StockAggregate) error {
+func (q *Queries) InsertStockDataBatch(ctx context.Context, stock string, stockBatch []*RedisStockAggregate) error {
 
 	dataBatch := make([]interface{}, len(stockBatch))
 
@@ -56,7 +56,7 @@ func (q *Queries) InsertStockDataBatch(ctx context.Context, stock string, stockB
 }
 
 
-func (q *Queries) GetAndEmptyCache(ctx context.Context, stockId string) ([]*StockAggregate, error) {
+func (q *Queries) GetAndEmptyCache(ctx context.Context, stockId string) ([]*RedisStockAggregate, error) {
 
 	pipe := q.db.client.TxPipeline()
 
@@ -73,10 +73,10 @@ func (q *Queries) GetAndEmptyCache(ctx context.Context, stockId string) ([]*Stoc
 	length, _ := getLenCmd.Result()
 	data, _ := getListCmd.Result()
 
-	stockBatch := make([]*StockAggregate, length)
+	stockBatch := make([]*RedisStockAggregate, length)
 
 	for idx := range data {
-		var stockItem StockAggregate
+		var stockItem RedisStockAggregate
 
 		if err := proto.Unmarshal([]byte(data[idx]), &stockItem); err != nil {
 			return nil, err

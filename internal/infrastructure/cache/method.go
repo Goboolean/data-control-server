@@ -10,7 +10,7 @@ import (
 
 
 
-func (c *StockPersistenceWithCache) InsertStockBatch(tx resolver.Transactioner, stock string, batch []*redis.StockAggregate) error {
+func (c *StockPersistenceWithCache) InsertStockBatch(tx resolver.Transactioner, stock string, batch []*redis.RedisStockAggregate) error {
 	if err := c.redis.InsertStockDataBatch(tx.Context(), stock, batch); err != nil {
 		return err
 	}

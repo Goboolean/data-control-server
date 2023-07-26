@@ -2,7 +2,6 @@ package mock
 
 import (
 	"context"
-	"log"
 	"math/rand"
 	"time"
 
@@ -27,8 +26,6 @@ type MockFetcher struct {
 	ch chan *ws.StockAggregate
 
 	stocks map[string]*mockGenerater
-
-	isClosed bool
 }
 
 
@@ -44,10 +41,20 @@ func New(ctx context.Context, d time.Duration, r ws.Receiver) *MockFetcher {
 		cancel: cancel,
 	}
 
-	instance.ch = make(chan *ws.StockAggregate, 1000)
+	instance.ch = make(chan *ws.StockAggregate, 10)
 	instance.stocks = make(map[string]*mockGenerater)
 
-	go instance.run()
+	go func(ctx context.Context) {
+		for {
+			select {
+			case <- ctx.Done():
+				return
+			case agg := <- instance.ch:
+				instance.r.OnReceiveStockAggs(agg)
+			}
+		}
+	}(ctx)
+
 	return instance
 }
 
@@ -56,19 +63,6 @@ func (s *MockFetcher) PlatformName() string {
 	return platformName
 }
 
-
-func (f *MockFetcher) run() {
-	for {
-		select {
-		case <- f.ctx.Done():
-			return
-		case agg := <- f.ch:
-			if err := f.r.OnReceiveStockAggs(agg); err != nil {
-				log.Fatal(err)
-			}
-		}
-	}
-}
 
 
 // Subscribing several topic at once is allowed, but atomicity is not guaranteed.
@@ -104,7 +98,6 @@ func (f *MockFetcher) Close() error {
 	// cancel() call will stop all the goroutines that generates data.
 	f.cancel()
 	close(f.ch)
-	f.isClosed = true
 
 	return nil
 }
@@ -113,8 +106,10 @@ func (f *MockFetcher) Close() error {
 // MockFetcher does not explicitly connect to the server.
 // Calling Ping() after Close() will cause error
 func (f *MockFetcher) Ping() error {
-	if flag := f.isClosed; flag {
+	select {
+	case <- f.ctx.Done():
 		return ErrConnectionClosed
+	default:
+		return nil
 	}
-	return nil
 }

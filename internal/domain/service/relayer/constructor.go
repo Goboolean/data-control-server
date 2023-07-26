@@ -15,7 +15,7 @@ type RelayerManager struct {
 	ws   out.RelayerPort
 	meta out.StockMetadataPort
 
-	*pipe
+	pipe *pipe
 
 	ctx    context.Context
 	cancel context.CancelFunc
@@ -34,19 +34,18 @@ func New(db out.StockPersistencePort, tx port.TX, meta out.StockMetadataPort, ws
 
 		ctx, cancel := context.WithCancel(context.Background())
 
-		startPoint := make(chan *entity.StockAggregateForm)
-		endPoint := make(map[string]chan []*entity.StockAggregate)
-
 		instance = &RelayerManager{
 			ctx:    ctx,
 			cancel: cancel,
 			s:      store.New(ctx),
 			ws:     ws,
 			meta:   meta,
-			pipe:   newPipe(startPoint, endPoint),
+			tx:     tx,
 		}
 
-		go instance.pipe.ExecPipe(ctx)
+		instance.pipe = newPipe()
+	  instance.pipe.sinkChan <- &entity.StockAggregateForm{}
+		instance.pipe.ExecPipe(ctx)
 	})
 
 	return instance

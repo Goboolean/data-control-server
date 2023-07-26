@@ -4,7 +4,6 @@ import (
 	"sync"
 
 	"github.com/Goboolean/fetch-server/internal/domain/port"
-	"github.com/Goboolean/fetch-server/internal/domain/port/in"
 	"github.com/Goboolean/fetch-server/internal/domain/port/out"
 	"github.com/Goboolean/fetch-server/internal/domain/service/persistence"
 	"github.com/Goboolean/fetch-server/internal/domain/service/relayer"
@@ -25,7 +24,7 @@ var (
 	once     sync.Once
 )
 
-func New(db out.StockMetadataPort, tx port.TX, r *relayer.RelayerManager, p *persistence.PersistenceManager, t *transmission.Transmitter) in.ConfiguratorPort {
+func New(db out.StockMetadataPort, tx port.TX, r *relayer.RelayerManager, p *persistence.PersistenceManager, t *transmission.Transmitter) *ConfigurationManager {
 
 	once.Do(func() {
 		instance = &ConfigurationManager{

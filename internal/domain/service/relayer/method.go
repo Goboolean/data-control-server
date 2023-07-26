@@ -19,6 +19,8 @@ func (m *RelayerManager) FetchStock(ctx context.Context, stockId string) error {
 		return err
 	}
 
+	m.pipe.AddNewPipe(stockId)
+
 	exists, err := m.meta.CheckStockExists(tx, stockId)
 	if err != nil {
 		return err
@@ -32,7 +34,7 @@ func (m *RelayerManager) FetchStock(ctx context.Context, stockId string) error {
 		return err
 	}
 
-	if err := m.ws.FetchStock(tx.Context(), stockId, meta); err != nil {
+	if err := m.ws.FetchStock(tx.Context(), meta.StockID, meta.Platform, meta.Symbol); err != nil {
 		m.s.UnstoreStock(stockId)
 		return err
 	}
@@ -52,6 +54,8 @@ func (m *RelayerManager) StopFetchingStock(ctx context.Context, stockId string) 
 		return err
 	}
 
+	m.pipe.RemovePipe(stockId)
+
 	return nil
 }
 
@@ -62,12 +66,18 @@ func (m *RelayerManager) IsStockRelayable(stockId string) bool {
 
 
 func (m *RelayerManager) PlaceStockFormBatch(stockBatch []*entity.StockAggregateForm) {
-	for idx := range stockBatch {
-		m.pipe.PlaceOnStartPoint(stockBatch[idx])
+	for _, stock := range stockBatch {
+		m.pipe.PlaceOnStartPoint(stock)
 	}
 }
 
+// 
+// If call side execute ctx.Done(), then subscription of this stock will be cancelled.
+func (m *RelayerManager) Subscribe(ctx context.Context, stockId string) (<-chan *entity.StockAggregate, error) {
 
-func (m *RelayerManager) Subscribe(stockId string) (<-chan []*entity.StockAggregate, error) {
-	return m.pipe.GetEndpointChannel(stockId)
+	if exists := m.s.StockExists(stockId); !exists {
+		return nil, ErrStockNotExists
+	}
+
+	return m.pipe.RegisterNewSubscriber(ctx, stockId)
 }

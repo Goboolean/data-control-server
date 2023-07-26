@@ -1,8 +1,10 @@
 package broker
 
 import (
-	"github.com/Goboolean/fetch-server/internal/domain/port"
+	"context"
+
 	"github.com/Goboolean/fetch-server/internal/domain/entity"
+	"github.com/Goboolean/fetch-server/internal/domain/port/out"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/prometheus"
 	"github.com/Goboolean/shared/pkg/broker"
 )
@@ -12,7 +14,7 @@ type Adapter struct {
 	pub  *broker.Publisher
 }
 
-func NewAdapter(conf *broker.Configurator, pub *broker.Publisher) *Adapter {
+func NewAdapter(conf *broker.Configurator, pub *broker.Publisher) out.TransmissionPort {
 	return &Adapter{
 		conf: conf,
 		pub:  pub,
@@ -20,7 +22,7 @@ func NewAdapter(conf *broker.Configurator, pub *broker.Publisher) *Adapter {
 }
 
 
-func (a *Adapter) TransmitStockBatch(tx port.Transactioner, stock string, batch []*entity.StockAggregate) error {
+func (a *Adapter) TransmitStockBatch(ctx context.Context, stock string, batch []*entity.StockAggregate) error {
 
 	prometheus.MQCounter.Add(float64(len(batch)))
 
@@ -42,6 +44,6 @@ func (a *Adapter) TransmitStockBatch(tx port.Transactioner, stock string, batch 
 	return a.pub.SendDataBatch(stock, converted)
 }
 
-func (a *Adapter) CreateStockQueue(tx port.Transactioner, stock string) error {
-	return a.conf.CreateTopic(tx.Context(), stock)
+func (a *Adapter) CreateStockBroker(ctx context.Context, stock string) error {
+	return a.conf.CreateTopic(ctx, stock)
 }

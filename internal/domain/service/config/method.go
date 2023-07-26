@@ -20,7 +20,7 @@ func (m *ConfigurationManager) SetStockStoreableTrue(ctx context.Context, stockI
 }
 
 func (m *ConfigurationManager) SetStockStoreableFalse(ctx context.Context, stockId string) error {
-	return m.persistence.UnsubscribeRelayer(ctx, stockId)
+	return m.persistence.UnsubscribeRelayer(stockId)
 }
 
 func (m *ConfigurationManager) SetStockTransmittableTrue(ctx context.Context, stockId string) error {
@@ -28,11 +28,11 @@ func (m *ConfigurationManager) SetStockTransmittableTrue(ctx context.Context, st
 }
 
 func (m *ConfigurationManager) SetStockTransmittableFalse(ctx context.Context, stockId string) error {
-	return m.transmitter.UnsubscribeRelayer(ctx, stockId)
+	return m.transmitter.UnsubscribeRelayer(stockId)
 }
 
 
-func (m *ConfigurationManager) GetStockConfiguration(ctx context.Context, stock string) (entity.StockConfiguration, error) {
+func (m *ConfigurationManager) GetStockConfiguration(ctx context.Context, stockId string) (entity.StockConfiguration, error) {
 
 	tx, err := m.tx.Transaction(context.Background())
 	defer tx.Rollback()
@@ -40,7 +40,7 @@ func (m *ConfigurationManager) GetStockConfiguration(ctx context.Context, stock 
 		return entity.StockConfiguration{}, err
 	}
 
-	exists, err := m.db.CheckStockExists(tx, stock)
+	exists, err := m.db.CheckStockExists(tx, stockId)
 	if err != nil {
 		return entity.StockConfiguration{}, err
 	}
@@ -56,7 +56,24 @@ func (m *ConfigurationManager) GetStockConfiguration(ctx context.Context, stock 
 		return entity.StockConfiguration{}, err
 	}
 
-	return entity.StockConfiguration{}, nil
+	if isRelayable := m.relayer.IsStockRelayable(stockId); !isRelayable {
+		return entity.StockConfiguration{
+			StockId: stockId,
+			Relayable: false,
+			Storeable: false,
+			Transmittable: false,
+		}, nil
+	}
+
+	isStoreable := m.persistence.IsStockStoreable(stockId)
+	isTransmittable := m.transmitter.IsStockTransmittable(stockId)
+
+	return entity.StockConfiguration{
+		StockId: stockId,
+		Relayable: true,
+		Storeable: isStoreable,
+		Transmittable: isTransmittable,
+	}, nil
 }
 
 

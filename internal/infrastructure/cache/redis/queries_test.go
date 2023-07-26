@@ -11,7 +11,7 @@ import (
 
 var (
 	stockId = "test"
-	stockData = &redis.StockAggregate{}
+	stockData = &redis.RedisStockAggregate{}
 )
 
 
@@ -50,7 +50,7 @@ func Test_GetAndEmptyCache(t *testing.T) {
 	
 	ctx := context.Background()
 
-	if err := queries.InsertStockDataBatch(ctx, stockId, []*redis.StockAggregate{stockData}); err != nil {
+	if err := queries.InsertStockDataBatch(ctx, stockId, []*redis.RedisStockAggregate{stockData}); err != nil {
 		t.Errorf("failed to insert stock data: %v", err)
 		return
 	}
