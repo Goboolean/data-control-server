@@ -42,14 +42,10 @@ var data = map[string] entity.StockAggsMeta{
 }
 
 
-type MockAdapter struct {
-
-}
+type MockAdapter struct {}
 
 func NewMockAdapter() out.StockMetadataPort {
-	return &MockAdapter{
-
-	}
+	return &MockAdapter{}
 }
 
 
