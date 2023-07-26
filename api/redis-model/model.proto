@@ -4,7 +4,7 @@ package api;
 
 option go_package = "github.com/Goboolean/fetch-server/internal/infrastructure/cache/redis";
 
-message StockAggregate {
+message RedisStockAggregate {
   string stockId = 1;
   string eventType = 2;
   double avg = 3;

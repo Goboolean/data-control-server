@@ -26,7 +26,7 @@ func NewAdapter(r *redis.Redis) out.StockPersistenceCachePort {
 
 func (a *Adapter) StoreStockOnCache(ctx context.Context, stockId string, stock *entity.StockAggregate) error {
 
-	dto := &redis.StockAggregate{
+	dto := &redis.RedisStockAggregate{
 		EventType: stock.EventType,
 		Avg:       stock.Average,
 		Min:       stock.Min,
@@ -43,10 +43,10 @@ func (a *Adapter) StoreStockOnCache(ctx context.Context, stockId string, stock *
 
 func (a *Adapter) StoreStockBatchOnCache(ctx context.Context, stockId string, stockBatch []*entity.StockAggregate) error {
 	
-	dtos := make([]*redis.StockAggregate, 0, len(stockBatch))
+	dtos := make([]*redis.RedisStockAggregate, 0, len(stockBatch))
 
 	for _, stock := range stockBatch {
-		dtos = append(dtos, &redis.StockAggregate{
+		dtos = append(dtos, &redis.RedisStockAggregate{
 			EventType: stock.EventType,
 			Avg:       stock.Average,
 			Min:       stock.Min,

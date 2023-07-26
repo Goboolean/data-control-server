@@ -11,9 +11,7 @@ import (
 
 
 type MockAdapter struct {
-
 	cache map[string][]*entity.StockAggregate
-
 }
 
 func NewMockAdapter() out.StockPersistenceCachePort {
@@ -52,3 +50,17 @@ func (a *MockAdapter) GetAndEmptyCache(ctx context.Context, stockId string) ([]*
 	return batch, nil
 }
 
+
+
+func (a *MockAdapter) GetStoredStockCount(stockId string) int {
+	if _, ok := a.cache[stockId]; !ok {
+		a.cache[stockId] = make([]*entity.StockAggregate, 0)		
+	}
+	return len(a.cache[stockId])
+}
+
+func (a *MockAdapter) Clear() {
+	for k := range a.cache {
+		delete(a.cache, k)
+	}
+}
