@@ -39,7 +39,7 @@ func MockRelayer() *relayer.RelayerManager {
 		panic(err)
 	}
 
-	instance := relayer.New(context.Background(), db, tx, meta, ws)
+	instance := relayer.New(db, tx, meta, ws)
 	ws.RegisterReceiver(instance)
 
 	return instance
@@ -54,7 +54,7 @@ func SetUp() {
 
 	db       = persistence_adapter.NewMockAdapter()
 	cache    = cache_adapter.NewMockAdapter()
-	instance = persistence.New(tx, context.Background(), db, cache, relayer, persistence.Option{BatchSize: 1})
+	instance = persistence.New(tx, db, cache, relayer, persistence.Option{BatchSize: 1})
 
 	if err := relayer.FetchStock(context.Background(), "stock.facebook.usa"); err != nil {
 		panic(err)

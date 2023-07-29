@@ -9,15 +9,14 @@ import (
 
 
 type Store struct {
-	Ctx *contextController
-
+	ctx context.Context
 	Map map[string] * contextController
 }
 
 
 func New(ctx context.Context) *Store {
 	return &Store{
-		Ctx: new_ctx(ctx),
+		ctx: ctx,
 		Map: make(map[string] * contextController),
 	}
 }
@@ -34,7 +33,7 @@ func (s *Store) StoreStock(stock string) error {
 		return fmt.Errorf("stock %s already exists", stock)
 	}
 
-	s.Map[stock] = new_ctx(s.Ctx.ctx)
+	s.Map[stock] = new_ctx(s.ctx)
 	return nil
 }
 
@@ -46,10 +45,4 @@ func (s *Store) UnstoreStock(stock string) error {
 	s.Map[stock].cancel()
 	delete(s.Map, stock)
 	return nil
-}
-
-
-func (s *Store) Close() {
-	s.Map = nil
-	s.Ctx.cancel()
 }

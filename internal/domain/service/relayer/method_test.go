@@ -31,7 +31,7 @@ func SetUp() {
 		panic(err)
 	}
 
-	instance = relayer.New(context.Background(), db, tx, meta, ws)
+	instance = relayer.New(db, tx, meta, ws)
 	ws.RegisterReceiver(instance)
 }
 
