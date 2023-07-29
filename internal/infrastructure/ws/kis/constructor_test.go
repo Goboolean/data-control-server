@@ -24,8 +24,8 @@ var (
 
 func SetupKis() {
 	instance = kis.New(&resolver.ConfigMap{
-		"KIS_APPKEY": os.Getenv("KIS_APPKEY"),
-		"KIS_SECRET": os.Getenv("KIS_SECRET"),
+		"APPKEY": os.Getenv("KIS_APPKEY"),
+		"SECRET": os.Getenv("KIS_SECRET"),
 	}, context.Background(), receiver)
 }
 
@@ -51,7 +51,11 @@ func TestMain(m *testing.M) {
 }
 
 func Test_Constructor(t *testing.T) {
-	if err := instance.Ping(); err != nil {
-		t.Errorf("Ping() = %v", err)
-	}
+
+	t.Run("Ping", func(t *testing.T) {
+		if err := instance.Ping(); err != nil {
+			t.Errorf("Ping() = %v", err)
+			return
+		}
+	})
 }

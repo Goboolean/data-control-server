@@ -1,29 +1,73 @@
 package kis_test
 
 import (
+	"os"
 	"testing"
 	"time"
+
+	"github.com/Goboolean/fetch-server/internal/infrastructure/ws/kis"
 )
 
-var stockName = "DNASAAPL"
 
-func Test_SubscribeStockAggs(t *testing.T) {
+func Test_Method(t *testing.T) {
 
-	if err := instance.SubscribeStockAggs(stockName); err != nil {
-		t.Errorf("SubscrbeStockAggs() = %v", err)
-		return
-	}
+	var instance *kis.Subscriber = new(kis.Subscriber)
 
-	time.Sleep(1 * time.Second)
+	t.Run("GetApprovalKey", func(t *testing.T) {
 
-	if count == 0 {
-		t.Errorf(" received %d, want many", count)
-		return
-	}
+		_, err := instance.GetApprovalKey(os.Getenv("KIS_APPKEY"), os.Getenv("KIS_SECRET"))
+		if err != nil {
+			t.Errorf("GetApprovalKey() = %v", err)
+			return
+		}
+	})
 }
 
 
-func Test_UnsubscribeStockAggs(t *testing.T) {
 
+func Test_SubscribeStockAggs(t *testing.T) {
+
+	const symbol = "DNASAAPL"
+
+	var (
+		countBeforeSubscription  int
+		countAfterSubscription   int
+		countAfterUnsubscription int
+	)
+
+	t.Run("Subscribe", func(t *testing.T) {
+
+		countBeforeSubscription = count
+		if err := instance.SubscribeStockAggs(symbol); err != nil {
+			t.Errorf("SubscrbeStockAggs() = %v", err)
+			return
+		}
 	
+		time.Sleep(1 * time.Second)
+
+		countAfterSubscription = count
+		diff := countAfterSubscription - countBeforeSubscription
+	
+		if diff == 0 {
+			t.Errorf("SubscribeStockAggs() received %d, want many", diff)
+			return
+		}
+	})
+
+	t.Run("Unsubscribe", func(t *testing.T) {
+		if err := instance.UnsubscribeStockAggs(symbol); err != nil {
+			t.Errorf("UnsubscribeStockAggs() = %v", err)
+			return
+		}
+
+		time.Sleep(1 * time.Second)
+
+		countAfterUnsubscription = count
+		diff := countAfterUnsubscription - countAfterSubscription
+
+		if diff != 0 {
+			t.Errorf("UnsubscribeStockAggs() received %d, want 0", diff)
+			return
+		}
+	})
 }

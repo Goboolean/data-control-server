@@ -10,7 +10,7 @@ import (
 )
 
 
-func (s *Subscriber) getApprovalKey(Appkey string, Secretkey string) (string, error) {
+func (s *Subscriber) GetApprovalKey(Appkey string, Secretkey string) (string, error) {
 	data := &getApprovalKeyReqeust{
 		GrantType: "client_credentials",
 		AppKey:    Appkey,

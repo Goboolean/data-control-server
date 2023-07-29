@@ -45,17 +45,17 @@ func New(c *resolver.ConfigMap, ctx context.Context, r ws.Receiver) *Subscriber 
 		r:      r,
 	}
 
-	appkey, err := c.GetStringKey("KIS_APPKEY")
+	appkey, err := c.GetStringKey("APPKEY")
 	if err != nil {
 		panic(err)
 	}
 
-	secretkey, err := c.GetStringKey("KIS_SECRET")
+	secretkey, err := c.GetStringKey("SECRET")
 	if err != nil {
 		panic(err)
 	}
 
-	approval_key, err := instance.getApprovalKey(appkey, secretkey)
+	approval_key, err := instance.GetApprovalKey(appkey, secretkey)
 	if err != nil {
 		panic(err)
 	}
@@ -83,5 +83,5 @@ func (s *Subscriber) Close() error {
 
 func (s *Subscriber) Ping() error {
 	handler := s.conn.PingHandler()
-	return handler("")
+	return handler("Ping")
 }
