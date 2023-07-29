@@ -28,11 +28,11 @@ var (
 	once     sync.Once
 )
 
-func New(db out.StockPersistencePort, tx port.TX, meta out.StockMetadataPort, ws out.RelayerPort) *RelayerManager {
+func New(ctx context.Context, db out.StockPersistencePort, tx port.TX, meta out.StockMetadataPort, ws out.RelayerPort) *RelayerManager {
 
 	once.Do(func() {
 
-		ctx, cancel := context.WithCancel(context.Background())
+		ctx, cancel := context.WithCancel(ctx)
 
 		instance = &RelayerManager{
 			ctx:    ctx,

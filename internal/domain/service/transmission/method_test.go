@@ -31,7 +31,7 @@ func MockRelayer() *relayer.RelayerManager {
 		db           = persistence.NewMockAdapter()
 		tx           = transaction.NewMock()
 		meta         = meta.NewMockAdapter()
-		ws = websocket.NewAdapter()
+		ws = websocket.NewAdapter().(*websocket.Adapter)
 		f = mock.New(context.Background(), time.Millisecond * 10, ws)
 	)
 
@@ -39,7 +39,7 @@ func MockRelayer() *relayer.RelayerManager {
 		panic(err)
 	}
 
-	instance := relayer.New(db, tx, meta, ws)
+	instance := relayer.New(context.Background(), db, tx, meta, ws)
 	ws.RegisterReceiver(instance)
 
 	return instance

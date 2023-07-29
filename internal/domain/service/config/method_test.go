@@ -30,14 +30,14 @@ func SetUp() {
 	db           := persistence_adapter.NewMockAdapter()
 	tx           := transaction.NewMock()
 	meta         := meta.NewMockAdapter()
-	ws := websocket.NewAdapter()
+	ws := websocket.NewAdapter().(*websocket.Adapter)
 	f := mock.New(context.Background(), time.Millisecond * 10, ws)
 
 	if err := ws.RegisterFetcher(f); err != nil {
 		panic(err)
 	}
 
-	relayer := relayer.New(db, tx, meta, ws)
+	relayer := relayer.New(context.Background(), db, tx, meta, ws)
 	ws.RegisterReceiver(relayer)
 
 
