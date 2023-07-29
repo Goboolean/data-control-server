@@ -23,6 +23,15 @@ var (
 )
 
 func SetupKis() {
+
+	if err := os.Chdir(env.Root); err != nil {
+		panic(err)
+	}
+
+	if err := godotenv.Load(); err != nil {
+		panic(err)
+	}
+
 	instance = kis.New(&resolver.ConfigMap{
 		"APPKEY": os.Getenv("KIS_APPKEY"),
 		"SECRET": os.Getenv("KIS_SECRET"),

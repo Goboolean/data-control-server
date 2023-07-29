@@ -32,6 +32,15 @@ var (
 
 
 func SetupBuycycle() {
+
+	if err := os.Chdir(env.Root); err != nil {
+		panic(err)
+	}
+
+	if err := godotenv.Load(); err != nil {
+		panic(err)
+	}
+
 	instance = buycycle.New(&resolver.ConfigMap{
 		"HOST": os.Getenv("BUYCYCLE_HOST"),
 		"PORT": os.Getenv("BUYCYCLE_PORT"),
@@ -65,9 +74,9 @@ func TestMain(m *testing.M) {
 
 func Test_Constructor(t *testing.T) {
 
-	if flag := isMarketOn(); flag {
-		t.Skip()
-	}
+	t.Skip()
+
+
 }
 
 

@@ -65,6 +65,13 @@ func Test_SubscribeStockAggs(t *testing.T) {
 		}
 	})
 
+	t.Run("SubscribeTwice", func(t *testing.T) {
+		if err := instance.SubscribeStockAggs(symbol); err == nil {
+			t.Errorf("SubscrbeStockAggs() = %v, want error", err)
+			return
+		}
+	})
+
 	t.Run("Unsubscribe", func(t *testing.T) {
 		if err := instance.UnsubscribeStockAggs(symbol); err != nil {
 			t.Errorf("UnsubscribeStockAggs() = %v", err)
