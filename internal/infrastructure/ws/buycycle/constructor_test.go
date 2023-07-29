@@ -1,7 +1,6 @@
 package buycycle_test
 
 import (
-	"context"
 	"os"
 	"sync"
 	"testing"
@@ -44,7 +43,7 @@ func SetupBuycycle() {
 	instance = buycycle.New(&resolver.ConfigMap{
 		"HOST": os.Getenv("BUYCYCLE_HOST"),
 		"PORT": os.Getenv("BUYCYCLE_PORT"),
-	}, context.Background(), receiver)
+	}, receiver)
 }
 
 func TeardownBuycycle() {

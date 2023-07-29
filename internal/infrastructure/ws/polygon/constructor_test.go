@@ -1,7 +1,6 @@
 package polygon_test
 
 import (
-	"context"
 	"os"
 	"sync"
 	"testing"
@@ -22,7 +21,7 @@ var instance ws.Fetcher
 func SetupPolygon() {
 	instance = polygon.New(&resolver.ConfigMap{
 		"KEY":  os.Getenv("POLYGON_API_KEY"),
-	}, context.Background(), receiver)
+	}, receiver)
 }
 
 func TeardownPolygon() {

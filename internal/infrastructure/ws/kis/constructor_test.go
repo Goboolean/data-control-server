@@ -1,7 +1,6 @@
 package kis_test
 
 import (
-	"context"
 	"os"
 	"testing"
 
@@ -35,7 +34,7 @@ func SetupKis() {
 	instance = kis.New(&resolver.ConfigMap{
 		"APPKEY": os.Getenv("KIS_APPKEY"),
 		"SECRET": os.Getenv("KIS_SECRET"),
-	}, context.Background(), receiver)
+	}, receiver)
 }
 
 func TeardownKis() {

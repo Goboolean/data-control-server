@@ -31,7 +31,7 @@ func SetUp() {
 	tx           := transaction.NewMock()
 	meta         := meta.NewMockAdapter()
 	ws := websocket.NewAdapter().(*websocket.Adapter)
-	f := mock.New(context.Background(), time.Millisecond * 10, ws)
+	f := mock.New(time.Millisecond * 10, ws)
 
 	if err := ws.RegisterFetcher(f); err != nil {
 		panic(err)

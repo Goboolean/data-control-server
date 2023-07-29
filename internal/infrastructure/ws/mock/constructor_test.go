@@ -1,7 +1,6 @@
 package mock_test
 
 import (
-	"context"
 	"os"
 	"testing"
 	"time"
@@ -24,7 +23,7 @@ func SetupMock() {
 		count++
 	})
 
-	instance = mock.New(context.Background(), 10*time.Millisecond, receiver)
+	instance = mock.New(10*time.Millisecond, receiver)
 }
 
 
