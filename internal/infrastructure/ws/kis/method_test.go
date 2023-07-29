@@ -27,7 +27,10 @@ func Test_Method(t *testing.T) {
 
 func Test_SubscribeStockAggs(t *testing.T) {
 
-	const symbol = "DNASAAPL"
+	const (
+		symbol = "DNASAAPL"
+		falseSymbol = "FALSE"
+	)
 
 	var (
 		countBeforeSubscription  int
@@ -35,15 +38,23 @@ func Test_SubscribeStockAggs(t *testing.T) {
 		countAfterUnsubscription int
 	)
 
+	t.Run("FalseSubscribe", func(t *testing.T) {
+		if err := instance.SubscribeStockAggs(falseSymbol); err == nil {
+			t.Errorf("SubscrbeStockAggs() = %v, want error", err)
+			return
+		}
+	})
+
 	t.Run("Subscribe", func(t *testing.T) {
 
-		countBeforeSubscription = count
 		if err := instance.SubscribeStockAggs(symbol); err != nil {
 			t.Errorf("SubscrbeStockAggs() = %v", err)
 			return
 		}
+
+		countBeforeSubscription = count
 	
-		time.Sleep(1 * time.Second)
+		time.Sleep(time.Second * 3/2)
 
 		countAfterSubscription = count
 		diff := countAfterSubscription - countBeforeSubscription
@@ -67,6 +78,13 @@ func Test_SubscribeStockAggs(t *testing.T) {
 
 		if diff != 0 {
 			t.Errorf("UnsubscribeStockAggs() received %d, want 0", diff)
+			return
+		}
+	})
+
+	t.Run("UnsubscribeTwice", func(t *testing.T) {
+		if err := instance.UnsubscribeStockAggs(symbol); err == nil {
+			t.Errorf("UnsubscribeStockAggs() = %v, want error", err)
 			return
 		}
 	})

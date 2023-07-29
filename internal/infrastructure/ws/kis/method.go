@@ -91,7 +91,7 @@ func (s *Subscriber) SubscribeStockAggs(symbols ...string) error {
 	for _, symbol := range symbols {
 		req := &RequestJson{
 			Header: HeaderJson{
-				ApprovalKey: s.approval_key,
+				ApprovalKey: s.approvalKey,
 				Custtype:    custtype,
 				TrType:      tr_type_subscribe,
 				ContentType: "utf-8",
@@ -117,7 +117,7 @@ func (s *Subscriber) UnsubscribeStockAggs(symbols ...string) error {
 	for _, symbol := range symbols {
 		req := &RequestJson{
 			Header: HeaderJson{
-				ApprovalKey: s.approval_key,
+				ApprovalKey: s.approvalKey,
 				Custtype:    custtype,
 				TrType:      tr_type_unsubscribe,
 				ContentType: "utf-8",

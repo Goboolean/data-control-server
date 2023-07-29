@@ -18,7 +18,7 @@ const address = "ops.koreainvestment.com:21000"
 type Subscriber struct {
 	conn *websocket.Conn
 
-	approval_key string
+	approvalKey string
 
 	ctx    context.Context
 	cancel context.CancelFunc
@@ -55,12 +55,12 @@ func New(c *resolver.ConfigMap, ctx context.Context, r ws.Receiver) *Subscriber 
 		panic(err)
 	}
 
-	approval_key, err := instance.GetApprovalKey(appkey, secretkey)
+	approvalKey, err := instance.GetApprovalKey(appkey, secretkey)
 	if err != nil {
 		panic(err)
 	}
 
-	instance.approval_key = approval_key
+	instance.approvalKey = approvalKey
 
 	go instance.run()
 

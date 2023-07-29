@@ -20,52 +20,69 @@ var (
 
 func Test_SubscribeStockAggs(t *testing.T) {
 
-	const stock1 = "stock1"
-	const stock2 = "stock2"
+	const (
+		symbol = "AAPL"
+		falseSymbol = "FALSE"
+	)
 
-	if flag	:= isMarketOn(); !flag {
-		t.Skip()
-		return
-	}
+	t.Skip("Skip this test, as polygon api key is expired.")
 
-	if err := instance.SubscribeStockAggs(stock1, stock2); err != nil {
-		t.Errorf("SubscrbeStockAggs() = %v", err)
-		return
-	}
+	t.Run("FalseSubscribe", func(t *testing.T) {
+		if err := instance.SubscribeStockAggs(falseSymbol); err == nil {
+			t.Errorf("SubscrbeStockAggs() = %v, want error", err)
+			return
+		}
+	})
 
-	time.Sleep(2 * time.Second)
+	t.Run("Subscribe", func(t *testing.T) {
+		if err := instance.SubscribeStockAggs(symbol); err != nil {
+			t.Errorf("SubscrbeStockAggs() = %v", err)
+			return
+		}
 
-	if count == 0 {
-		t.Errorf("SubscrbeStockAggs() received %d, want many", count)
-		return
-	}
-}
+		countBeforeSubscription := count
+	
+		time.Sleep(time.Second * 2 / 3)
 
+		countAfterSubscription := count
+		diff := countAfterSubscription - countBeforeSubscription
+	
+		if diff == 0 {
+			t.Errorf("SubscrbeStockAggs() received %d, want many", diff)
+			return
+		}
+	})
 
-func Test_UnsubscribeStockAggs(t *testing.T) {
+	t.Run("SubscribeTwice", func(t *testing.T) {
+		if err := instance.SubscribeStockAggs(symbol); err == nil {
+			t.Errorf("SubscrbeStockAggs() = %v, want error", err)
+			return
+		}
+	})
 
-	const stock1 = "stock1"
-	const stock2 = "stock2"
+	t.Run("Unsubscribe", func(t *testing.T) {
+		if err := instance.UnsubscribeStockAggs(symbol); err != nil {
+			t.Errorf("UnsubscrbeStockAggs() = %v", err)
+			return
+		}
 
-	if flag	:= isMarketOn(); !flag {
-		t.Skip()
-		return
-	}
+		countBeforeUnsubscription := count
+	
+		time.Sleep(time.Second * 2 / 3)
 
-	if err := instance.SubscribeStockAggs(stock1, stock2); err != nil {
-		t.Errorf("SubscrbeStockAggs() = %v", err)
-		return
-	}
+		countAfterUnsubscription := count
+		diff := countAfterUnsubscription - countBeforeUnsubscription
 
-	if err := instance.UnsubscribeStockAggs(stock2, stock1); err != nil {
-		t.Errorf("UnsubscrbeStockAggs() = %v", err)
-		return
-	}	
+		if diff != 0 {
+			t.Errorf("UnsubscrbeStockAggs() received %d, want 0", diff)
+			return
+		}
+	})
 
-	time.Sleep(2 * time.Second)
-
-	if count != 0 {
-		t.Errorf("UnsubscrbeStockAggs() received %d, want 0", count)
-		return
-	}
+	t.Run("UnsubscribeTwice", func(t *testing.T) {
+		if err := instance.UnsubscribeStockAggs(symbol); err == nil {
+			t.Errorf("UnsubscrbeStockAggs() = %v, want error", err)
+			return
+		}
+	})
 }

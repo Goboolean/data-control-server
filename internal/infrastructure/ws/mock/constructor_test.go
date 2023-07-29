@@ -45,10 +45,12 @@ func TestMain(m *testing.M) {
 
 func Test_Constructor(t *testing.T) {
 
-	if err := instance.Ping(); err != nil {
-		t.Errorf("Ping() = %v", err)
-		return
-	}
+	t.Run("Ping", func(t *testing.T) {
+		if err := instance.Ping(); err != nil {
+			t.Errorf("Ping() = %v", err)
+			return
+		}
+	})
 }
 
 
@@ -59,52 +61,63 @@ func Test_SubscribeStockAggs(t *testing.T) {
   // since the data is generated every 10 ms in average.
   // But it seems that error may occur in some case.
 
-	if err := instance.SubscribeStockAggs("test"); err != nil {
-		t.Errorf("SubscribeStockAggs() = %v", err)
-		return
-	}
+	t.Run("Subscribe", func(t *testing.T) {
+		if err := instance.SubscribeStockAggs("test"); err != nil {
+			t.Errorf("SubscribeStockAggs() = %v", err)
+			return
+		}
 
-	if err := instance.SubscribeStockAggs("test"); err == nil {
-		t.Errorf("SubscribeStockAggs() = %v, want %v", err, mock.ErrTopicAlreadyExists)
-		return
-	}
+		time.Sleep(100 * time.Millisecond)
 
-	time.Sleep(100 * time.Millisecond)
+		if !(5 <= count) {
+			t.Errorf("count = %v, should be at least 5", count)
+			return
+		}
+	})
 
-	t.Logf("count = %v", count)
-
-	if !(5 <= count) {
-		t.Errorf("count = %v, should be at least 5", count)
-		return
-	}
+	t.Run("SubscribeTwice", func(t *testing.T) {
+		if err := instance.SubscribeStockAggs("test"); err == nil {
+			t.Errorf("SubscribeStockAggs() = %v, want %v", err, mock.ErrTopicAlreadyExists)
+			return
+		}
+	})
 }
 
 
 func Test_UnsubscribeStockAggs(t *testing.T) {
 
-	if err := instance.UnsubscribeStockAggs("unsubscribed"); err == nil {
-		t.Errorf("UnsubscribeStockAggs() = %v, want %v", err, mock.ErrTopicNotFound)
-		return
-	}
+	const symbol = "TEST"
 
-	if err := instance.SubscribeStockAggs("test"); err != nil {
-		t.Errorf("SubscribeStockAggs() = %v", err)
-		return
-	}
+	t.Run("InvalidUnsubscribe", func(t *testing.T) {
+		if err := instance.UnsubscribeStockAggs(symbol); err == nil {
+			t.Errorf("UnsubscribeStockAggs() = %v, want %v", err, mock.ErrTopicNotFound)
+			return
+		}
+	})
 
-	time.Sleep(100 * time.Millisecond)
+	t.Run("Unsubscribe", func(t *testing.T) {
+		if err := instance.SubscribeStockAggs(symbol); err != nil {
+			t.Errorf("SubscribeStockAggs() = %v", err)
+			return
+		}
+	
+		time.Sleep(100 * time.Millisecond)
+	
+		if err := instance.UnsubscribeStockAggs(symbol); err != nil {
+			t.Errorf("UnsubscribeStockAggs() = %v", err)
+			return
+		}
 
-	if err := instance.UnsubscribeStockAggs("test"); err != nil {
-		t.Errorf("UnsubscribeStockAggs() = %v", err)
-		return
-	}
+		countBeforeSubscription := count
+	
+		time.Sleep(100 * time.Millisecond)
 
-	lastCount := count
-
-	time.Sleep(100 * time.Millisecond)
-
-	if lastCount != count {
-		t.Errorf("lastCount = %v, count = %v", lastCount, count)
-		return
-	}
+		countAfterUnsubscription := count
+		diff := countAfterUnsubscription - countBeforeSubscription
+	
+		if diff != 0 {
+			t.Errorf("UnsubscribeStockAggs() received %d, want 0", diff)
+			return
+		}
+	})
 }
