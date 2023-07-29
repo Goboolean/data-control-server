@@ -5,6 +5,7 @@ import (
 
 	"github.com/Goboolean/fetch-server/internal/domain/entity"
 	"github.com/Goboolean/fetch-server/internal/domain/port/in"
+	"github.com/Goboolean/fetch-server/internal/domain/port/out"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/prometheus"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws"
 )
@@ -20,13 +21,15 @@ type Adapter struct {
 	idToSymnbol map[string]string // stockid -> symbol
 
 	port in.RelayerPort
+
+	prom prometheus.Server
 }
 
 
 // There are two options to register fetcher:
 // 1. compile time: use New()
 // 2. runtime: use StockFetchAdapter.RegisterFetcher()
-func NewAdapter(fetchers ...ws.Fetcher) *Adapter {
+func NewAdapter(fetchers ...ws.Fetcher) out.RelayerPort {
 
 	instance := &Adapter{
 		fetcher: make(map[string]ws.Fetcher),
@@ -97,7 +100,6 @@ func (s *Adapter) toDomainEntity(agg *ws.StockAggregate) (*entity.StockAggregate
 
 
 func (s *Adapter) OnReceiveStockAggs(agg *ws.StockAggregate) error {
-	prometheus.StockCounter.Inc()
 
 	data, err := s.toDomainEntity(agg)
 	if err != nil {
@@ -105,12 +107,12 @@ func (s *Adapter) OnReceiveStockAggs(agg *ws.StockAggregate) error {
 	}
 
 	s.port.PlaceStockFormBatch([]*entity.StockAggregateForm{data})
+
+	s.prom.FetchCounter()().Inc()
 	return nil
 }
 
 func (s *Adapter) OnReceiveStockAggsBatch(aggs []*ws.StockAggregate) error {
-	prometheus.StockCounter.Add(float64(len(aggs)))
-
 	batch := make([]*entity.StockAggregateForm, len(aggs))
 
 	for _, agg := range aggs {
@@ -123,6 +125,8 @@ func (s *Adapter) OnReceiveStockAggsBatch(aggs []*ws.StockAggregate) error {
 	}
 
 	s.port.PlaceStockFormBatch(batch)
+
+	s.prom.FetchCounter()().Add(float64(len(aggs)))
 	return nil
 }
 
