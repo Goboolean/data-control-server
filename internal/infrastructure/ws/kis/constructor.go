@@ -1,11 +1,8 @@
 package kis
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
-	"io/ioutil"
-	"net/http"
+
 	"net/url"
 
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws"
@@ -17,15 +14,6 @@ const platformName = "kis"
 
 const address = "ops.koreainvestment.com:21000"
 
-type Data struct {
-	GrantType string `json:"grant_type"`
-	AppKey    string `json:"appkey"`
-	SecretKey string `json:"secretkey"`
-}
-
-type Response struct {
-	ApprovalKey string `json:"approval_key"`
-}
 
 type Subscriber struct {
 	conn *websocket.Conn
@@ -37,36 +25,7 @@ type Subscriber struct {
 	r      ws.Receiver
 }
 
-func (s *Subscriber) getApprovalKey(Appkey string, Secretkey string) (string, error) {
-	data := &Data{
-		GrantType: "client_credentials",
-		AppKey:    Appkey,
-		SecretKey: Secretkey,
-	}
-	jsonData, err := json.Marshal(data)
-	if err != nil {
-		return "", err
-	}
 
-	response, err := http.Post("https://openapi.koreainvestment.com:9443/oauth2/Approval", "application/json", bytes.NewBuffer(jsonData))
-	if err != nil {
-		return "", err
-	}
-	defer response.Body.Close()
-
-	body, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		return "", err
-	}
-
-	var res *Response
-
-	if err := json.Unmarshal(body, &res); err != nil {
-		return "", err
-	}
-
-	return res.ApprovalKey, nil
-}
 
 func New(c *resolver.ConfigMap, ctx context.Context, r ws.Receiver) *Subscriber {
 

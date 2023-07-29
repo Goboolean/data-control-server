@@ -1,11 +1,55 @@
 package kis
 
 import (
+	"bytes"
 	"log"
+
+	"encoding/json"
+	"io/ioutil"
+	"net/http"
 )
 
-const custtype string = "P"
-const tr_type string = "1"
+
+func (s *Subscriber) getApprovalKey(Appkey string, Secretkey string) (string, error) {
+	data := &getApprovalKeyReqeust{
+		GrantType: "client_credentials",
+		AppKey:    Appkey,
+		SecretKey: Secretkey,
+	}
+	jsonData, err := json.Marshal(data)
+	if err != nil {
+		return "", err
+	}
+
+	response, err := http.Post("https://openapi.koreainvestment.com:9443/oauth2/Approval", "application/json", bytes.NewBuffer(jsonData))
+	if err != nil {
+		return "", err
+	}
+	defer response.Body.Close()
+
+	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return "", err
+	}
+
+	var res *getApprovalKeyResponse
+
+	if err := json.Unmarshal(body, &res); err != nil {
+		return "", err
+	}
+
+	return res.ApprovalKey, nil
+}
+
+
+const (
+	custtype            string = "P"
+	tr_type_subscribe   string = "1"
+	tr_type_unsubscribe string = "0"
+)
+
+
+
 
 func (s *Subscriber) run() {
 	for {
@@ -42,13 +86,14 @@ func (s *Subscriber) run() {
 	}
 }
 
+
 func (s *Subscriber) SubscribeStockAggs(symbols ...string) error {
 	for _, symbol := range symbols {
 		req := &RequestJson{
 			Header: HeaderJson{
 				ApprovalKey: s.approval_key,
 				Custtype:    custtype,
-				TrType:      tr_type,
+				TrType:      tr_type_subscribe,
 				ContentType: "utf-8",
 			},
 			Body: RequestBodyJson{
@@ -67,6 +112,28 @@ func (s *Subscriber) SubscribeStockAggs(symbols ...string) error {
 	return nil
 }
 
-func (s *Subscriber) UnsubscribeStockAggs(stocks ...string) error {
+
+func (s *Subscriber) UnsubscribeStockAggs(symbols ...string) error {
+	for _, symbol := range symbols {
+		req := &RequestJson{
+			Header: HeaderJson{
+				ApprovalKey: s.approval_key,
+				Custtype:    custtype,
+				TrType:      tr_type_unsubscribe,
+				ContentType: "utf-8",
+			},
+			Body: RequestBodyJson{
+				Input: RequestInputJson{
+					TrId:  "HDFSCNT0",
+					TrKey: symbol,
+				},
+			},
+		}
+
+		if err := s.conn.WriteJSON(req); err != nil {
+			return err
+		}
+
+	}
 	return nil
 }
