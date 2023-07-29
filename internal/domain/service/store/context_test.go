@@ -13,20 +13,23 @@ func Test_contextController(t *testing.T) {
 
 	CTX := new_ctx(ctx)
 
-	select {
-	case <- CTX.Done():
-		t.Errorf("context did not created successfully")
-	default:
-		break
-	}
+	t.Run("CreateContext", func(t *testing.T) {
+		select {
+		case <- CTX.Done():
+			t.Errorf("context did not created successfully")
+		default:
+			break
+		}
+	})
 
-	CTX.cancel()
+	t.Run("CancelContext", func(t *testing.T) {
+		CTX.cancel()
 
-	select {
-	case <- CTX.Done():
-		break
-	default:
-		t.Errorf("context did not canceled successfully")
-	}
-
+		select {
+		case <- CTX.Done():
+			break
+		default:
+			t.Errorf("context did not canceled successfully")
+		}
+	})
 }
