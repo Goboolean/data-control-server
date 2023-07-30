@@ -9,7 +9,6 @@ import (
 
 	api "github.com/Goboolean/fetch-server/api/grpc"
 	"github.com/Goboolean/fetch-server/internal/domain/port/in"
-	"github.com/Goboolean/fetch-server/internal/infrastructure/prometheus"
 )
 
 
@@ -26,8 +25,6 @@ func NewAdapter(s in.ConfiguratorPort) api.StockConfiguratorServer {
 
 
 func (c *Adapter) UpdateStockConfigOne(ctx context.Context, in *api.StockConfig) (*api.ReturnMessage, error) {
-
-	prometheus.RequestCounter.Inc()
 
 	stockId := in.GetStockId()
 	relayable := in.GetRelayable()
@@ -95,8 +92,6 @@ func (c *Adapter) UpdateStockConfigOne(ctx context.Context, in *api.StockConfig)
 func (c *Adapter) UpdateStockConfigMany(ctx context.Context, in *api.StockConfigList) (*api.ReturnMessageList, error) {
 
 	length := len(in.GetStockConfig())
-
-	prometheus.RequestCounter.Add(float64(length))
 
 	msgList := make([]*api.ReturnMessage, length)
 

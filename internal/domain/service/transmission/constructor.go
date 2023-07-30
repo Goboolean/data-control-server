@@ -14,8 +14,10 @@ type Transmitter struct {
 	broker out.TransmissionPort
 
 	s *store.Store
-
 	batchSize int
+
+	ctx context.Context
+	cancel context.CancelFunc
 }
 
 var (
@@ -23,13 +25,19 @@ var (
 	once     sync.Once
 )
 
-func New(ctx context.Context, broker out.TransmissionPort, relayer *relayer.RelayerManager, o Option) *Transmitter {
+func New(broker out.TransmissionPort, relayer *relayer.RelayerManager, o Option) *Transmitter {
+
+	ctx, cancel := context.WithCancel(context.Background())
+
 	once.Do(func() {
 		instance = &Transmitter{
 			relayer:   relayer,
 			broker:    broker,
 			s:         store.New(ctx),
 			batchSize: o.BatchSize,
+
+			ctx: ctx,
+			cancel: cancel,
 		}
 	})
 
@@ -37,5 +45,5 @@ func New(ctx context.Context, broker out.TransmissionPort, relayer *relayer.Rela
 }
 
 func (t *Transmitter) Close() {
-	t.s.Close()
+	t.cancel()
 }

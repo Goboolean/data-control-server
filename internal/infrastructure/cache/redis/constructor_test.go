@@ -6,9 +6,8 @@ import (
 	"testing"
 
 	"github.com/Goboolean/fetch-server/internal/infrastructure/cache/redis"
-	"github.com/Goboolean/fetch-server/internal/util/env"
 	"github.com/Goboolean/shared/pkg/resolver"
-	"github.com/joho/godotenv"
+	_ "github.com/Goboolean/fetch-server/internal/util/env"
 )
 
 
@@ -43,19 +42,9 @@ func Teardown() {
 
 
 func TestMain(m *testing.M) {
-
-	if err := os.Chdir(env.Root); err != nil {
-		panic(err)
-	}
-
-	if err := godotenv.Load(); err != nil {
-		panic(err)
-	}
-
 	Setup()
 	code := m.Run()
 	Teardown()
-
 	os.Exit(code)
 }
 

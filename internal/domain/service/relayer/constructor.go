@@ -35,12 +35,13 @@ func New(db out.StockPersistencePort, tx port.TX, meta out.StockMetadataPort, ws
 		ctx, cancel := context.WithCancel(context.Background())
 
 		instance = &RelayerManager{
-			ctx:    ctx,
-			cancel: cancel,
 			s:      store.New(ctx),
 			ws:     ws,
 			meta:   meta,
 			tx:     tx,
+
+			ctx: 	  ctx,
+			cancel: cancel,
 		}
 
 		instance.pipe = newPipe()
@@ -51,7 +52,6 @@ func New(db out.StockPersistencePort, tx port.TX, meta out.StockMetadataPort, ws
 	return instance
 }
 
-func (m *RelayerManager) Close() error {
+func (m *RelayerManager) Close() {
 	m.cancel()
-	return nil
 }

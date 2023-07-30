@@ -18,28 +18,32 @@ func Test_Store(t *testing.T) {
 
 	instance := store.New(ctx)
 
-	if exists := instance.StockExists(stockId); exists {
-		t.Errorf("stock exists before storing")
-		return
-	}
+	t.Run("StoreStock", func(t *testing.T) {
+		if exists := instance.StockExists(stockId); exists {
+			t.Errorf("stock exists before storing")
+			return
+		}
+	
+		if err := instance.StoreStock(stockId); err != nil {
+			t.Errorf("failed to store stock: %v", err)
+			return
+		}
+	
+		if exists := instance.StockExists(stockId); !exists {
+			t.Errorf("stock not exists after storing")
+			return
+		}
+	})
 
-	if err := instance.StoreStock(stockId); err != nil {
-		t.Errorf("failed to store stock: %v", err)
-		return
-	}
-
-	if exists := instance.StockExists(stockId); !exists {
-		t.Errorf("stock not exists after storing")
-		return
-	}
-
-	if err := instance.UnstoreStock(stockId); err != nil {
-		t.Errorf("failed to unstore stock: %v", err)
-		return
-	}
-
-	if exists := instance.StockExists(stockId); exists {
-		t.Errorf("stock exists before storing")
-		return
-	}	
+	t.Run("UnstoreStock", func(t *testing.T) {
+		if err := instance.UnstoreStock(stockId); err != nil {
+			t.Errorf("failed to unstore stock: %v", err)
+			return
+		}
+	
+		if exists := instance.StockExists(stockId); exists {
+			t.Errorf("stock exists before storing")
+			return
+		}	
+	})
 }

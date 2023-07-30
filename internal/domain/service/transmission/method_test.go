@@ -31,8 +31,8 @@ func MockRelayer() *relayer.RelayerManager {
 		db           = persistence.NewMockAdapter()
 		tx           = transaction.NewMock()
 		meta         = meta.NewMockAdapter()
-		ws = websocket.NewAdapter()
-		f = mock.New(context.Background(), time.Millisecond * 10, ws)
+		ws = websocket.NewMockAdapter().(*websocket.Adapter)
+		f = mock.New(time.Millisecond * 10, ws)
 	)
 
 	if err := ws.RegisterFetcher(f); err != nil {
@@ -52,7 +52,7 @@ func SetUp() {
 				
 	relayerManager = MockRelayer()
 	kafka = broker.NewMockAdapter()
-	instance = transmission.New(context.Background(), kafka, relayerManager, transmission.Option{BatchSize: 2})
+	instance = transmission.New(kafka, relayerManager, transmission.Option{BatchSize: 2})
 
 	if err := relayerManager.FetchStock(context.Background(), stockId); err != nil {
 		panic(err)

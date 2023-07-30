@@ -11,13 +11,15 @@ import (
 )
 
 type PersistenceManager struct {
-	o 			  Option
-	db        out.StockPersistencePort
-	cache     out.StockPersistenceCachePort
-	relayer   *relayer.RelayerManager
-	s         *store.Store
+	o 			Option
+	db      out.StockPersistencePort
+	cache   out.StockPersistenceCachePort
+	relayer *relayer.RelayerManager
+	s       *store.Store
 
-	tx port.TX
+	tx      port.TX
+	ctx     context.Context
+	cancel  context.CancelFunc
 }
 
 var (
@@ -26,7 +28,9 @@ var (
 )
 
 
-func New(tx port.TX, ctx context.Context, db out.StockPersistencePort, cache out.StockPersistenceCachePort, r *relayer.RelayerManager, o Option) *PersistenceManager {
+func New(tx port.TX, db out.StockPersistencePort, cache out.StockPersistenceCachePort, r *relayer.RelayerManager, o Option) *PersistenceManager {
+
+	ctx, cancel := context.WithCancel(context.Background())
 
 	once.Do(func() {
 		instance = &PersistenceManager{
@@ -36,6 +40,9 @@ func New(tx port.TX, ctx context.Context, db out.StockPersistencePort, cache out
 			relayer: r,
 			s:       store.New(ctx),
 			tx:      tx,
+
+			ctx:     ctx,
+			cancel:  cancel,
 		}
 
 		if o.BatchSize == 0 {
@@ -49,5 +56,5 @@ func New(tx port.TX, ctx context.Context, db out.StockPersistencePort, cache out
 
 
 func (m *PersistenceManager) Close() {
-	m.s.Close()	
+	m.cancel()
 }

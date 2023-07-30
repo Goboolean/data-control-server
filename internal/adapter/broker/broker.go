@@ -12,19 +12,22 @@ import (
 type Adapter struct {
 	conf *broker.Configurator
 	pub  *broker.Publisher
+
+	prom *prometheus.Server
 }
 
-func NewAdapter(conf *broker.Configurator, pub *broker.Publisher) out.TransmissionPort {
+func NewAdapter(conf *broker.Configurator, pub *broker.Publisher, prom *prometheus.Server) out.TransmissionPort {
 	return &Adapter{
 		conf: conf,
 		pub:  pub,
+		prom: prom,
 	}
 }
 
 
 func (a *Adapter) TransmitStockBatch(ctx context.Context, stock string, batch []*entity.StockAggregate) error {
 
-	prometheus.MQCounter.Add(float64(len(batch)))
+	a.prom.BrokerCounter()().Add(float64(len(batch)))
 
 	converted := make([]*broker.StockAggregate, len(batch))
 
