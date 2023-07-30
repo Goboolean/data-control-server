@@ -2,6 +2,7 @@ package buycycle
 
 import (
 	"log"
+	"time"
 
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws"
 )
@@ -14,13 +15,13 @@ func (s *Subscriber) run() {
 		select {
 		case <-s.ctx.Done():
 			return
-		default:
-			
+		case <- time.After(time.Millisecond * 100):
+			break			
 		}
 
 		var agg *StockDetail = &StockDetail{}
 		if err := s.conn.ReadJSON(agg); err != nil {
-			log.Fatal(err)
+			log.Fatalf("24: %v", err)
 		}
 
 		var data = &ws.StockAggregate{
@@ -33,7 +34,7 @@ func (s *Subscriber) run() {
 		}
 
 		if err := s.r.OnReceiveStockAggs(data); err != nil {
-			log.Fatal(err)
+			log.Fatalf("37: %v", err)
 		}
 	}
 }
