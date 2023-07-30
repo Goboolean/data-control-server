@@ -309,24 +309,7 @@ var PrometheusSet = wire.NewSet(
 	providePrometheusArgs, prometheus.New,
 )
 
-var InfrastructureSet = wire.NewSet(
-	InitMongo,
-	InitMongoQueries,
-	InitPsql,
-	InitPsqlQueries,
-	InitKafkaConfigurator,
-	InitKafkaPublisher,
-	InitRedis,
-	InitGrpc,
-	InitBuycycle,
-	InitKIS,
-	InitPolygon,
-	InitPrometheus,
-)
-
 // service.go:
-
-var ServiceSet = wire.NewSet(relayer.New, persistence2.New, transmission.New, config.New)
 
 func provideFetcher() []ws.Fetcher {
 	return []ws.Fetcher{}

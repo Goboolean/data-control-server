@@ -7,14 +7,13 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Goboolean/fetch-server/cmd/inject"
 	cache_adapter "github.com/Goboolean/fetch-server/internal/adapter/cache"
-	"github.com/Goboolean/fetch-server/internal/adapter/meta"
 	persistence_adapter "github.com/Goboolean/fetch-server/internal/adapter/persistence"
 	"github.com/Goboolean/fetch-server/internal/adapter/transaction"
 	"github.com/Goboolean/fetch-server/internal/adapter/websocket"
 	"github.com/Goboolean/fetch-server/internal/domain/port/out"
 	"github.com/Goboolean/fetch-server/internal/domain/service/persistence"
-	"github.com/Goboolean/fetch-server/internal/domain/service/relayer"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws/mock"
 )
 
@@ -25,33 +24,16 @@ var (
 	cache out.StockPersistenceCachePort
 )
 
-func MockRelayer() *relayer.RelayerManager {
 
-	var (
-		db           = persistence_adapter.NewMockAdapter()
-		tx           = transaction.NewMock()
-		meta         = meta.NewMockAdapter()
-		ws = websocket.NewMockAdapter().(*websocket.Adapter)
-		f = mock.New(time.Millisecond * 10, ws)
-	)
-
-	if err := ws.RegisterFetcher(f); err != nil {
-		panic(err)
-	}
-
-	instance := relayer.New(db, tx, meta, ws)
-	ws.RegisterReceiver(instance)
-
-	return instance
-}
 
 func SetUp() {
 
-	var (		
-		tx      = transaction.NewMock()
-		relayer = MockRelayer()
-	)
+	ws := websocket.NewMockAdapter().(*websocket.Adapter)
+	f := mock.New(time.Millisecond * 10, ws)
+	ws.RegisterFetcher(f)
+	relayer := inject.InitMockRelayer(ws)
 
+	tx      := transaction.NewMock()
 	db       = persistence_adapter.NewMockAdapter()
 	cache    = cache_adapter.NewMockAdapter()
 	instance = persistence.New(tx, db, cache, relayer, persistence.Option{BatchSize: 1})
@@ -68,12 +50,10 @@ func TearDown() {
 
 
 func TestMain(m *testing.M) {
-
 	SetUp()
 	code := m.Run()
 	TearDown()
 	os.Exit(code)
-
 }
 
 

@@ -214,18 +214,3 @@ func InitPrometheus() *prometheus.Server {
 	wire.Build(PrometheusSet)
 	return &prometheus.Server{}
 }
-
-var InfrastructureSet = wire.NewSet(
-	InitMongo,
-	InitMongoQueries,
-	InitPsql,
-	InitPsqlQueries,
-	InitKafkaConfigurator,
-	InitKafkaPublisher,
-	InitRedis,
-	InitGrpc,
-	InitBuycycle,
-	InitKIS,
-	InitPolygon,
-	InitPrometheus,
-)

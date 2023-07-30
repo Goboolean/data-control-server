@@ -31,14 +31,6 @@ import (
 
 
 
-var ServiceSet = wire.NewSet(
-	relayer.New,
-	persistence.New,
-	transmission.New,
-	config.New,
-)
-
-
 func provideFetcher() []ws.Fetcher {
 	return []ws.Fetcher{}
 }
@@ -50,7 +42,6 @@ var AdapterArgumentSet = wire.NewSet(
 
 var MockAdapterSet = wire.NewSet(
 	AdapterArgumentSet,
-
 	grpc_adapter.NewAdapter,
 	broker_adapter.NewMockAdapter,
 	cache.NewMockAdapter,
@@ -59,28 +50,6 @@ var MockAdapterSet = wire.NewSet(
 	transaction.NewMock,
 	websocket.NewAdapter,
 )
-
-/*
-func InitMockRelayer() *relayer.RelayerManager {
-	wire.Build(MockAdapterSet, ServiceSet)
-	return &relayer.RelayerManager{}
-}
-
-func InitMockPersistenceManager(o persistence.Option) *persistence.PersistenceManager {
-	wire.Build(MockAdapterSet, ServiceSet)
-	return &persistence.PersistenceManager{}
-}
-
-func InitMockTransmission(o transmission.Option) *transmission.Transmitter {
-	wire.Build(MockAdapterSet, ServiceSet)
-	return &transmission.Transmitter{}
-}
-
-func InitMockConfigurationManager(*relayer.RelayerManager, *persistence.PersistenceManager, *transmission.Transmitter) *config.ConfigurationManager {
-	wire.Build(MockAdapterSet, config.New)
-	return &config.ConfigurationManager{}
-}
-*/
 
 
 var AdapterSet = wire.NewSet(
@@ -93,27 +62,7 @@ var AdapterSet = wire.NewSet(
 	websocket.NewAdapter,
 )
 
-/*
-func InitRelayer() *relayer.RelayerManager {
-	wire.Build(AdapterSet, InfrastructureSet, ServiceSet)
-	return &relayer.RelayerManager{}
-}
 
-func InitPersistenceManager(o persistence.Option) *persistence.PersistenceManager {
-	wire.Build(AdapterSet, InfrastructureSet, ServiceSet)
-	return &persistence.PersistenceManager{}
-}
-
-func InitTransmission(o transmission.Option) *transmission.Transmitter {
-	wire.Build(AdapterSet, InfrastructureSet, ServiceSet)
-	return &transmission.Transmitter{}
-}
-
-func InitConfigurationManager(*relayer.RelayerManager, *persistence.PersistenceManager, *transmission.Transmitter) *config.ConfigurationManager {
-	wire.Build(AdapterSet, InfrastructureSet, config.New)
-	return &config.ConfigurationManager{}
-}
-*/
 
 func provideTransmissionArgs() transmission.Option {
 	return transmission.Option{}
@@ -126,7 +75,7 @@ func providePersistenceArgs() persistence.Option {
 
 
 func InitMockRelayer(out.RelayerPort) *relayer.RelayerManager {
-	wire.Build(MockAdapterSet, ServiceSet)
+	wire.Build(MockAdapterSet, relayer.New)
 	return &relayer.RelayerManager{}
 }
 

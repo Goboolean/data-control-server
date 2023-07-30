@@ -2,13 +2,11 @@ package transaction
 
 import (
 	"context"
-	"os"
 	"sync"
 
 	"github.com/Goboolean/fetch-server/internal/domain/port"
 	"github.com/Goboolean/shared/pkg/mongo"
 	"github.com/Goboolean/shared/pkg/rdbms"
-	"github.com/Goboolean/shared/pkg/resolver"
 )
 
 
@@ -25,23 +23,12 @@ var (
 )
 
 
-func New() port.TX {
+func New(m *mongo.DB, p *rdbms.PSQL) port.TX {
 
 	once.Do(func() {
-		instance = &Tx{	
-			m: mongo.NewDB(&resolver.ConfigMap{
-				"HOST":     os.Getenv("MONGO_HOST"),
-				"PORT":     os.Getenv("MONGO_PORT"),
-				"USER":     os.Getenv("MONGO_USER"),
-				"PASSWORD": os.Getenv("MONGO_PASS"),
-			}),
-	
-			p: rdbms.NewDB(&resolver.ConfigMap{
-				"HOST":     os.Getenv("PSQL_HOST"),
-				"PORT":     os.Getenv("PSQL_PORT"),
-				"USER":     os.Getenv("PSQL_USER"),
-				"PASSWORD": os.Getenv("PSQL_PASS"),
-			}),
+		instance = &Tx{
+			m: m,
+			p: p,
 		}
 	})
 

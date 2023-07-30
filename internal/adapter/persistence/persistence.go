@@ -21,10 +21,11 @@ type Adapter struct {
 	prom *prometheus.Server
 }
 
-func NewAdapter(rdbms *rdbms.Queries, mongo *mongo.Queries) out.StockPersistencePort {
+func NewAdapter(rdbms *rdbms.Queries, mongo *mongo.Queries, prom *prometheus.Server) out.StockPersistencePort {
 	return &Adapter{
 		rdbms: rdbms,
 		mongo: mongo,
+		prom: prom,
 	}
 }
 

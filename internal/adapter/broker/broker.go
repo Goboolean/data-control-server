@@ -16,10 +16,11 @@ type Adapter struct {
 	prom *prometheus.Server
 }
 
-func NewAdapter(conf *broker.Configurator, pub *broker.Publisher) out.TransmissionPort {
+func NewAdapter(conf *broker.Configurator, pub *broker.Publisher, prom *prometheus.Server) out.TransmissionPort {
 	return &Adapter{
 		conf: conf,
 		pub:  pub,
+		prom: prom,
 	}
 }
 
