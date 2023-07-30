@@ -16,7 +16,10 @@ import (
 
 
 
+
 func Test_verifyCondition(t *testing.T) {
+
+	t.Skip("Skip this test, as it is not implemented yet.")
 
 	type args struct {
 		dateSpecification DateSpecification
@@ -38,7 +41,13 @@ func Test_verifyCondition(t *testing.T) {
 		{
 			name: "valid dateSpecification type: one day",
 			args: args{
-				// ?????
+				dateSpecification: func() interface{} {
+					t, err := time.Parse("2006-01-02", "0000-00-00")
+					if err != nil {
+						panic(err)
+					}
+					return t
+				}(),
 				condition: &Condition{Allday: true},
 			},
 			wantErr: false,

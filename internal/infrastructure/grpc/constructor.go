@@ -1,20 +1,17 @@
-package server
+package grpc
 
 import (
-	"context"
 	"fmt"
 	"net"
-	"os"
 	"sync"
 
 	api "github.com/Goboolean/fetch-server/api/grpc"
-	adapter "github.com/Goboolean/fetch-server/internal/adapter/grpc"
+	"github.com/Goboolean/shared/pkg/resolver"
 	"google.golang.org/grpc"
 )
 
 type Host struct {
 	server *grpc.Server
-	impl   *adapter.StockConfiguratorAdapter
 }
 
 var (
@@ -22,39 +19,32 @@ var (
 	once     sync.Once
 )
 
-func New(adapter *adapter.StockConfiguratorAdapter) *Host {
+func New(c *resolver.ConfigMap, adapter api.StockConfiguratorServer) *Host {
+
 	once.Do(func() {
+		port, err :=  c.GetStringKey("PORT")
+		if err != nil {
+			panic("fetch server port required")
+		}
+	
+		lis, err := net.Listen("tcp", fmt.Sprintf(":%s", port))
+		if err != nil {
+			panic(err)
+		}
+	
+		grpcServer := grpc.NewServer()
+		api.RegisterStockConfiguratorServer(grpcServer, adapter)
+		go grpcServer.Serve(lis)
+
 		instance = &Host{
-			impl: adapter,
+			server: grpcServer,
 		}
 	})
 
 	return instance
 }
 
-func (h *Host) Run(ctx context.Context) {
 
-	port, flag := os.LookupEnv("FETCH_SERVER_PORT")
-
-	if !flag {
-		panic("fetch server port required")
-	}
-
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", port))
-
-	if err != nil {
-		panic(err)
-	}
-
-	grpcServer := grpc.NewServer()
-	api.RegisterStockConfiguratorServer(grpcServer, h.impl)
-
-	go func() {
-		if err := grpcServer.Serve(lis); err != nil {
-			panic(err)
-		}
-	}()
-}
 
 func (s *Host) Close() {
 	s.server.GracefulStop()

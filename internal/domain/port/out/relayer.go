@@ -1,8 +1,12 @@
 package out
 
+import (
+	"context"
+)
+
 
 
 type RelayerPort interface {
-	FetchDomesticStock(string) error
-	FetchInternationalStock(string) error
+	FetchStock(ctx context.Context, stockId string, platform string, symbol string) error
+	StopFetchingStock(ctx context.Context, stockId string) error
 }

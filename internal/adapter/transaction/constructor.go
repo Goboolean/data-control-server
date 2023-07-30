@@ -2,108 +2,55 @@ package transaction
 
 import (
 	"context"
+	"sync"
 
-	"github.com/Goboolean/shared/pkg/resolver"
+	"github.com/Goboolean/fetch-server/internal/domain/port"
+	"github.com/Goboolean/shared/pkg/mongo"
+	"github.com/Goboolean/shared/pkg/rdbms"
 )
 
-type Transaction struct {
-	M   resolver.Transactioner
-	P   resolver.Transactioner
-	R   resolver.Transactioner
-	ctx context.Context
+
+
+
+type Tx struct {
+	m *mongo.DB
+	p *rdbms.PSQL
 }
 
-func (t *Transaction) Commit() error {
+var (
+	once sync.Once
+	instance *Tx
+)
 
-	if t.M != nil {
-		if err := t.M.Commit(); err != nil {
-			return err
+
+func New(m *mongo.DB, p *rdbms.PSQL) port.TX {
+
+	once.Do(func() {
+		instance = &Tx{
+			m: m,
+			p: p,
 		}
-	}
+	})
 
-	if t.P != nil {
-		if err := t.P.Commit(); err != nil {
-			return err
-		}
-	}
-
-	if t.R != nil {
-		if err := t.R.Commit(); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-
-func (t *Transaction) Rollback() error {
-
-	if t.M != nil {
-		if err := t.M.Rollback(); err != nil {
-			return err
-		}
-	}
-
-	if t.P != nil {
-		if err := t.P.Rollback(); err != nil {
-			return err
-		}
-	}
-
-	if t.R != nil {
-		if err := t.R.Rollback(); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (t *Transaction) Context() context.Context {
-	return t.ctx
+	return instance
 }
 
 
 
-type Option struct {
-	Mongo    bool
-	Postgres bool
-	Redis    bool
-}
+func (t *Tx) Transaction(ctx context.Context) (port.Transactioner, error) {
 
-func New(ctx context.Context, o *Option) (instance *Transaction, err error) {
 
-	f := NewFactory()
-
-	if o != nil {
-		o = &Option{
-			Mongo: true,
-			Postgres: true,
-			Redis: true,
-		}	
+	m, err := t.m.NewTx(ctx)
+	if err != nil {
+		return nil, err
 	}
 
-	if o.Mongo {
-		instance.M, err = f.m.NewTx(ctx)
-		if err != nil {
-			return
-		}
+	p, err := t.p.NewTx(ctx)
+	if err != nil {
+		return nil, err
 	}
 
-	if o.Postgres {
-		instance.P, err = f.p.NewTx(ctx)
-		if err != nil {
-			return
-		}
-	}
+	var a *TxSession = &TxSession{M: m, P: p}
 
-	if o.Redis {
-		instance.R, err = f.r.NewTx(ctx)
-		if err != nil {
-			return
-		}
-	}
-
-	return
+	return a, nil
 }

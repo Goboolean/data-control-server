@@ -4,17 +4,23 @@ import (
 	"context"
 	"sync"
 
+	"github.com/Goboolean/fetch-server/internal/domain/entity"
+	"github.com/Goboolean/fetch-server/internal/domain/port"
 	"github.com/Goboolean/fetch-server/internal/domain/port/out"
-	"github.com/Goboolean/fetch-server/internal/domain/value"
+	"github.com/Goboolean/fetch-server/internal/domain/service/store"
 )
 
 type RelayerManager struct {
-	*store
-	*subscriber
-	*pipe
+	s *store.Store
+	ws   out.RelayerPort
+	meta out.StockMetadataPort
+
+	pipe *pipe
 
 	ctx    context.Context
 	cancel context.CancelFunc
+
+	tx port.TX
 }
 
 var (
@@ -22,29 +28,30 @@ var (
 	once     sync.Once
 )
 
-func New(db out.StockPersistencePort, meta out.StockMetadataPort, ws out.RelayerPort) *RelayerManager {
+func New(db out.StockPersistencePort, tx port.TX, meta out.StockMetadataPort, ws out.RelayerPort) *RelayerManager {
 
 	once.Do(func() {
 
 		ctx, cancel := context.WithCancel(context.Background())
 
-		startPoint := make(chan value.StockAggregateForm)
-		endPoint := make(map[string]chan []value.StockAggregate)
-
 		instance = &RelayerManager{
-			ctx: ctx, cancel: cancel,
-			store:      &store{},
-			subscriber: newSubscriber(ws, meta),
-			pipe:       newPipe(startPoint, endPoint),
+			s:      store.New(ctx),
+			ws:     ws,
+			meta:   meta,
+			tx:     tx,
+
+			ctx: 	  ctx,
+			cancel: cancel,
 		}
 
-		go instance.pipe.ExecPipe(ctx)
+		instance.pipe = newPipe()
+	  instance.pipe.sinkChan <- &entity.StockAggregateForm{}
+		instance.pipe.ExecPipe(ctx)
 	})
 
 	return instance
 }
 
-func (m *RelayerManager) Close() error {
+func (m *RelayerManager) Close() {
 	m.cancel()
-	return nil
 }

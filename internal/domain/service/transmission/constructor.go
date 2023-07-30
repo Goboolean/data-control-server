@@ -1,18 +1,23 @@
 package transmission
 
 import (
+	"context"
 	"sync"
 
 	"github.com/Goboolean/fetch-server/internal/domain/port/out"
 	"github.com/Goboolean/fetch-server/internal/domain/service/relayer"
-	"github.com/Goboolean/fetch-server/internal/domain/value"
+	"github.com/Goboolean/fetch-server/internal/domain/service/store"
 )
 
 type Transmitter struct {
 	relayer *relayer.RelayerManager
-	broker  out.TransmissionPort
+	broker out.TransmissionPort
 
-	closed map[string]chan []value.StockAggregate
+	s *store.Store
+	batchSize int
+
+	ctx context.Context
+	cancel context.CancelFunc
 }
 
 var (
@@ -20,13 +25,25 @@ var (
 	once     sync.Once
 )
 
-func New(broker out.TransmissionPort, relayer *relayer.RelayerManager) *Transmitter {
+func New(broker out.TransmissionPort, relayer *relayer.RelayerManager, o Option) *Transmitter {
+
+	ctx, cancel := context.WithCancel(context.Background())
+
 	once.Do(func() {
 		instance = &Transmitter{
-			relayer: relayer,
-			broker:  broker,
+			relayer:   relayer,
+			broker:    broker,
+			s:         store.New(ctx),
+			batchSize: o.BatchSize,
+
+			ctx: ctx,
+			cancel: cancel,
 		}
 	})
 
 	return instance
+}
+
+func (t *Transmitter) Close() {
+	t.cancel()
 }

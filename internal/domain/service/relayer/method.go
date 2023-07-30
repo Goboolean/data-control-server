@@ -1,37 +1,83 @@
 package relayer
 
-import "github.com/Goboolean/fetch-server/internal/domain/value"
+import (
+	"context"
 
-func (m *RelayerManager) FetchStock(stock string) error {
-	if err := m.store.storeStock(stock); err != nil {
+	"github.com/Goboolean/fetch-server/internal/domain/entity"
+)
+
+
+func (m *RelayerManager) FetchStock(ctx context.Context, stockId string) error {
+
+	tx, err := m.tx.Transaction(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	if err := m.s.StoreStock(stockId); err != nil {
 		return err
 	}
 
-	if err := m.subscriber.fetchStock(stock); err != nil {
+	m.pipe.AddNewPipe(stockId)
+
+	exists, err := m.meta.CheckStockExists(tx, stockId)
+	if err != nil {
 		return err
 	}
+	if !exists {
+		return ErrStockNotExists
+	}
+
+	meta, err := m.meta.GetStockMetadata(tx, stockId)
+	if err != nil {
+		return err
+	}
+
+	if err := m.ws.FetchStock(tx.Context(), meta.StockID, meta.Platform, meta.Symbol); err != nil {
+		m.s.UnstoreStock(stockId)
+		return err
+	}
+
+	return tx.Commit()
+}
+
+
+func (m *RelayerManager) StopFetchingStock(ctx context.Context, stockId string) error {
+
+	if err := m.s.UnstoreStock(stockId); err != nil {
+		return err
+	}
+
+	if err := m.ws.StopFetchingStock(ctx, stockId); err != nil {
+		m.s.StoreStock(stockId)
+		return err
+	}
+
+	m.pipe.RemovePipe(stockId)
 
 	return nil
 }
 
-func (m *RelayerManager) StopFetchingStock(stock string) error {
-	if err := m.store.unstoreStock(stock); err != nil {
-		return err
-	}
 
-	if err := m.subscriber.unfetchStock(stock); err != nil {
-		return err
-	}
-
-	return nil
+func (m *RelayerManager) IsStockRelayable(stockId string) bool {
+	return m.s.StockExists(stockId)
 }
 
-func (m *RelayerManager) PlaceStockFormBatch(stock []value.StockAggregateForm) {
-	for idx := range stock {
-		m.pipe.PlaceOnStartPoint(stock[idx])
+
+func (m *RelayerManager) PlaceStockFormBatch(stockBatch []*entity.StockAggregateForm) {
+	for _, stock := range stockBatch {
+		m.pipe.PlaceOnStartPoint(stock)
 	}
 }
 
-func (m *RelayerManager) Subscribe(stock string) (<-chan []value.StockAggregate, error) {
-	return m.pipe.GetEndpointChannel(stock)
+// 
+// If call side execute ctx.Done(), then subscription of this stock will be cancelled.
+func (m *RelayerManager) Subscribe(ctx context.Context, stockId string) (<-chan *entity.StockAggregate, error) {
+
+	if exists := m.s.StockExists(stockId); !exists {
+		return nil, ErrStockNotExists
+	}
+
+	return m.pipe.RegisterNewSubscriber(ctx, stockId)
 }

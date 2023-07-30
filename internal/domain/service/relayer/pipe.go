@@ -2,93 +2,136 @@ package relayer
 
 import (
 	"context"
-	"fmt"
+	"reflect"
+	"sync"
+	"time"
 
-	"github.com/Goboolean/fetch-server/internal/domain/value"
+	"github.com/Goboolean/fetch-server/internal/domain/entity"
 )
 
-const BUFFER_SIZE = 100
+const DEFAULT_BUFFER_SIZE = 10
+
 
 type pipe struct {
-	filteredChan      chan value.StockAggregateForm
-	classifiedChanMap map[string]chan value.StockAggregate
+	sinkChan          chan *entity.StockAggregateForm
+	filteredChan      chan *entity.StockAggregateForm
+	classifiedChanMap map[string]chan *entity.StockAggregate
 
-	startPoint chan value.StockAggregateForm
-	endPoint   map[string]chan []value.StockAggregate
+	connPool map[string] map[int64] conn
+
+	wg *sync.WaitGroup
 }
 
-func (p *pipe) filterBadTick(in <-chan value.StockAggregateForm, out chan<- value.StockAggregateForm) {
+
+type conn struct {
+	ctx context.Context
+	cancel context.CancelFunc
+	ch chan *entity.StockAggregate
+}
+
+func newConn(ctx context.Context) conn {
+	ctx, cancel := context.WithCancel(ctx)
+	return conn{
+		ctx:    ctx,
+		cancel: cancel,
+		ch:     make(chan *entity.StockAggregate, DEFAULT_BUFFER_SIZE),
+	}
+}
+
+
+func (p *pipe) getHash() int64 {
+	return time.Now().UnixNano()
+}
+
+
+func (p *pipe) RegisterNewSubscriber(ctx context.Context, stockId string) (<-chan *entity.StockAggregate, error) {
+
+	_, ok := p.connPool[stockId]
+	if !ok {
+		return nil, ErrStockNotExists
+	}
+
+	conn := newConn(ctx)
+	hash := p.getHash()
+
+	p.connPool[stockId][hash] = conn
+	
+	go func(ctx context.Context) {
+		for {
+			select {
+			case <- ctx.Done():
+				delete(p.connPool[stockId], hash)
+				close(conn.ch)
+				return
+			}
+		}
+	}(conn.ctx)
+
+	return conn.ch, nil
+}
+
+
+
+// This method should be executed as goroutine
+// It is assured to terminate when channel is closed
+func (p *pipe) filterBadTick(in <-chan *entity.StockAggregateForm, out chan<- *entity.StockAggregateForm) {
 	for stock := range in {
+		if isnil := reflect.DeepEqual(stock, &entity.StockAggregateForm{}); isnil {
+			continue
+		}
 		out <- stock
 	}
 }
 
-func (p *pipe) classifyStock(in <-chan value.StockAggregateForm, out map[string]chan value.StockAggregate) {
+// This method should be executed as goroutine
+// It is assured to terminate when channel is closed
+func (p *pipe) classifyStock(in <-chan *entity.StockAggregateForm, out map[string]chan *entity.StockAggregate) {
 	for stock := range in {
-		out[stock.StockID] <- stock.StockAggregate
+		out[stock.StockID] <- &stock.StockAggregate
 	}
 }
 
-func (p *pipe) bindBatch(in <-chan value.StockAggregate, out chan<- []value.StockAggregate) {
-	batch := make([]value.StockAggregate, 0)
-
+// This method should be executed as goroutine
+// It is assured to terminate when channel is closed
+func (p *pipe) relayStockToSubscriber(in <-chan *entity.StockAggregate, out map[int64] conn) {
 	for stock := range in {
-		batch = append(batch, stock)
-		if len(batch) == BUFFER_SIZE {
-			out <- batch
-			batch = batch[:0]
+		for sub := range out {
+			out[sub].ch <- stock
 		}
 	}
 }
 
-func newPipe(st chan value.StockAggregateForm, ed map[string]chan []value.StockAggregate) *pipe {
-	instance := &pipe{
-		filteredChan:      make(chan value.StockAggregateForm),
-		classifiedChanMap: make(map[string]chan value.StockAggregate),
-		startPoint:        st,
-		endPoint:          ed,
-	}
 
-	return instance
+func newPipe() *pipe {
+	return &pipe{
+		filteredChan:      make(chan *entity.StockAggregateForm, DEFAULT_BUFFER_SIZE),
+		classifiedChanMap: make(map[string]chan *entity.StockAggregate),
+		connPool:          make(map[string]map[int64]conn),
+		sinkChan:          make(chan *entity.StockAggregateForm, DEFAULT_BUFFER_SIZE),
+	}
 }
+
 
 // Run as goroutine, and control lifeccle with ctx.
 func (p *pipe) ExecPipe(ctx context.Context) {
 
-	for stock := range p.endPoint {
-		p.classifiedChanMap[stock] = make(chan value.StockAggregate)
-	}
-
-	go p.filterBadTick(p.startPoint, p.filteredChan)
+	go p.filterBadTick(p.sinkChan, p.filteredChan)
 	go p.classifyStock(p.filteredChan, p.classifiedChanMap)
-
-	// Use AddNewPipe() to create filter fot channels to met endpoint
-
-	defer func() {
-		for stock := range p.endPoint {
-			close(p.classifiedChanMap[stock])
-			delete(p.classifiedChanMap, stock)
-		}
-		close(p.filteredChan)
-	}()
-
-	<-ctx.Done()
 }
 
 func (p *pipe) AddNewPipe(stock string) {
-	p.classifiedChanMap[stock] = make(chan value.StockAggregate)
-	go p.bindBatch(p.classifiedChanMap[stock], p.endPoint[stock])
+	p.classifiedChanMap[stock] = make(chan *entity.StockAggregate, DEFAULT_BUFFER_SIZE)
+	p.connPool[stock] = make(map[int64] conn)
+	go p.relayStockToSubscriber(p.classifiedChanMap[stock], p.connPool[stock])
 }
 
-func (p *pipe) PlaceOnStartPoint(data value.StockAggregateForm) {
-	p.startPoint <- data
+func (p *pipe) PlaceOnStartPoint(data *entity.StockAggregateForm) {
+	p.sinkChan <- data
 }
 
-func (p *pipe) GetEndpointChannel(stock string) (chan []value.StockAggregate, error) {
-	chans, ok := p.endPoint[stock]
-	if !ok {
-		return nil, fmt.Errorf("stock do not exist on channel")
+func (p *pipe) RemovePipe(stock string) {
+
+	for sub := range p.connPool[stock] {
+		p.connPool[stock][sub].cancel()
 	}
-
-	return chans, nil
 }

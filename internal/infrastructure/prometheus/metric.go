@@ -7,35 +7,34 @@ import (
 
 
 
-var (
-	DomesticStockCounter prometheus.Counter
-	ForeignStockCounter prometheus.Counter
-	StoreCounter prometheus.Counter
-	MQCounter prometheus.Counter
-	RequestCounter prometheus.Counter
-)
-
-
-
-func init() {
-
-	DomesticStockCounter = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "counts domestic stock received",
+func (s *Server) FetchCounter() func() prometheus.Counter {
+	counter := promauto.NewCounter(prometheus.CounterOpts{
+		Name: "StockCounter",
 	})
 
-	ForeignStockCounter = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "counts foreign stock received",
+	return func() prometheus.Counter {
+		return counter
+	}
+}
+
+
+func (s *Server) StoreCounter() func() prometheus.Counter {
+	counter := promauto.NewCounter(prometheus.CounterOpts{
+		Name: "StoreCounter",
 	})
 
-	StoreCounter = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "counts stock stored on db",
+	return func() prometheus.Counter {
+		return counter
+	}
+}
+
+
+func (s *Server) BrokerCounter() func() prometheus.Counter {
+	counter := promauto.NewCounter(prometheus.CounterOpts{
+		Name: "BrokerCounter",
 	})
 
-	MQCounter = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "counts stock sended to kafka",
-	})
-
-	RequestCounter = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "counts grpc request",
-	})	
+	return func() prometheus.Counter {
+		return counter
+	}
 }

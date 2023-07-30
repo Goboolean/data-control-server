@@ -8,3 +8,7 @@ type Transactioner interface {
 	Rollback() error
 	Context() context.Context
 }
+
+type TX interface {
+	Transaction(context.Context) (Transactioner, error)
+}

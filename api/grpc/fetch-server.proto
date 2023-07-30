@@ -1,0 +1,51 @@
+syntax = "proto3";
+
+package grpcapi;
+
+option go_package = "github.com/Goboolean/fetch-server/api/grpc;grpcapi";
+
+// defines set of stock configuration control services
+service StockConfigurator {
+  rpc UpdateStockConfigOne (StockConfig) returns (ReturnMessage) {}
+  rpc UpdateStockConfigMany (StockConfigList) returns (ReturnMessageList) {}
+  rpc GetStockConfigOne (StockId) returns (StockConfig) {}
+  rpc GetStockConfigAll (Null) returns (StockConfigList) {}
+}
+
+
+message Null {}
+
+
+message StockId {
+  string stock_id = 1;
+}
+
+// meaning of option_status:
+//  0 - off
+//  1 - on
+//  -1 - none
+//  other - error
+message OptionStatus {
+  int32 option_status = 1;
+}
+
+message StockConfig {
+  string       stock_id = 1;
+  OptionStatus relayable = 2;
+  OptionStatus transmittable = 3;
+  OptionStatus storeable = 4;
+}
+
+message StockConfigList {
+  repeated StockConfig stock_config = 1;
+}
+
+
+message ReturnMessage {
+  bool status = 1;
+  string message = 2;
+}
+
+message ReturnMessageList {
+  repeated ReturnMessage return_message = 1;
+}

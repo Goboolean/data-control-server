@@ -3,7 +3,7 @@ module github.com/Goboolean/fetch-server
 go 1.18
 
 require (
-	github.com/Goboolean/shared v0.0.0-20230629074122-b131da060abb
+	github.com/Goboolean/shared v0.0.0-20230729142040-2cbb19eb85a1
 	github.com/gin-gonic/gin v1.9.1
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/gorilla/websocket v1.5.0
@@ -34,6 +34,7 @@ require (
 	github.com/klauspost/compress v1.15.14 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.4 // indirect
 	github.com/leodido/go-urn v1.2.4 // indirect
+	github.com/lib/pq v1.10.9 // indirect
 	github.com/mattn/go-isatty v0.0.19 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
