@@ -52,7 +52,6 @@ func New(db out.StockPersistencePort, tx port.TX, meta out.StockMetadataPort, ws
 	return instance
 }
 
-func (m *RelayerManager) Close() error {
+func (m *RelayerManager) Close() {
 	m.cancel()
-	return nil
 }

@@ -3,6 +3,7 @@ package relayer
 import (
 	"context"
 	"reflect"
+	"sync"
 	"time"
 
 	"github.com/Goboolean/fetch-server/internal/domain/entity"
@@ -17,6 +18,8 @@ type pipe struct {
 	classifiedChanMap map[string]chan *entity.StockAggregate
 
 	connPool map[string] map[int64] conn
+
+	wg *sync.WaitGroup
 }
 
 

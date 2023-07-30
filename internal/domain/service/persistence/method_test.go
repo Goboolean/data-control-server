@@ -31,7 +31,7 @@ func MockRelayer() *relayer.RelayerManager {
 		db           = persistence_adapter.NewMockAdapter()
 		tx           = transaction.NewMock()
 		meta         = meta.NewMockAdapter()
-		ws = websocket.NewAdapter().(*websocket.Adapter)
+		ws = websocket.NewMockAdapter().(*websocket.Adapter)
 		f = mock.New(time.Millisecond * 10, ws)
 	)
 
