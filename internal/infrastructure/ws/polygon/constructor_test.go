@@ -1,7 +1,6 @@
 package polygon_test
 
 import (
-	"context"
 	"os"
 	"sync"
 	"testing"
@@ -9,10 +8,9 @@ import (
 
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws/polygon"
-	"github.com/Goboolean/fetch-server/internal/util/env"
 	"github.com/Goboolean/fetch-server/internal/util/withintime"
 	"github.com/Goboolean/shared/pkg/resolver"
-	"github.com/joho/godotenv"
+	_ "github.com/Goboolean/fetch-server/internal/util/env"
 )
 
 
@@ -22,7 +20,7 @@ var instance ws.Fetcher
 func SetupPolygon() {
 	instance = polygon.New(&resolver.ConfigMap{
 		"KEY":  os.Getenv("POLYGON_API_KEY"),
-	}, context.Background(), receiver)
+	}, receiver)
 }
 
 func TeardownPolygon() {
@@ -31,27 +29,23 @@ func TeardownPolygon() {
 
 
 func TestMain(m *testing.M) {
-
-	if err := os.Chdir(env.Root); err != nil {
-		panic(err)
-	}
-
-	if err := godotenv.Load(); err != nil {
-		panic(err)
-	}
-
 	SetupPolygon()
 	code := m.Run()
 	TeardownPolygon()
-
 	os.Exit(code)
 }
 
 
 func Test_Constructor(t *testing.T) {
-	if err := instance.Ping(); err != nil {
-		t.Errorf("Ping() = %v", err)
-	}
+
+	t.Skip("Skip this test, as polygon api key is expired.")
+
+	t.Run("Ping", func(t *testing.T) {
+		if err := instance.Ping(); err != nil {
+			t.Errorf("Ping() = %v", err)
+			return
+		}
+	})
 }
 
 

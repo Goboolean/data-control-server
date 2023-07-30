@@ -30,8 +30,8 @@ func SetUp() {
 	db           := persistence_adapter.NewMockAdapter()
 	tx           := transaction.NewMock()
 	meta         := meta.NewMockAdapter()
-	ws := websocket.NewAdapter()
-	f := mock.New(context.Background(), time.Millisecond * 10, ws)
+	ws := websocket.NewMockAdapter().(*websocket.Adapter)
+	f := mock.New(time.Millisecond * 10, ws)
 
 	if err := ws.RegisterFetcher(f); err != nil {
 		panic(err)
@@ -42,10 +42,10 @@ func SetUp() {
 
 
 	kafka := broker.NewMockAdapter()
-	transmitter := transmission.New(context.Background(), kafka, relayer, transmission.Option{BatchSize: 2})
+	transmitter := transmission.New(kafka, relayer, transmission.Option{BatchSize: 2})
 
 	cache    := cache.NewMockAdapter()
-	persistenceManager := persistence.New(tx, context.Background(), db, cache, relayer, persistence.Option{BatchSize: 1})
+	persistenceManager := persistence.New(tx, db, cache, relayer, persistence.Option{BatchSize: 1})
 
 	instance = config.New(meta, tx, relayer, persistenceManager, transmitter)
 }

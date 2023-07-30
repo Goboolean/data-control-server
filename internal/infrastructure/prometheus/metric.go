@@ -7,30 +7,34 @@ import (
 
 
 
-var (
-	StockCounter prometheus.Counter
-	StoreCounter prometheus.Counter
-	MQCounter prometheus.Counter
-	RequestCounter prometheus.Counter
-)
-
-
-
-func init() {
-
-	StockCounter = promauto.NewCounter(prometheus.CounterOpts{
+func (s *Server) FetchCounter() func() prometheus.Counter {
+	counter := promauto.NewCounter(prometheus.CounterOpts{
 		Name: "StockCounter",
 	})
 
-	StoreCounter = promauto.NewCounter(prometheus.CounterOpts{
+	return func() prometheus.Counter {
+		return counter
+	}
+}
+
+
+func (s *Server) StoreCounter() func() prometheus.Counter {
+	counter := promauto.NewCounter(prometheus.CounterOpts{
 		Name: "StoreCounter",
 	})
 
-	MQCounter = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "MQCounter",
+	return func() prometheus.Counter {
+		return counter
+	}
+}
+
+
+func (s *Server) BrokerCounter() func() prometheus.Counter {
+	counter := promauto.NewCounter(prometheus.CounterOpts{
+		Name: "BrokerCounter",
 	})
 
-	RequestCounter = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "RequestCounter",
-	})	
+	return func() prometheus.Counter {
+		return counter
+	}
 }

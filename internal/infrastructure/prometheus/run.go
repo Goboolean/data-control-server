@@ -3,31 +3,58 @@ package prometheus
 import (
 	"context"
 	"fmt"
-	"os"
+	"net/http"
+	"sync"
 
+	"github.com/Goboolean/shared/pkg/resolver"
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 
+type Server struct {
+	srv *http.Server
+}
 
 
+var (
+	instance *Server
+	once 	   sync.Once
+)
 
+func New(c *resolver.ConfigMap) *Server {
 
-func Run(ctx context.Context) {
+	once.Do(func() {
 
-	port, exist := os.LookupEnv("FETCH_SERVER_METRIC_PORT")
-
-	if !exist {
-		panic(fmt.Errorf("%s required", "FETCH_SERVER_METRIC_PORT"))
-	}
-
-	router := gin.Default()
-	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
-
-	go func() {
-		if err := router.Run(fmt.Sprintf(":%s", port)); err != nil {
-			panic(err)
+		port, err := c.GetStringKey("PORT")
+		if err != nil {
+			panic("fetch server metric port is required")
 		}
-	}()
+
+		router := gin.Default()
+
+		srv := &http.Server{
+			Addr:    fmt.Sprintf(":%s", port),
+			Handler: router,
+		}
+
+		router.GET("/metrics", gin.WrapH(promhttp.Handler()))
+
+		go func() {
+			if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+				panic(err)
+			}
+		}()
+
+		instance = &Server{
+			srv: srv,
+		}
+	})
+
+	return instance
+}
+
+
+func (s *Server) Close() {
+	s.srv.Shutdown(context.Background())
 }

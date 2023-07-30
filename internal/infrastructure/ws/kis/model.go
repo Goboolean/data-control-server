@@ -8,6 +8,18 @@ import (
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws"
 )
 
+
+type getApprovalKeyReqeust struct {
+	GrantType string `json:"grant_type"`
+	AppKey    string `json:"appkey"`
+	SecretKey string `json:"secretkey"`
+}
+
+type getApprovalKeyResponse struct {
+	ApprovalKey string `json:"approval_key"`
+}
+
+
 type HeaderJson struct {
 	ApprovalKey string `json:"approval_key"` // 실시간 접속키
 	Custtype    string `json:"custtype"`     // 고객 타입 (P: 개인, B: 법인)

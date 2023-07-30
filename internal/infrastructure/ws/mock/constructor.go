@@ -29,10 +29,10 @@ type MockFetcher struct {
 }
 
 
-func New(ctx context.Context, d time.Duration, r ws.Receiver) *MockFetcher {
+func New(d time.Duration, r ws.Receiver) *MockFetcher {
 	rand.Seed(time.Now().UnixNano())
 
-	ctx, cancel := context.WithCancel(ctx)
+	ctx, cancel := context.WithCancel(context.Background())
 
 	instance := &MockFetcher{
 		d: d,

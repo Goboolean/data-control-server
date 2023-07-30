@@ -6,9 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Goboolean/fetch-server/internal/adapter/meta"
-	"github.com/Goboolean/fetch-server/internal/adapter/persistence"
-	"github.com/Goboolean/fetch-server/internal/adapter/transaction"
+	"github.com/Goboolean/fetch-server/cmd/inject"
 	"github.com/Goboolean/fetch-server/internal/adapter/websocket"
 	"github.com/Goboolean/fetch-server/internal/domain/service/relayer"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws/mock"
@@ -16,22 +14,14 @@ import (
 
 var instance *relayer.RelayerManager
 
-
 func SetUp() {
-
-	var (
-		db           = persistence.NewMockAdapter()
-		tx           = transaction.NewMock()
-		meta         = meta.NewMockAdapter()
-		ws = websocket.NewAdapter()
-		f = mock.New(context.Background(), time.Millisecond * 10, ws)
-	)
+	ws := websocket.NewMockAdapter().(*websocket.Adapter)
+	f := mock.New(time.Millisecond * 10, ws)
+	instance = inject.InitMockRelayer(ws)
 
 	if err := ws.RegisterFetcher(f); err != nil {
 		panic(err)
 	}
-
-	instance = relayer.New(db, tx, meta, ws)
 	ws.RegisterReceiver(instance)
 }
 

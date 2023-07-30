@@ -47,3 +47,6 @@ proto-generate:
 		$(REDIS_MODEL_PROTO_PATH)
 	mv $(REDIS_MODEL_GEN_PATH)/api/redis-model/model.pb.go $(REDIS_MODEL_GEN_PATH)
 	rm -rf $(REDIS_MODEL_GEN_PATH)/api
+
+wire-build:
+	wire cmd/inject/infrastructure.go cmd/inject/service.go

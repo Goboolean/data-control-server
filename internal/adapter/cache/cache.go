@@ -15,9 +15,9 @@ type Adapter struct {
 }
 
 
-func NewAdapter(r *redis.Redis) out.StockPersistenceCachePort {
+func NewAdapter(r *redis.Queries) out.StockPersistenceCachePort {
 	return &Adapter{
-		redis: redis.New(r),
+		redis: r,
 	}
 }
 

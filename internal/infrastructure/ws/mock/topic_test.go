@@ -12,9 +12,8 @@ import (
 
 var (
 	generater *mockGenerater
-
-	topic = "test"
 	ch chan *ws.StockAggregate
+	symbol = "MOCK"
 )
 
 func SetupMockGenerater() {
@@ -23,7 +22,7 @@ func SetupMockGenerater() {
 	
 	duration := time.Second / 10 // the data is generated every 0.1 second in average.
 	
-	generater = newMockGenerater(topic, ctx, ch, duration)
+	generater = newMockGenerater(symbol, ctx, ch, duration)
 }
 
 func TeardownMockGenerater() {
@@ -58,28 +57,31 @@ func Test_newMockGenerater(t *testing.T) {
 	ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(time.Second))
 	defer cancel()
 
-	for count := 5; count >= 0; count-- {
-		select {
-		case <- ctx.Done():
-			t.Errorf("newMockGenerater() got timeout")
-			return
-		case <- ch:
-			continue
+	t.Run("generateRandomStockAggs", func(t *testing.T) {
+		for count := 5; count >= 0; count-- {
+			select {
+			case <- ctx.Done():
+				t.Errorf("newMockGenerater() got timeout")
+				return
+			case <- ch:
+				continue
+			}
 		}
-	}
+	})
 
-	generater.Close()
+	t.Run("afterStoptoGenerate", func(t *testing.T) {
+		generater.Close()
 
-	// empty channel to test that it does not generate data after closing.
-	for len(ch) > 0 {
-		<- ch
-	}
-
-	select {
-	case <- ch:
-		t.Errorf("newMockGenerater got data after closing")
-		return
-	case <- time.After(time.Second / 10):
-		break
-	}	
+		for len(ch) > 0 {
+			<- ch
+		}
+	
+		select {
+		case <- ch:
+			t.Errorf("newMockGenerater got data after closing")
+			return
+		case <- time.After(time.Second / 10):
+			break
+		}	
+	})
 }
