@@ -28,10 +28,13 @@ var (
 
 func SetUp() {
 
-	ws := websocket.NewMockAdapter().(*websocket.Adapter)
+	ws := websocket.NewMockAdapter().(*websocket.MockAdapter)
 	f := mock.New(time.Millisecond * 10, ws)
-	ws.RegisterFetcher(f)
+	if err := ws.RegisterFetcher(f); err != nil {
+		panic(err)
+	}
 	relayer := inject.InitMockRelayer(ws)
+	ws.RegisterReceiver(relayer)
 
 	tx      := transaction.NewMock()
 	db       = persistence_adapter.NewMockAdapter()
@@ -62,26 +65,23 @@ func Test_Persistence(t *testing.T) {
 
 	stockId := "stock.facebook.usa"
 
-	var count = 0
-
 	t.Run("SubscribeRelayer", func(t *testing.T) {
+
+		countBefore := db.(*persistence_adapter.MockAdapter).GetStoredStockCount(stockId)
 
 		if err := instance.SubscribeRelayer(context.Background(), stockId); err != nil {
 			t.Errorf("SubscribeRelayer() = %v", err)
 			return
 		}
 
-
 		time.Sleep(100 * time.Millisecond)
 
-		sended := db.(*persistence_adapter.MockAdapter).GetStoredStockCount(stockId)
-
-		if sended == 0 {
-			t.Errorf("SubscribeRelayer() = %v, expected = many", sended)
+		countAfter := db.(*persistence_adapter.MockAdapter).GetStoredStockCount(stockId)
+		
+		if diff := countAfter - countBefore; diff == 0 {
+			t.Errorf("SubscribeRelayer() = %v, expected = many", diff)
 			return
 		}
-
-		count = sended
 	})
 
 
@@ -91,11 +91,14 @@ func Test_Persistence(t *testing.T) {
 			return
 		}
 
+		countBefore := db.(*persistence_adapter.MockAdapter).GetStoredStockCount(stockId)
+
 		time.Sleep(100 * time.Millisecond)
 
-		sended := db.(*persistence_adapter.MockAdapter).GetStoredStockCount(stockId)
-		if sended != count {
-			t.Errorf("UnsubscribeRelayer() = %v, expected = %v", sended, count)
+		countAfter := db.(*persistence_adapter.MockAdapter).GetStoredStockCount(stockId)
+	
+		if diff := countAfter - countBefore; diff != 0 {
+			t.Errorf("UnsubscribeRelayer() = %v, expected = %v", diff, 0)
 			return
 		}
 	})
@@ -136,6 +139,9 @@ func Test_WithCache(t *testing.T) {
 	var syncCount = 15
 	t.Run(fmt.Sprintf("SyncCount=%d", syncCount), func(t *testing.T) {
 
+		db.(*persistence_adapter.MockAdapter).Clear()
+		cache.(*cache_adapter.MockAdapter).Clear()
+
 		instance.SetSyncCount(syncCount)
 		defer instance.SetSyncCount(0)
 
@@ -151,21 +157,27 @@ func Test_WithCache(t *testing.T) {
 			}
 		}()
 
+		storedBefore := db.(*persistence_adapter.MockAdapter).GetStoredStockCount(stockId)
+		cachedBefore := cache.(*cache_adapter.MockAdapter).GetStoredStockCount(stockId)
+
 		time.Sleep(100 * time.Millisecond)
 
-		stored := db.(*persistence_adapter.MockAdapter).GetStoredStockCount(stockId)
-		if stored != 0 {
+		storedAfter := db.(*persistence_adapter.MockAdapter).GetStoredStockCount(stockId)
+		if stored := storedAfter - storedBefore; stored != 0 {
 			t.Errorf("SubscribeRelayer() = %v, expected = 0", stored)
+			return
+		}
+
+		cachedAfter := cache.(*cache_adapter.MockAdapter).GetStoredStockCount(stockId)
+		if cached := cachedAfter - cachedBefore; cached == 0 {
+			t.Errorf("SubscribeRelayer() = %v, expected = many", cached)
 			return
 		}
 
 		time.Sleep(200 * time.Millisecond)
 
-		stored = db.(*persistence_adapter.MockAdapter).GetStoredStockCount(stockId)
-		cached := cache.(*cache_adapter.MockAdapter).GetStoredStockCount(stockId)
-
-		t.Logf("stored = %v, cached = %v", stored, cached)
-		if stored == 0 {
+		storedFinal := db.(*persistence_adapter.MockAdapter).GetStoredStockCount(stockId)
+		if stored := storedFinal - storedAfter; stored == 0 {
 			t.Errorf("SubscribeRelayer() = %v, expected = many", stored)
 			return
 		}
@@ -181,7 +193,6 @@ func Test_WithCache(t *testing.T) {
 		instance.SetSyncDuration(syncDuration)
 		defer instance.SetSyncDuration(0)
 
-
 		if err := instance.SubscribeRelayer(context.Background(), stockId); err != nil {
 			t.Errorf("SubscribeRelayer() = %v", err)
 			return
@@ -194,18 +205,27 @@ func Test_WithCache(t *testing.T) {
 			}
 		}()
 
+		storedBefore := db.(*persistence_adapter.MockAdapter).GetStoredStockCount(stockId)
+		cachedBefore := cache.(*cache_adapter.MockAdapter).GetStoredStockCount(stockId)
+
 		time.Sleep(100 * time.Millisecond)
 
-		stored := db.(*persistence_adapter.MockAdapter).GetStoredStockCount(stockId)
-		if stored != 0 {
+		storedAfter := db.(*persistence_adapter.MockAdapter).GetStoredStockCount(stockId)
+		if stored := storedAfter - storedBefore; stored != 0 {
 			t.Errorf("SubscribeRelayer() = %v, expected = 0", stored)
 			return
 		}
 
-		time.Sleep(200 * time.Millisecond)
+		cachedAfter := cache.(*cache_adapter.MockAdapter).GetStoredStockCount(stockId)
+		if cached := cachedAfter - cachedBefore; cached == 0 {
+			t.Errorf("SubscribeRelayer() = %v, expected = many", cached)
+			return
+		}
 
-		stored = db.(*persistence_adapter.MockAdapter).GetStoredStockCount(stockId)
-		if stored == 0 {
+		time.Sleep(200 * time.Millisecond)
+		storedFinal := db.(*persistence_adapter.MockAdapter).GetStoredStockCount(stockId)
+
+		if stored := storedFinal - storedAfter; stored == 0 {
 			t.Errorf("SubscribeRelayer() = %v, expected = many", stored)
 			return
 		}

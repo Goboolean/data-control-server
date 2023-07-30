@@ -15,12 +15,6 @@ func (m *RelayerManager) FetchStock(ctx context.Context, stockId string) error {
 	}
 	defer tx.Rollback()
 
-	if err := m.s.StoreStock(stockId); err != nil {
-		return err
-	}
-
-	m.pipe.AddNewPipe(stockId)
-
 	exists, err := m.meta.CheckStockExists(tx, stockId)
 	if err != nil {
 		return err
@@ -28,6 +22,12 @@ func (m *RelayerManager) FetchStock(ctx context.Context, stockId string) error {
 	if !exists {
 		return ErrStockNotExists
 	}
+
+	if err := m.s.StoreStock(stockId); err != nil {
+		return err
+	}
+
+	m.pipe.AddNewPipe(stockId)
 
 	meta, err := m.meta.GetStockMetadata(tx, stockId)
 	if err != nil {

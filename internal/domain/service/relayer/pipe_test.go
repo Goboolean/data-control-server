@@ -4,6 +4,7 @@ import (
 	"context"
 	"math/rand"
 	"reflect"
+	"sync"
 	"testing"
 	"time"
 
@@ -290,23 +291,33 @@ func Test_pipe(t *testing.T) {
 
 
 	t.Run("CancelSubscribe", func(t *testing.T) {
+
+		var wg sync.WaitGroup
+
+		wg.Add(1)
+		go func(wg *sync.WaitGroup) {
+			defer wg.Done()
+
+			select {
+			case 	_, ok := <- ch:
+				if ok {
+					t.Error("RegisterNewSubscriber() failed: channel should be closed after cancel() is called, not receiving data")
+					return
+				}
+			case <- time.After(10 * time.Millisecond):
+				t.Error("RegisterNewSubscriber() failed: channel is not closed after cancel() is called")
+				return
+			}
+		}(&wg)
+
 		cancel()
+
+		time.Sleep(10 * time.Millisecond)
 
 		agg := generateRandomStockAggregateForm(stockId)
 		p.PlaceOnStartPoint(&agg)
-	
-		time.Sleep(10 * time.Millisecond)
-	
-		select {
-		case 	_, ok := <- ch:
-			if ok {
-				t.Error("RegisterNewSubscriber() failed: channel should be closed after cancel() is called")
-				return
-			}
-		default:
-			t.Error("RegisterNewSubscriber() failed: channel should be closed after cancel() is called")
-			return
-		}
+
+		wg.Wait()
 	})
 
 	t.Run("UnregisterSubscriber", func(t *testing.T) {

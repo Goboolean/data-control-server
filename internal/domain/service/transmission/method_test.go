@@ -31,7 +31,7 @@ func MockRelayer() *relayer.RelayerManager {
 		db           = persistence.NewMockAdapter()
 		tx           = transaction.NewMock()
 		meta         = meta.NewMockAdapter()
-		ws = websocket.NewMockAdapter().(*websocket.Adapter)
+		ws = websocket.NewMockAdapter().(*websocket.MockAdapter)
 		f = mock.New(time.Millisecond * 10, ws)
 	)
 
@@ -157,8 +157,8 @@ func Test_Transmitter(t *testing.T) {
 
 		time.Sleep(time.Millisecond * 100)
 
-		if flag := instance.IsStockTransmittable(stockId); !flag {
-			t.Errorf("IsStockTransmittable() = %v, expected = %v", flag, true)
+		if flag := instance.IsStockTransmittable(stockId); flag {
+			t.Errorf("IsStockTransmittable() = %v, expected = %v", flag, false)
 			return
 		}
 	})

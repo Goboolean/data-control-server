@@ -30,7 +30,7 @@ func SetUp() {
 	db           := persistence_adapter.NewMockAdapter()
 	tx           := transaction.NewMock()
 	meta         := meta.NewMockAdapter()
-	ws := websocket.NewMockAdapter().(*websocket.Adapter)
+	ws := websocket.NewMockAdapter().(*websocket.MockAdapter)
 	f := mock.New(time.Millisecond * 10, ws)
 
 	if err := ws.RegisterFetcher(f); err != nil {

@@ -15,7 +15,7 @@ import (
 var instance *relayer.RelayerManager
 
 func SetUp() {
-	ws := websocket.NewMockAdapter().(*websocket.Adapter)
+	ws := websocket.NewMockAdapter().(*websocket.MockAdapter)
 	f := mock.New(time.Millisecond * 10, ws)
 	instance = inject.InitMockRelayer(ws)
 
