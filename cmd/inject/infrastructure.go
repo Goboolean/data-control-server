@@ -7,14 +7,17 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/Goboolean/fetch-server/internal/domain/port/in"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/cache/redis"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/grpc"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/prometheus"
+	"github.com/Goboolean/fetch-server/internal/infrastructure/ws"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws/buycycle"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws/kis"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws/polygon"
 	"github.com/Goboolean/shared/pkg/broker"
 	"github.com/Goboolean/shared/pkg/mongo"
+	"github.com/Goboolean/shared/pkg/rdbms"
 	"github.com/Goboolean/shared/pkg/resolver"
 	"github.com/google/wire"
 )
@@ -30,10 +33,13 @@ func provideMongoArgs() *resolver.ConfigMap {
 	}
 }
 
-func provideKafkaArgs() *resolver.ConfigMap {
+func providePsqlArgs() *resolver.ConfigMap {
 	return &resolver.ConfigMap{
-		"HOST": os.Getenv("KAFKA_HOST"),
-		"PORT": os.Getenv("KAFKA_PORT"),
+		"HOST":     os.Getenv("PSQL_HOST"),
+		"USER":     os.Getenv("PSQL_USER"),
+		"PORT":     os.Getenv("PSQL_PORT"),
+		"PASSWORD": os.Getenv("PSQL_PASS"),
+		"DATABASE": os.Getenv("PSQL_DATABASE"),
 	}
 }
 
@@ -49,6 +55,13 @@ func provideRedisArgs() *resolver.ConfigMap {
 		"USER":     os.Getenv("REDIS_USER"),
 		"PASSWORD": os.Getenv("REDIS_PASS"),
 		"DATABASE": database,
+	}
+}
+
+func provideKafkaArgs() *resolver.ConfigMap {
+	return &resolver.ConfigMap{
+		"HOST": os.Getenv("KAFKA_HOST"),
+		"PORT": os.Getenv("KAFKA_PORT"),
 	}
 }
 
@@ -85,55 +98,128 @@ func providePrometheusArgs() *resolver.ConfigMap {
 	}
 }
 
+var MongoSet = wire.NewSet(
+	provideMongoArgs,
+	mongo.NewDB,
+	mongo.New,
+)
+
+var PsqlSet = wire.NewSet(
+	providePsqlArgs,
+	rdbms.NewDB,
+	rdbms.NewQueries,
+)
+
+var KafkaSet = wire.NewSet(
+	provideKafkaArgs,
+	broker.NewConfigurator,
+	broker.NewPublisher,
+	broker.NewSubscriber,
+)
+
+var RedisSet = wire.NewSet(
+	provideRedisArgs,
+	redis.NewInstance,
+	redis.New,
+)
+
+var GrpcSet = wire.NewSet(
+	provideGrpcArgs,
+	grpc.New,
+)
+
+var BuycycleSet = wire.NewSet(
+	provideBuycycleArgs,
+	buycycle.New,
+)
+
+var KISSet = wire.NewSet(
+	provideKISArgs,
+	kis.New,
+)
+
+var PolygonSet = wire.NewSet(
+	providePolygonArgs,
+	polygon.New,
+)
+
+var PrometheusSet = wire.NewSet(
+	providePrometheusArgs,
+	prometheus.New,
+)
 
 
 func InitMongo() *mongo.DB {
-	wire.Build(mongo.NewDB, provideMongoArgs)
+	wire.Build(MongoSet)
 	return &mongo.DB{}
 }
 
+func InitMongoQueries() *mongo.Queries {
+	wire.Build(MongoSet)
+	return &mongo.Queries{}
+}
+
+func InitPsql() *rdbms.PSQL{
+	wire.Build(PsqlSet)
+	return &rdbms.PSQL{}
+}
+
+func InitPsqlQueries() *rdbms.Queries {
+	wire.Build(PsqlSet)
+	return &rdbms.Queries{}
+}
+
+func InitRedis() *redis.Redis {
+	wire.Build(RedisSet)
+	return &redis.Redis{}
+}
+
+func InitRedisQueries() *redis.Queries {
+	wire.Build(RedisSet)
+	return &redis.Queries{}
+}
+
 func InitKafkaConfigurator() *broker.Configurator {
-	wire.Build(broker.NewConfigurator, provideKafkaArgs)
+	wire.Build(KafkaSet)
 	return &broker.Configurator{}
 }
 
 func InitKafkaPublisher() *broker.Publisher {
-	wire.Build(broker.NewPublisher, provideKafkaArgs)
+	wire.Build(KafkaSet)
 	return &broker.Publisher{}
 }
 
-func InitRedis() *redis.Redis {
-	wire.Build(redis.NewInstance, provideRedisArgs)
-	return &redis.Redis{}
-}
 
-func InitGrpc() *grpc.Host {
-	wire.Build(grpc.New, provideGrpcArgs)
+func InitGrpc(in.ConfiguratorPort) *grpc.Host {
+	wire.Build(GrpcSet, AdapterSet)
 	return &grpc.Host{}
 }
 
-func InitBuycycle() *buycycle.Subscriber {
-	wire.Build(buycycle.New, provideBuycycleArgs)
+func InitBuycycle(ws.Receiver) *buycycle.Subscriber {
+	wire.Build(BuycycleSet)
 	return &buycycle.Subscriber{}
 }
 
-func InitKIS() *kis.Subscriber {
-	wire.Build(kis.New, provideKISArgs)
+func InitKIS(ws.Receiver) *kis.Subscriber {
+	wire.Build(KISSet)
 	return &kis.Subscriber{}
 }
 
-func InitPolygon() *polygon.Subscriber {
-	wire.Build(polygon.New, providePolygonArgs)
+func InitPolygon(ws.Receiver) *polygon.Subscriber {
+	wire.Build(PolygonSet)
 	return &polygon.Subscriber{}
 }
 
-func InitPrometheus() *resolver.ConfigMap {
-	wire.Build(prometheus.New, providePrometheusArgs)
-	return &resolver.ConfigMap{}
+func InitPrometheus() *prometheus.Server {
+	wire.Build(PrometheusSet)
+	return &prometheus.Server{}
 }
 
 var InfrastructureSet = wire.NewSet(
 	InitMongo,
+	InitMongoQueries,
+	InitPsql,
+	InitPsqlQueries,
 	InitKafkaConfigurator,
 	InitKafkaPublisher,
 	InitRedis,
