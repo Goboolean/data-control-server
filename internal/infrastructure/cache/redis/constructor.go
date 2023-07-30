@@ -47,10 +47,6 @@ func NewInstance(c *resolver.ConfigMap) *Redis {
 
 	address := fmt.Sprintf("%s:%s", host, port)
 
-	if err != nil {
-		panic(err)
-	}
-
 	once.Do(func() {
 
 		rdb := redis.NewClient(&redis.Options{

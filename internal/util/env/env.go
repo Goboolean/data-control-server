@@ -1,10 +1,17 @@
 package env
 
 import (
+	"os"
 	"path/filepath"
+
+	"github.com/joho/godotenv"
 )
 
-var Root string
+
+
+// Just importing this package get all the env variables at the root of the project
+// Import this package anonymously as shown below:
+// import _ "github.com/Goboolean/fetch-server/internal/util/env"
 
 func init() {
 	path, err := filepath.Abs(".")
@@ -21,5 +28,12 @@ func init() {
 		}
 	}
 
-	Root = path
+	if err := os.Chdir(path); err != nil {
+		panic(err)
+	}
+
+	if err := godotenv.Load(); err != nil {
+		panic(err)
+	}
+
 }

@@ -10,14 +10,11 @@ import (
 	pb "github.com/Goboolean/fetch-server/api/grpc"
 	server "github.com/Goboolean/fetch-server/internal/infrastructure/grpc"
 	grpc_adapter "github.com/Goboolean/fetch-server/internal/adapter/grpc"
-	"github.com/Goboolean/fetch-server/internal/util/env"
 	"github.com/Goboolean/shared/pkg/resolver"
-	"github.com/joho/godotenv"
 
 	"google.golang.org/grpc"
+	_ "github.com/Goboolean/fetch-server/internal/util/env"
 )
-
-
 
 
 var (
@@ -41,14 +38,6 @@ func NewClient() pb.StockConfiguratorClient {
 
 
 func SetUp() {
-
-	if err := os.Chdir(env.Root); err != nil {
-		panic(err)
-	}
-
-	if err := godotenv.Load(); err != nil {
-		panic(err)
-	}
 
 	instance = server.New(&resolver.ConfigMap{
 		"PORT": os.Getenv("SERVER_PORT"),

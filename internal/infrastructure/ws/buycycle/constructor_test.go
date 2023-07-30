@@ -9,10 +9,9 @@ import (
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws/buycycle"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws/mock"
-	"github.com/Goboolean/fetch-server/internal/util/env"
 	"github.com/Goboolean/fetch-server/internal/util/withintime"
 	"github.com/Goboolean/shared/pkg/resolver"
-	"github.com/joho/godotenv"
+	_ "github.com/Goboolean/fetch-server/internal/util/env"
 )
 
 
@@ -31,15 +30,6 @@ var (
 
 
 func SetupBuycycle() {
-
-	if err := os.Chdir(env.Root); err != nil {
-		panic(err)
-	}
-
-	if err := godotenv.Load(); err != nil {
-		panic(err)
-	}
-
 	instance = buycycle.New(&resolver.ConfigMap{
 		"HOST": os.Getenv("BUYCYCLE_HOST"),
 		"PORT": os.Getenv("BUYCYCLE_PORT"),
@@ -50,21 +40,10 @@ func TeardownBuycycle() {
 	instance.Close()
 }
 
-
 func TestMain(m *testing.M) {
-
-	if err := os.Chdir(env.Root); err != nil {
-		panic(err)
-	}
-
-	if err := godotenv.Load(); err != nil {
-		panic(err)
-	}
-
 	SetupBuycycle()
 	code := m.Run()
 	TeardownBuycycle()
-
 	os.Exit(code)
 }
 
