@@ -8,27 +8,38 @@ import (
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws/kis"
 )
 
-
 func Test_Method(t *testing.T) {
 
 	var instance *kis.Subscriber = new(kis.Subscriber)
 
-	t.Run("GetApprovalKey", func(t *testing.T) {
+	t.Run("GetApprovalKey (case:fail)", func(t *testing.T) {
 
-		_, err := instance.GetApprovalKey(os.Getenv("KIS_APPKEY"), os.Getenv("KIS_SECRET"))
+		_, err := instance.GetApprovalKey("", "")
+		if err == nil {
+			t.Errorf("GetApprovalKey() = %v, want error", err)
+			return
+		}
+	})
+
+	t.Run("GetApprovalKey (case:success)", func(t *testing.T) {
+
+		key, err := instance.GetApprovalKey(os.Getenv("KIS_APPKEY"), os.Getenv("KIS_SECRET"))
 		if err != nil {
 			t.Errorf("GetApprovalKey() = %v", err)
+			return
+		}
+
+		if key == "" {
+			t.Errorf("GetApprovalKey() = %v, want not empty", key)
 			return
 		}
 	})
 }
 
-
-
 func Test_SubscribeStockAggs(t *testing.T) {
 
 	const (
-		symbol = "DNASAAPL"
+		symbol      = "DNASAAPL"
 		falseSymbol = "FALSE"
 	)
 
@@ -53,12 +64,12 @@ func Test_SubscribeStockAggs(t *testing.T) {
 		}
 
 		countBeforeSubscription = count
-	
-		time.Sleep(time.Second * 3/2)
+
+		time.Sleep(time.Second * 3 / 2)
 
 		countAfterSubscription = count
 		diff := countAfterSubscription - countBeforeSubscription
-	
+
 		if diff == 0 {
 			t.Errorf("SubscribeStockAggs() received %d, want many", diff)
 			return

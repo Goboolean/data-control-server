@@ -23,6 +23,8 @@ type Subscriber struct {
 	ctx    context.Context
 	cancel context.CancelFunc
 	r      ws.Receiver
+
+	subscribed chan string
 }
 
 
@@ -43,6 +45,7 @@ func New(c *resolver.ConfigMap, r ws.Receiver) *Subscriber {
 		ctx:    ctx,
 		cancel: cancel,
 		r:      r,
+		subscribed: make(chan string),
 	}
 
 	appkey, err := c.GetStringKey("APPKEY")
@@ -78,6 +81,7 @@ func (s *Subscriber) Close() error {
 	}
 
 	s.cancel()
+	close(s.subscribed)
 	return nil
 }
 
