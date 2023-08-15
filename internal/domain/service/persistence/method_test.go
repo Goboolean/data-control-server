@@ -27,20 +27,26 @@ var (
 
 
 func SetUp() {
+	var err error
 
 	ws := websocket.NewMockAdapter().(*websocket.MockAdapter)
 	f := mock.New(time.Millisecond * 10, ws)
 	if err := ws.RegisterFetcher(f); err != nil {
 		panic(err)
 	}
-	relayer := inject.InitMockRelayer(ws)
+	relayer, err := inject.InitMockRelayer(ws)
+	if err != nil {
+		panic(err)
+	}
 	ws.RegisterReceiver(relayer)
 
 	tx      := transaction.NewMock()
 	db       = persistence_adapter.NewMockAdapter()
 	cache    = cache_adapter.NewMockAdapter()
-	instance = persistence.New(tx, db, cache, relayer, persistence.Option{BatchSize: 1})
-
+	instance, err = persistence.New(tx, db, cache, relayer, persistence.Option{BatchSize: 1})
+	if err != nil {
+		panic(err)
+	}
 	if err := relayer.FetchStock(context.Background(), "stock.facebook.usa"); err != nil {
 		panic(err)
 	}

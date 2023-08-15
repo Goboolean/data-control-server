@@ -39,7 +39,10 @@ func MockRelayer() *relayer.RelayerManager {
 		panic(err)
 	}
 
-	instance := relayer.New(db, tx, meta, ws)
+	instance, err := relayer.New(db, tx, meta, ws)
+	if err != nil {
+		panic(err)
+	}
 	ws.RegisterReceiver(instance)
 
 	return instance
@@ -47,12 +50,17 @@ func MockRelayer() *relayer.RelayerManager {
 
 
 func SetUp() {
+	var err error
 
 	var stockId = "stock.google.usa"
 				
 	relayerManager = MockRelayer()
 	kafka = broker.NewMockAdapter()
-	instance = transmission.New(kafka, relayerManager, transmission.Option{BatchSize: 2})
+
+	instance, err = transmission.New(kafka, relayerManager, transmission.Option{BatchSize: 2})
+	if err != nil {
+		panic(err)
+	}
 
 	if err := relayerManager.FetchStock(context.Background(), stockId); err != nil {
 		panic(err)

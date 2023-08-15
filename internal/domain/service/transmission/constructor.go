@@ -25,7 +25,7 @@ var (
 	once     sync.Once
 )
 
-func New(broker out.TransmissionPort, relayer *relayer.RelayerManager, o Option) *Transmitter {
+func New(broker out.TransmissionPort, relayer *relayer.RelayerManager, o Option) (*Transmitter, error) {
 
 	ctx, cancel := context.WithCancel(context.Background())
 
@@ -41,7 +41,7 @@ func New(broker out.TransmissionPort, relayer *relayer.RelayerManager, o Option)
 		}
 	})
 
-	return instance
+	return instance, nil
 }
 
 func (t *Transmitter) Close() {

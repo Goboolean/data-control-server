@@ -28,7 +28,7 @@ var (
 	once     sync.Once
 )
 
-func New(db out.StockPersistencePort, tx port.TX, meta out.StockMetadataPort, ws out.RelayerPort) *RelayerManager {
+func New(db out.StockPersistencePort, tx port.TX, meta out.StockMetadataPort, ws out.RelayerPort) (*RelayerManager, error) {
 
 	once.Do(func() {
 
@@ -49,7 +49,7 @@ func New(db out.StockPersistencePort, tx port.TX, meta out.StockMetadataPort, ws
 		instance.pipe.ExecPipe(ctx)
 	})
 
-	return instance
+	return instance, nil
 }
 
 func (m *RelayerManager) Close() {

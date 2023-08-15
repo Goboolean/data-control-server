@@ -37,17 +37,29 @@ func SetUp() {
 		panic(err)
 	}
 
-	relayer := relayer.New(db, tx, meta, ws)
+	relayer, err := relayer.New(db, tx, meta, ws)
+	if err != nil {
+		panic(err)
+	}
 	ws.RegisterReceiver(relayer)
 
 
 	kafka := broker.NewMockAdapter()
-	transmitter := transmission.New(kafka, relayer, transmission.Option{BatchSize: 2})
+	transmitter, err := transmission.New(kafka, relayer, transmission.Option{BatchSize: 2})
+	if err != nil {
+		panic(err)
+	}
 
 	cache    := cache.NewMockAdapter()
-	persistenceManager := persistence.New(tx, db, cache, relayer, persistence.Option{BatchSize: 1})
+	persistenceManager, err := persistence.New(tx, db, cache, relayer, persistence.Option{BatchSize: 1})
+	if err != nil {
+		panic(err)
+	}
 
-	instance = config.New(meta, tx, relayer, persistenceManager, transmitter)
+	instance, err = config.New(meta, tx, relayer, persistenceManager, transmitter)
+	if err != nil {
+		panic(err)
+	}
 }
 
 
