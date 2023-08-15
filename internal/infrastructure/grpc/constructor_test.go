@@ -2,42 +2,28 @@ package grpc_test
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"testing"
 	"time"
 
 	pb "github.com/Goboolean/fetch-server/api/grpc"
-	server "github.com/Goboolean/fetch-server/internal/infrastructure/grpc"
 	grpc_adapter "github.com/Goboolean/fetch-server/internal/adapter/grpc"
+	server "github.com/Goboolean/fetch-server/internal/infrastructure/grpc"
 	"github.com/Goboolean/shared/pkg/resolver"
 
-	"google.golang.org/grpc"
 	_ "github.com/Goboolean/fetch-server/internal/util/env"
 )
 
 
 var (
 	instance *server.Host
-	client pb.StockConfiguratorClient
+	client *server.Client
 )
 
 
 
-func NewClient() pb.StockConfiguratorClient {
-
-	address := fmt.Sprintf(":%s", os.Getenv("SERVER_PORT"))
-	conn, err := grpc.Dial(address, grpc.WithInsecure(), grpc.WithBlock())
-
-	if err != nil {
-		panic(err)
-	}
-
-	return pb.NewStockConfiguratorClient(conn)
-}
-
-
 func SetUp() {
+	var err error
 
 	instance = server.New(&resolver.ConfigMap{
 		"PORT": os.Getenv("SERVER_PORT"),
@@ -45,7 +31,12 @@ func SetUp() {
 
 	time.Sleep(1 * time.Second)
 
-	client = NewClient()
+	client, err = server.NewClient(&resolver.ConfigMap{
+		"PORT": os.Getenv("SERVER_PORT"),
+	})
+	if err != nil {
+		panic(err)
+	}
 }
 
 func TearDown() {
