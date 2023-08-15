@@ -1,8 +1,8 @@
 package compose
 
 import (
+	"context"
 	"fmt"
-	"os"
 	"os/signal"
 	"syscall"
 
@@ -24,59 +24,98 @@ func Released() (err error) {
 	// Ends of Close() method must assure that every goroutine it holds are closed
 
 	// Initialize Infrastructure
-	pub := inject.InitKafkaPublisher()
-	conf := inject.InitKafkaConfigurator()
-	defer conf.Close()
+	pub, err := inject.InitKafkaPublisher()
+	if err != nil {
+		panic(err)
+	}
 	defer pub.Close()
 
-	mongoDB := inject.InitMongo()
-	mongoQueries := mongo.New(mongoDB)
+	conf, err := inject.InitKafkaConfigurator()
+	if err != nil {
+		panic(err)
+	}
+	defer conf.Close()
+
+	mongoDB, err := inject.InitMongo()
+	if err != nil {
+		panic(err)
+	}
 	defer mongoDB.Close()
+	mongoQueries := mongo.New(mongoDB)
 
-	psqlDB := inject.InitPsql()
-	psqlQueries := rdbms.NewQueries(psqlDB)
+	psqlDB, err := inject.InitPsql()
+	if err != nil {
+		panic(err)
+	}
 	defer psqlDB.Close()
+	psqlQueries := rdbms.NewQueries(psqlDB)
 
-	redisDB := inject.InitRedis()
-	redisQueries := redis.New(redisDB)
+	redisDB, err := inject.InitRedis()
+	if err != nil {
+		panic(err)
+	}
 	defer redisDB.Close()
+	redisQueries := redis.New(redisDB)
 
 	transactor := inject.InitTransactor(mongoDB, psqlDB)
 	
-	prom := inject.InitPrometheus()
+	prom, err := inject.InitPrometheus()
+	if err != nil {
+		panic(err)
+	}
 	defer prom.Close()
 
-	ws := inject.InitWs(prom)
+	ws := inject.InitWs()
 
 
 	// Initialize Service
-	relayer := inject.InitRelayer(transactor, mongoQueries, psqlQueries, nil, prom)
+	relayer, err := inject.InitRelayer(transactor, mongoQueries, psqlQueries, nil)
+	if err != nil {
+		panic(err)
+	}
 	defer relayer.Close()
-	transmitter := inject.InitTransmission(transactor, transmission.Option{}, conf, pub, relayer, prom)
+
+	transmitter, err := inject.InitTransmission(transactor, transmission.Option{}, conf, pub, relayer)
+	if err != nil {
+		panic(err)
+	}
 	defer transmitter.Close()
-	persister := inject.InitPersistenceManager(transactor, persistence.Option{}, redisQueries, psqlQueries, mongoQueries, relayer, prom)
+
+	persister, err := inject.InitPersistenceManager(transactor, persistence.Option{}, redisQueries, psqlQueries, mongoQueries, relayer)
+	if err != nil {
+		panic(err)
+	}
 	defer persister.Close()
-	configurator := inject.InitConfigurationManager(transactor, psqlQueries, persister, transmitter, relayer, prom)
+
+	configurator, err := inject.InitConfigurationManager(transactor, psqlQueries, persister, transmitter, relayer)
+	if err != nil {
+		panic(err)
+	}
 	defer func(){}()
 
 
 	// Initialize Infrastructure
-	grpc := inject.InitGrpcWithAdapter(configurator)
+	grpc, err := inject.InitGrpcWithAdapter(configurator)
+	if err != nil {
+		panic(err)
+	}
 	defer grpc.Close()
 
-	kis := inject.InitKIS(ws)
-	defer kis.Close()
+	fetcher, err := inject.InitKIS(ws)
+	if err != nil {
+		panic(err)
+	}
 
-	if err := ws.RegisterFetcher(kis); err != nil {
+	if err := ws.RegisterFetcher(fetcher); err != nil {
 		panic(err)
 	}
 	ws.RegisterReceiver(relayer)
-	
-	sigs := make(chan os.Signal, 1)
-	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-
 
 	
+
+	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer cancel()
+
 	defer func() {
 		// Every fatel error will be catched here
 		if panic := recover(); err != nil {
@@ -84,6 +123,7 @@ func Released() (err error) {
 		}
 	}()
 
-	sig := <- sigs
-	return fmt.Errorf("signal: %v", sig)
+	<- ctx.Done()
+
+	return fmt.Errorf("signal: %v", err)
 }
