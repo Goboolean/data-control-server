@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"sync"
+	"time"
 
 	"github.com/Goboolean/shared/pkg/resolver"
 	"github.com/gin-gonic/gin"
@@ -17,41 +17,35 @@ type Server struct {
 }
 
 
-var (
-	instance *Server
-	once 	   sync.Once
-)
 
-func New(c *resolver.ConfigMap) *Server {
+func New(c *resolver.ConfigMap) (*Server, error) {
 
-	once.Do(func() {
+	var err error
 
-		port, err := c.GetStringKey("PORT")
-		if err != nil {
-			panic("fetch server metric port is required")
+	port, err := c.GetStringKey("PORT")
+	if err != nil {
+		return nil, err
+	}
+
+	router := gin.Default()
+
+	srv := &http.Server{
+		Addr:    fmt.Sprintf(":%s", port),
+		Handler: router,
+	}
+
+	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
+
+	go func() {
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			err = err
 		}
+	}()
+	time.Sleep(100 * time.Millisecond)
 
-		router := gin.Default()
-
-		srv := &http.Server{
-			Addr:    fmt.Sprintf(":%s", port),
-			Handler: router,
-		}
-
-		router.GET("/metrics", gin.WrapH(promhttp.Handler()))
-
-		go func() {
-			if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-				panic(err)
-			}
-		}()
-
-		instance = &Server{
-			srv: srv,
-		}
-	})
-
-	return instance
+	return &Server{
+		srv: srv,
+	}, err
 }
 
 

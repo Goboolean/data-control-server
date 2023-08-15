@@ -7,34 +7,15 @@ import (
 
 
 
-func (s *Server) FetchCounter() func() prometheus.Counter {
-	counter := promauto.NewCounter(prometheus.CounterOpts{
-		Name: "StockCounter",
+
+var (
+	FetchCounter = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "FetchCounter",
 	})
-
-	return func() prometheus.Counter {
-		return counter
-	}
-}
-
-
-func (s *Server) StoreCounter() func() prometheus.Counter {
-	counter := promauto.NewCounter(prometheus.CounterOpts{
+	StoreCounter = promauto.NewCounter(prometheus.CounterOpts{
 		Name: "StoreCounter",
 	})
-
-	return func() prometheus.Counter {
-		return counter
-	}
-}
-
-
-func (s *Server) BrokerCounter() func() prometheus.Counter {
-	counter := promauto.NewCounter(prometheus.CounterOpts{
+	BrokerCounter = promauto.NewCounter(prometheus.CounterOpts{
 		Name: "BrokerCounter",
 	})
-
-	return func() prometheus.Counter {
-		return counter
-	}
-}
+)
