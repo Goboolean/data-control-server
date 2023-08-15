@@ -74,9 +74,9 @@ func InitMockPersistenceManager(*relayer.RelayerManager, persistence.Option) (*p
 	return &persistence.PersistenceManager{}, nil
 }
 
-func InitMockTransmissionManager(*relayer.RelayerManager, transmission.Option) *transmission.Transmitter {
+func InitMockTransmissionManager(*relayer.RelayerManager, transmission.Option) (*transmission.Transmitter, error) {
 	wire.Build(MockAdapterSet, transmission.New)
-	return &transmission.Transmitter{}
+	return &transmission.Transmitter{}, nil
 }
 
 func InitMockConfigurationManager(*relayer.RelayerManager, *persistence.PersistenceManager, *transmission.Transmitter) (*config.ConfigurationManager, error) {

@@ -5,7 +5,7 @@ import (
 
 	"github.com/Goboolean/fetch-server/internal/domain/entity"
 	"github.com/Goboolean/fetch-server/internal/domain/port/in"
-	"github.com/Goboolean/fetch-server/internal/infrastructure/prometheus"
+	"github.com/Goboolean/fetch-server/internal/util/prometheus"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws"
 )
 
@@ -20,15 +20,13 @@ type Adapter struct {
 	idToSymnbol map[string]string // stockid -> symbol
 
 	port in.RelayerPort
-
-	prom *prometheus.Server
 }
 
 
 // There are two options to register fetcher:
 // 1. compile time: use New()
 // 2. runtime: use StockFetchAdapter.RegisterFetcher()
-func NewAdapter(prom *prometheus.Server, fetchers ...ws.Fetcher) *Adapter {
+func NewAdapter(fetchers ...ws.Fetcher) *Adapter {
 
 	instance := &Adapter{
 		fetcher: make(map[string]ws.Fetcher),

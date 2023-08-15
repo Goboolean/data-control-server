@@ -6,7 +6,7 @@ import (
 	"github.com/Goboolean/fetch-server/internal/domain/entity"
 	"github.com/Goboolean/fetch-server/internal/domain/port"
 	"github.com/Goboolean/fetch-server/internal/domain/port/out"
-	"github.com/Goboolean/fetch-server/internal/infrastructure/prometheus"
+	"github.com/Goboolean/fetch-server/internal/util/prometheus"
 	"github.com/Goboolean/shared/pkg/mongo"
 	"github.com/Goboolean/shared/pkg/rdbms"
 )
@@ -17,15 +17,12 @@ import (
 type Adapter struct {
 	rdbms *rdbms.Queries
 	mongo *mongo.Queries
-
-	prom *prometheus.Server
 }
 
-func NewAdapter(rdbms *rdbms.Queries, mongo *mongo.Queries, prom *prometheus.Server) out.StockPersistencePort {
+func NewAdapter(rdbms *rdbms.Queries, mongo *mongo.Queries) out.StockPersistencePort {
 	return &Adapter{
 		rdbms: rdbms,
 		mongo: mongo,
-		prom: prom,
 	}
 }
 

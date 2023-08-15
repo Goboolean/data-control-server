@@ -5,22 +5,19 @@ import (
 
 	"github.com/Goboolean/fetch-server/internal/domain/entity"
 	"github.com/Goboolean/fetch-server/internal/domain/port/out"
-	"github.com/Goboolean/fetch-server/internal/infrastructure/prometheus"
+	"github.com/Goboolean/fetch-server/internal/util/prometheus"
 	"github.com/Goboolean/shared/pkg/broker"
 )
 
 type Adapter struct {
 	conf *broker.Configurator
 	pub  *broker.Publisher
-
-	prom *prometheus.Server
 }
 
-func NewAdapter(conf *broker.Configurator, pub *broker.Publisher, prom *prometheus.Server) out.TransmissionPort {
+func NewAdapter(conf *broker.Configurator, pub *broker.Publisher) out.TransmissionPort {
 	return &Adapter{
 		conf: conf,
 		pub:  pub,
-		prom: prom,
 	}
 }
 

@@ -23,12 +23,12 @@ import (
 	"github.com/Goboolean/fetch-server/internal/domain/service/transmission"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/cache/redis"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/grpc"
-	"github.com/Goboolean/fetch-server/internal/infrastructure/prometheus"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws/buycycle"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws/kis"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws/mock"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws/polygon"
+	"github.com/Goboolean/fetch-server/internal/util/prometheus"
 	"github.com/Goboolean/shared/pkg/broker"
 	"github.com/Goboolean/shared/pkg/mongo"
 	"github.com/Goboolean/shared/pkg/rdbms"
@@ -43,19 +43,13 @@ import (
 
 func InitMongo() (*mongo.DB, error) {
 	configMap := provideMongoArgs()
-	db, err := mongo.NewDB(configMap)
-	if err != nil {
-		return nil, err
-	}
+	db := mongo.NewDB(configMap)
 	return db, nil
 }
 
 func InitPsql() (*rdbms.PSQL, error) {
 	configMap := providePsqlArgs()
-	psql, err := rdbms.NewDB(configMap)
-	if err != nil {
-		return nil, err
-	}
+	psql := rdbms.NewDB(configMap)
 	return psql, nil
 }
 
@@ -70,29 +64,20 @@ func InitRedis() (*redis.Redis, error) {
 
 func InitKafkaConfigurator() (*broker.Configurator, error) {
 	configMap := provideKafkaArgs()
-	configurator, err := broker.NewConfigurator(configMap)
-	if err != nil {
-		return nil, err
-	}
+	configurator := broker.NewConfigurator(configMap)
 	return configurator, nil
 }
 
 func InitKafkaPublisher() (*broker.Publisher, error) {
 	configMap := provideKafkaArgs()
-	publisher, err := broker.NewPublisher(configMap)
-	if err != nil {
-		return nil, err
-	}
+	publisher := broker.NewPublisher(configMap)
 	return publisher, nil
 }
 
 func InitGrpc(configuratorPort in.ConfiguratorPort) (*grpc.Host, error) {
 	configMap := provideGrpcArgs()
 	stockConfiguratorServer := grpc2.NewAdapter(configuratorPort)
-	host, err := grpc.New(configMap, stockConfiguratorServer)
-	if err != nil {
-		return nil, err
-	}
+	host := grpc.New(configMap, stockConfiguratorServer)
 	return host, nil
 }
 
@@ -161,10 +146,13 @@ func InitMockPersistenceManager(relayerManager *relayer.RelayerManager, option p
 	return persistenceManager, nil
 }
 
-func InitMockTransmissionManager(relayerManager *relayer.RelayerManager, option transmission.Option) *transmission.Transmitter {
+func InitMockTransmissionManager(relayerManager *relayer.RelayerManager, option transmission.Option) (*transmission.Transmitter, error) {
 	transmissionPort := broker2.NewMockAdapter()
-	transmitter := transmission.New(transmissionPort, relayerManager, option)
-	return transmitter
+	transmitter, err := transmission.New(transmissionPort, relayerManager, option)
+	if err != nil {
+		return nil, err
+	}
+	return transmitter, nil
 }
 
 func InitMockConfigurationManager(relayerManager *relayer.RelayerManager, persistenceManager *persistence2.PersistenceManager, transmitter *transmission.Transmitter) (*config.ConfigurationManager, error) {
@@ -194,7 +182,10 @@ func InitRelayer(tx port.TX, queries *mongo.Queries, rdbmsQueries *rdbms.Queries
 
 func InitTransmission(tx port.TX, option transmission.Option, configurator *broker.Configurator, publisher *broker.Publisher, relayerManager *relayer.RelayerManager) (*transmission.Transmitter, error) {
 	transmissionPort := broker2.NewAdapter(configurator, publisher)
-	transmitter := transmission.New(transmissionPort, relayerManager, option)
+	transmitter, err := transmission.New(transmissionPort, relayerManager, option)
+	if err != nil {
+		return nil, err
+	}
 	return transmitter, nil
 }
 
@@ -220,10 +211,7 @@ func InitConfigurationManager(tx port.TX, queries *rdbms.Queries, persistenceMan
 func InitGrpcWithAdapter(configuratorPort in.ConfiguratorPort) (*grpc.Host, error) {
 	configMap := provideGrpcArgs()
 	stockConfiguratorServer := grpc2.NewAdapter(configuratorPort)
-	host, err := grpc.New(configMap, stockConfiguratorServer)
-	if err != nil {
-		return nil, err
-	}
+	host := grpc.New(configMap, stockConfiguratorServer)
 	return host, nil
 }
 
