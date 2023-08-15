@@ -24,13 +24,16 @@ func Setup() {
 		panic(err)
 	}
 
-	instance = redis.NewInstance(&resolver.ConfigMap{
+	instance, err = redis.NewInstance(&resolver.ConfigMap{
 		"HOST":     os.Getenv("REDIS_HOST"),
 		"PORT":     os.Getenv("REDIS_PORT"),
 		"USER":     os.Getenv("REDIS_USER"),
 		"PASSWORD": os.Getenv("REDIS_PASS"),
 		"DATABASE": database,
 	})
+	if err != nil {
+		panic(err)
+	}
 
 	queries = redis.New(instance)
 }

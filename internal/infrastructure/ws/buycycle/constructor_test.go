@@ -30,12 +30,16 @@ var (
 
 
 func SetupBuycycle() {
-	
-	instance = buycycle.New(&resolver.ConfigMap{
+	var err error
+
+	instance, err = buycycle.New(&resolver.ConfigMap{
 		"HOST": os.Getenv("BUYCYCLE_HOST"),
 		"PORT": os.Getenv("BUYCYCLE_PORT"),
 		"PATH": os.Getenv("BUYCYCLE_PATH"),
 	}, receiver)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func TeardownBuycycle() {

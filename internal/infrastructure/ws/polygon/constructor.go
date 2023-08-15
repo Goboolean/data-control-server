@@ -22,11 +22,11 @@ type Subscriber struct {
 
 
 
-func New(c *resolver.ConfigMap, r ws.Receiver) *Subscriber {
+func New(c *resolver.ConfigMap, r ws.Receiver) (*Subscriber, error) {
 
 	key, err := c.GetStringKey("KEY")
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	conn, err := polygonws.New(polygonws.Config{
@@ -36,7 +36,7 @@ func New(c *resolver.ConfigMap, r ws.Receiver) *Subscriber {
 	})
 
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -49,7 +49,7 @@ func New(c *resolver.ConfigMap, r ws.Receiver) *Subscriber {
 	}
 
 	go instance.run()
-	return instance
+	return instance, nil
 }
 
 

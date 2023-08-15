@@ -29,13 +29,13 @@ type Subscriber struct {
 
 
 
-func New(c *resolver.ConfigMap, r ws.Receiver) *Subscriber {
+func New(c *resolver.ConfigMap, r ws.Receiver) (*Subscriber, error) {
 
 	u := url.URL{Scheme: "ws", Host: address}
 
 	conn, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -50,24 +50,24 @@ func New(c *resolver.ConfigMap, r ws.Receiver) *Subscriber {
 
 	appkey, err := c.GetStringKey("APPKEY")
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	secretkey, err := c.GetStringKey("SECRET")
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	approvalKey, err := instance.GetApprovalKey(appkey, secretkey)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	instance.approvalKey = approvalKey
 
 	go instance.run()
 
-	return instance
+	return instance, nil
 }
 
 func (s *Subscriber) PlatformName() string {
