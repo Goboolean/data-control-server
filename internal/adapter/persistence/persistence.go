@@ -46,8 +46,8 @@ func (a *Adapter) StoreStock(tx port.Transactioner, stockId string, agg *entity.
 	if err := a.mongo.InsertStockBatch(tx.(*mongo.Transaction), stockId, []*mongo.StockAggregate{dto}); err != nil {
 		return err
 	}
-	
-	a.prom.StoreCounter()().Inc()
+
+	prometheus.FetchCounter.Inc()	
 	return nil
 }
 
@@ -72,7 +72,7 @@ func (a *Adapter) StoreStockBatch(tx port.Transactioner, stockId string, aggs []
 		return err
 	}
 
-	a.prom.StoreCounter()().Add(float64(len(aggs)))
+	prometheus.StoreCounter.Add(float64(len(aggs)))
 	return nil
 }
 

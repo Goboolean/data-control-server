@@ -27,7 +27,7 @@ func NewAdapter(conf *broker.Configurator, pub *broker.Publisher, prom *promethe
 
 func (a *Adapter) TransmitStockBatch(ctx context.Context, stock string, batch []*entity.StockAggregate) error {
 
-	a.prom.BrokerCounter()().Add(float64(len(batch)))
+	prometheus.BrokerCounter.Add(float64(len(batch)))
 
 	converted := make([]*broker.StockAggregate, len(batch))
 

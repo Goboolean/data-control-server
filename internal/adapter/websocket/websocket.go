@@ -107,7 +107,7 @@ func (s *Adapter) OnReceiveStockAggs(agg *ws.StockAggregate) error {
 
 	s.port.PlaceStockFormBatch([]*entity.StockAggregateForm{data})
 
-	s.prom.FetchCounter()().Inc()
+	prometheus.FetchCounter.Inc()
 	return nil
 }
 
@@ -125,7 +125,7 @@ func (s *Adapter) OnReceiveStockAggsBatch(aggs []*ws.StockAggregate) error {
 
 	s.port.PlaceStockFormBatch(batch)
 
-	s.prom.FetchCounter()().Add(float64(len(aggs)))
+	prometheus.FetchCounter.Add(float64(len(aggs)))
 	return nil
 }
 
