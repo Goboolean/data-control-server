@@ -27,6 +27,7 @@ import (
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws/buycycle"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws/kis"
+	"github.com/Goboolean/fetch-server/internal/infrastructure/ws/mock"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws/polygon"
 	"github.com/Goboolean/shared/pkg/broker"
 	"github.com/Goboolean/shared/pkg/mongo"
@@ -35,108 +36,129 @@ import (
 	"github.com/google/wire"
 	"os"
 	"strconv"
+	"time"
 )
 
 // Injectors from infrastructure.go:
 
-func InitMongo() *mongo.DB {
+func InitMongo() (*mongo.DB, error) {
 	configMap := provideMongoArgs()
-	db := mongo.NewDB(configMap)
-	return db
+	db, err := mongo.NewDB(configMap)
+	if err != nil {
+		return nil, err
+	}
+	return db, nil
 }
 
-func InitMongoQueries() *mongo.Queries {
-	configMap := provideMongoArgs()
-	db := mongo.NewDB(configMap)
-	queries := mongo.New(db)
-	return queries
-}
-
-func InitPsql() *rdbms.PSQL {
+func InitPsql() (*rdbms.PSQL, error) {
 	configMap := providePsqlArgs()
-	psql := rdbms.NewDB(configMap)
-	return psql
+	psql, err := rdbms.NewDB(configMap)
+	if err != nil {
+		return nil, err
+	}
+	return psql, nil
 }
 
-func InitPsqlQueries() *rdbms.Queries {
-	configMap := providePsqlArgs()
-	psql := rdbms.NewDB(configMap)
-	queries := rdbms.NewQueries(psql)
-	return queries
-}
-
-func InitRedis() *redis.Redis {
+func InitRedis() (*redis.Redis, error) {
 	configMap := provideRedisArgs()
-	redisRedis := redis.NewInstance(configMap)
-	return redisRedis
+	redisRedis, err := redis.NewInstance(configMap)
+	if err != nil {
+		return nil, err
+	}
+	return redisRedis, nil
 }
 
-func InitRedisQueries() *redis.Queries {
-	configMap := provideRedisArgs()
-	redisRedis := redis.NewInstance(configMap)
-	queries := redis.New(redisRedis)
-	return queries
-}
-
-func InitKafkaConfigurator() *broker.Configurator {
+func InitKafkaConfigurator() (*broker.Configurator, error) {
 	configMap := provideKafkaArgs()
-	configurator := broker.NewConfigurator(configMap)
-	return configurator
+	configurator, err := broker.NewConfigurator(configMap)
+	if err != nil {
+		return nil, err
+	}
+	return configurator, nil
 }
 
-func InitKafkaPublisher() *broker.Publisher {
+func InitKafkaPublisher() (*broker.Publisher, error) {
 	configMap := provideKafkaArgs()
-	publisher := broker.NewPublisher(configMap)
-	return publisher
+	publisher, err := broker.NewPublisher(configMap)
+	if err != nil {
+		return nil, err
+	}
+	return publisher, nil
 }
 
-func InitGrpc(configuratorPort in.ConfiguratorPort) *grpc.Host {
+func InitGrpc(configuratorPort in.ConfiguratorPort) (*grpc.Host, error) {
 	configMap := provideGrpcArgs()
 	stockConfiguratorServer := grpc2.NewAdapter(configuratorPort)
-	host := grpc.New(configMap, stockConfiguratorServer)
-	return host
+	host, err := grpc.New(configMap, stockConfiguratorServer)
+	if err != nil {
+		return nil, err
+	}
+	return host, nil
 }
 
-func InitBuycycle(receiver ws.Receiver) *buycycle.Subscriber {
+func InitBuycycle(receiver ws.Receiver) (*buycycle.Subscriber, error) {
 	configMap := provideBuycycleArgs()
-	subscriber := buycycle.New(configMap, receiver)
-	return subscriber
+	subscriber, err := buycycle.New(configMap, receiver)
+	if err != nil {
+		return nil, err
+	}
+	return subscriber, nil
 }
 
-func InitKIS(receiver ws.Receiver) *kis.Subscriber {
+func InitKIS(receiver ws.Receiver) (*kis.Subscriber, error) {
 	configMap := provideKISArgs()
-	subscriber := kis.New(configMap, receiver)
-	return subscriber
+	subscriber, err := kis.New(configMap, receiver)
+	if err != nil {
+		return nil, err
+	}
+	return subscriber, nil
 }
 
-func InitPolygon(receiver ws.Receiver) *polygon.Subscriber {
+func InitPolygon(receiver ws.Receiver) (*polygon.Subscriber, error) {
 	configMap := providePolygonArgs()
-	subscriber := polygon.New(configMap, receiver)
-	return subscriber
+	subscriber, err := polygon.New(configMap, receiver)
+	if err != nil {
+		return nil, err
+	}
+	return subscriber, nil
 }
 
-func InitPrometheus() *prometheus.Server {
+func InitMockWebsocket(duration time.Duration, receiver ws.Receiver) *mock.MockFetcher {
+	mockFetcher := mock.New(duration, receiver)
+	return mockFetcher
+}
+
+func InitPrometheus() (*prometheus.Server, error) {
 	configMap := providePrometheusArgs()
-	server := prometheus.New(configMap)
-	return server
+	server, err := prometheus.New(configMap)
+	if err != nil {
+		return nil, err
+	}
+	return server, nil
 }
 
 // Injectors from service.go:
 
-func InitMockRelayer(relayerPort out.RelayerPort) *relayer.RelayerManager {
+func InitMockRelayer(relayerPort out.RelayerPort) (*relayer.RelayerManager, error) {
 	stockPersistencePort := persistence.NewMockAdapter()
 	tx := transaction.NewMock()
 	stockMetadataPort := meta.NewMockAdapter()
-	relayerManager := relayer.New(stockPersistencePort, tx, stockMetadataPort, relayerPort)
-	return relayerManager
+	relayerManager, err := relayer.New(stockPersistencePort, tx, stockMetadataPort, relayerPort)
+	if err != nil {
+		return nil, err
+	}
+	return relayerManager, nil
 }
 
-func InitMockPersistenceManager(relayerManager *relayer.RelayerManager, option persistence2.Option) *persistence2.PersistenceManager {
+func InitMockPersistenceManager(relayerManager *relayer.RelayerManager, option persistence2.Option) (*persistence2.PersistenceManager, error) {
 	tx := transaction.NewMock()
 	stockPersistencePort := persistence.NewMockAdapter()
 	stockPersistenceCachePort := cache.NewMockAdapter()
-	persistenceManager := persistence2.New(tx, stockPersistencePort, stockPersistenceCachePort, relayerManager, option)
-	return persistenceManager
+	persistenceManager, err := persistence2.New(tx, stockPersistencePort, stockPersistenceCachePort, relayerManager, option)
+	if err != nil {
+		return nil, err
+	}
+	return persistenceManager, nil
 }
 
 func InitMockTransmissionManager(relayerManager *relayer.RelayerManager, option transmission.Option) *transmission.Transmitter {
@@ -145,11 +167,14 @@ func InitMockTransmissionManager(relayerManager *relayer.RelayerManager, option 
 	return transmitter
 }
 
-func InitMockConfigurationManager(relayerManager *relayer.RelayerManager, persistenceManager *persistence2.PersistenceManager, transmitter *transmission.Transmitter) *config.ConfigurationManager {
+func InitMockConfigurationManager(relayerManager *relayer.RelayerManager, persistenceManager *persistence2.PersistenceManager, transmitter *transmission.Transmitter) (*config.ConfigurationManager, error) {
 	stockMetadataPort := meta.NewMockAdapter()
 	tx := transaction.NewMock()
-	configurationManager := config.New(stockMetadataPort, tx, relayerManager, persistenceManager, transmitter)
-	return configurationManager
+	configurationManager, err := config.New(stockMetadataPort, tx, relayerManager, persistenceManager, transmitter)
+	if err != nil {
+		return nil, err
+	}
+	return configurationManager, nil
 }
 
 func InitTransactor(mongo2 *mongo.DB, psql *rdbms.PSQL) port.TX {
@@ -157,42 +182,54 @@ func InitTransactor(mongo2 *mongo.DB, psql *rdbms.PSQL) port.TX {
 	return tx
 }
 
-func InitRelayer(tx port.TX, queries *mongo.Queries, rdbmsQueries *rdbms.Queries, relayerPort out.RelayerPort, server *prometheus.Server) *relayer.RelayerManager {
-	stockPersistencePort := persistence.NewAdapter(rdbmsQueries, queries, server)
+func InitRelayer(tx port.TX, queries *mongo.Queries, rdbmsQueries *rdbms.Queries, relayerPort out.RelayerPort) (*relayer.RelayerManager, error) {
+	stockPersistencePort := persistence.NewAdapter(rdbmsQueries, queries)
 	stockMetadataPort := meta.NewAdapter(rdbmsQueries)
-	relayerManager := relayer.New(stockPersistencePort, tx, stockMetadataPort, relayerPort)
-	return relayerManager
+	relayerManager, err := relayer.New(stockPersistencePort, tx, stockMetadataPort, relayerPort)
+	if err != nil {
+		return nil, err
+	}
+	return relayerManager, nil
 }
 
-func InitTransmission(tx port.TX, option transmission.Option, configurator *broker.Configurator, publisher *broker.Publisher, relayerManager *relayer.RelayerManager, server *prometheus.Server) *transmission.Transmitter {
-	transmissionPort := broker2.NewAdapter(configurator, publisher, server)
+func InitTransmission(tx port.TX, option transmission.Option, configurator *broker.Configurator, publisher *broker.Publisher, relayerManager *relayer.RelayerManager) (*transmission.Transmitter, error) {
+	transmissionPort := broker2.NewAdapter(configurator, publisher)
 	transmitter := transmission.New(transmissionPort, relayerManager, option)
-	return transmitter
+	return transmitter, nil
 }
 
-func InitPersistenceManager(tx port.TX, option persistence2.Option, queries *redis.Queries, rdbmsQueries *rdbms.Queries, mongoQueries *mongo.Queries, relayerManager *relayer.RelayerManager, server *prometheus.Server) *persistence2.PersistenceManager {
-	stockPersistencePort := persistence.NewAdapter(rdbmsQueries, mongoQueries, server)
+func InitPersistenceManager(tx port.TX, option persistence2.Option, queries *redis.Queries, rdbmsQueries *rdbms.Queries, mongoQueries *mongo.Queries, relayerManager *relayer.RelayerManager) (*persistence2.PersistenceManager, error) {
+	stockPersistencePort := persistence.NewAdapter(rdbmsQueries, mongoQueries)
 	stockPersistenceCachePort := cache.NewAdapter(queries)
-	persistenceManager := persistence2.New(tx, stockPersistencePort, stockPersistenceCachePort, relayerManager, option)
-	return persistenceManager
+	persistenceManager, err := persistence2.New(tx, stockPersistencePort, stockPersistenceCachePort, relayerManager, option)
+	if err != nil {
+		return nil, err
+	}
+	return persistenceManager, nil
 }
 
-func InitConfigurationManager(tx port.TX, queries *rdbms.Queries, persistenceManager *persistence2.PersistenceManager, transmitter *transmission.Transmitter, relayerManager *relayer.RelayerManager, server *prometheus.Server) *config.ConfigurationManager {
+func InitConfigurationManager(tx port.TX, queries *rdbms.Queries, persistenceManager *persistence2.PersistenceManager, transmitter *transmission.Transmitter, relayerManager *relayer.RelayerManager) (*config.ConfigurationManager, error) {
 	stockMetadataPort := meta.NewAdapter(queries)
-	configurationManager := config.New(stockMetadataPort, tx, relayerManager, persistenceManager, transmitter)
-	return configurationManager
+	configurationManager, err := config.New(stockMetadataPort, tx, relayerManager, persistenceManager, transmitter)
+	if err != nil {
+		return nil, err
+	}
+	return configurationManager, nil
 }
 
-func InitGrpcWithAdapter(configuratorPort in.ConfiguratorPort) *grpc.Host {
+func InitGrpcWithAdapter(configuratorPort in.ConfiguratorPort) (*grpc.Host, error) {
 	configMap := provideGrpcArgs()
 	stockConfiguratorServer := grpc2.NewAdapter(configuratorPort)
-	host := grpc.New(configMap, stockConfiguratorServer)
-	return host
+	host, err := grpc.New(configMap, stockConfiguratorServer)
+	if err != nil {
+		return nil, err
+	}
+	return host, nil
 }
 
-func InitWs(server *prometheus.Server) *websocket.Adapter {
+func InitWs() *websocket.Adapter {
 	v := provideFetcher()
-	adapter := websocket.NewAdapter(server, v...)
+	adapter := websocket.NewAdapter(v...)
 	return adapter
 }
 
@@ -326,11 +363,3 @@ var MockAdapterSet = wire.NewSet(
 var AdapterSet = wire.NewSet(
 	AdapterArgumentSet, broker2.NewAdapter, grpc2.NewAdapter, cache.NewAdapter, meta.NewAdapter, persistence.NewAdapter, websocket.NewAdapter,
 )
-
-func provideTransmissionArgs() transmission.Option {
-	return transmission.Option{}
-}
-
-func providePersistenceArgs() persistence2.Option {
-	return persistence2.Option{}
-}
