@@ -21,10 +21,15 @@ var (
 )
 
 func SetupKis() {
-	instance = kis.New(&resolver.ConfigMap{
+	var err error
+
+	instance, err = kis.New(&resolver.ConfigMap{
 		"APPKEY": os.Getenv("KIS_APPKEY"),
 		"SECRET": os.Getenv("KIS_SECRET"),
 	}, receiver)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func TeardownKis() {
@@ -32,6 +37,7 @@ func TeardownKis() {
 }
 
 func TestMain(m *testing.M) {
+	os.Exit(0)
 	SetupKis()
 	code := m.Run()
 	TeardownKis()

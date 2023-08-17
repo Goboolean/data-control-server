@@ -60,8 +60,13 @@ func Test_SubscribeStockAggs(t *testing.T) {
   // since the data is generated every 10 ms in average.
   // But it seems that error may occur in some case.
 
+	const (
+		symbol = "TEST"
+		invalidSymnol = "INVALID"
+	)
+
 	t.Run("Subscribe", func(t *testing.T) {
-		if err := instance.SubscribeStockAggs("test"); err != nil {
+		if err := instance.SubscribeStockAggs(symbol); err != nil {
 			t.Errorf("SubscribeStockAggs() = %v", err)
 			return
 		}
@@ -75,32 +80,20 @@ func Test_SubscribeStockAggs(t *testing.T) {
 	})
 
 	t.Run("SubscribeTwice", func(t *testing.T) {
-		if err := instance.SubscribeStockAggs("test"); err == nil {
+		if err := instance.SubscribeStockAggs(symbol); err == nil {
 			t.Errorf("SubscribeStockAggs() = %v, want %v", err, mock.ErrTopicAlreadyExists)
 			return
 		}
 	})
-}
-
-
-func Test_UnsubscribeStockAggs(t *testing.T) {
-
-	const symbol = "TEST"
 
 	t.Run("InvalidUnsubscribe", func(t *testing.T) {
-		if err := instance.UnsubscribeStockAggs(symbol); err == nil {
+		if err := instance.UnsubscribeStockAggs(invalidSymnol); err == nil {
 			t.Errorf("UnsubscribeStockAggs() = %v, want %v", err, mock.ErrTopicNotFound)
 			return
 		}
 	})
 
 	t.Run("Unsubscribe", func(t *testing.T) {
-		if err := instance.SubscribeStockAggs(symbol); err != nil {
-			t.Errorf("SubscribeStockAggs() = %v", err)
-			return
-		}
-	
-		time.Sleep(100 * time.Millisecond)
 	
 		if err := instance.UnsubscribeStockAggs(symbol); err != nil {
 			t.Errorf("UnsubscribeStockAggs() = %v", err)
@@ -120,3 +113,4 @@ func Test_UnsubscribeStockAggs(t *testing.T) {
 		}
 	})
 }
+

@@ -3,7 +3,7 @@ package relayer
 import (
 	"context"
 
-	"github.com/Goboolean/fetch-server/internal/domain/entity"
+	"github.com/Goboolean/fetch-server/internal/domain/vo"
 )
 
 
@@ -15,12 +15,6 @@ func (m *RelayerManager) FetchStock(ctx context.Context, stockId string) error {
 	}
 	defer tx.Rollback()
 
-	if err := m.s.StoreStock(stockId); err != nil {
-		return err
-	}
-
-	m.pipe.AddNewPipe(stockId)
-
 	exists, err := m.meta.CheckStockExists(tx, stockId)
 	if err != nil {
 		return err
@@ -28,6 +22,12 @@ func (m *RelayerManager) FetchStock(ctx context.Context, stockId string) error {
 	if !exists {
 		return ErrStockNotExists
 	}
+
+	if err := m.s.StoreStock(stockId); err != nil {
+		return err
+	}
+
+	m.pipe.AddNewPipe(stockId)
 
 	meta, err := m.meta.GetStockMetadata(tx, stockId)
 	if err != nil {
@@ -65,7 +65,7 @@ func (m *RelayerManager) IsStockRelayable(stockId string) bool {
 }
 
 
-func (m *RelayerManager) PlaceStockFormBatch(stockBatch []*entity.StockAggregateForm) {
+func (m *RelayerManager) PlaceStockFormBatch(stockBatch []*vo.StockAggregateForm) {
 	for _, stock := range stockBatch {
 		m.pipe.PlaceOnStartPoint(stock)
 	}
@@ -73,7 +73,7 @@ func (m *RelayerManager) PlaceStockFormBatch(stockBatch []*entity.StockAggregate
 
 // 
 // If call side execute ctx.Done(), then subscription of this stock will be cancelled.
-func (m *RelayerManager) Subscribe(ctx context.Context, stockId string) (<-chan *entity.StockAggregate, error) {
+func (m *RelayerManager) Subscribe(ctx context.Context, stockId string) (<-chan *vo.StockAggregate, error) {
 
 	if exists := m.s.StockExists(stockId); !exists {
 		return nil, ErrStockNotExists

@@ -3,7 +3,7 @@ package websocket
 import (
 	"context"
 
-	"github.com/Goboolean/fetch-server/internal/domain/entity"
+	"github.com/Goboolean/fetch-server/internal/domain/vo"
 	"github.com/Goboolean/fetch-server/internal/domain/port/in"
 	"github.com/Goboolean/fetch-server/internal/domain/port/out"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws"
@@ -68,17 +68,17 @@ func (a *MockAdapter) RegisterReceiver(port in.RelayerPort) {
 }
 
 
-func (s *MockAdapter) toDomainEntity(agg *ws.StockAggregate) (*entity.StockAggregateForm, error) {
+func (s *MockAdapter) toDomainEntity(agg *ws.StockAggregate) (*vo.StockAggregateForm, error) {
 	stockId, ok := s.symbolToId[agg.Symbol]
 	if !ok {
 		return nil, ErrSymbolUnrecognized
 	}
 
-	return &entity.StockAggregateForm{
-		StockAggsMeta: entity.StockAggsMeta{
+	return &vo.StockAggregateForm{
+		StockAggsMeta: vo.StockAggsMeta{
 			StockID: stockId,
 		},
-		StockAggregate: entity.StockAggregate{
+		StockAggregate: vo.StockAggregate{
 			Average: agg.Average,
 			Min: agg.Min,
 			Max: agg.Max,
@@ -98,12 +98,12 @@ func (s *MockAdapter) OnReceiveStockAggs(agg *ws.StockAggregate) error {
 		return err
 	}
 
-	s.port.PlaceStockFormBatch([]*entity.StockAggregateForm{data})
+	s.port.PlaceStockFormBatch([]*vo.StockAggregateForm{data})
 	return nil
 }
 
 func (s *MockAdapter) OnReceiveStockAggsBatch(aggs []*ws.StockAggregate) error {
-	batch := make([]*entity.StockAggregateForm, len(aggs))
+	batch := make([]*vo.StockAggregateForm, len(aggs))
 
 	for _, agg := range aggs {
 		data, err := s.toDomainEntity(agg)

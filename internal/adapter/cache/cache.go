@@ -3,7 +3,7 @@ package cache
 import (
 	"context"
 
-	"github.com/Goboolean/fetch-server/internal/domain/entity"
+	"github.com/Goboolean/fetch-server/internal/domain/vo"
 	"github.com/Goboolean/fetch-server/internal/domain/port/out"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/cache/redis"
 )
@@ -24,7 +24,7 @@ func NewAdapter(r *redis.Queries) out.StockPersistenceCachePort {
 
 
 
-func (a *Adapter) StoreStockOnCache(ctx context.Context, stockId string, stock *entity.StockAggregate) error {
+func (a *Adapter) StoreStockOnCache(ctx context.Context, stockId string, stock *vo.StockAggregate) error {
 
 	dto := &redis.RedisStockAggregate{
 		EventType: stock.EventType,
@@ -41,7 +41,7 @@ func (a *Adapter) StoreStockOnCache(ctx context.Context, stockId string, stock *
 }
 
 
-func (a *Adapter) StoreStockBatchOnCache(ctx context.Context, stockId string, stockBatch []*entity.StockAggregate) error {
+func (a *Adapter) StoreStockBatchOnCache(ctx context.Context, stockId string, stockBatch []*vo.StockAggregate) error {
 	
 	dtos := make([]*redis.RedisStockAggregate, 0, len(stockBatch))
 
@@ -61,16 +61,16 @@ func (a *Adapter) StoreStockBatchOnCache(ctx context.Context, stockId string, st
 	return a.redis.InsertStockDataBatch(ctx, stockId, dtos)
 }
 
-func (a *Adapter) GetAndEmptyCache(ctx context.Context, stockId string) ([]*entity.StockAggregate, error) {
+func (a *Adapter) GetAndEmptyCache(ctx context.Context, stockId string) ([]*vo.StockAggregate, error) {
 
 	dtos, err := a.redis.GetAndEmptyCache(ctx, stockId)
 	if err != nil {
 		return nil, err
 	}
 
-	stockBatch := make([]*entity.StockAggregate, 0, len(dtos))
+	stockBatch := make([]*vo.StockAggregate, 0, len(dtos))
 	for idx, dto := range dtos {
-		stockBatch[idx] = &entity.StockAggregate{
+		stockBatch[idx] = &vo.StockAggregate{
 			EventType: dto.EventType,
 			Average:   dto.Avg,
 			Min:       dto.Min,
