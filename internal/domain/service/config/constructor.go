@@ -24,7 +24,7 @@ var (
 	once     sync.Once
 )
 
-func New(db out.StockMetadataPort, tx port.TX, r *relayer.RelayerManager, p *persistence.PersistenceManager, t *transmission.Transmitter) *ConfigurationManager {
+func New(db out.StockMetadataPort, tx port.TX, r *relayer.RelayerManager, p *persistence.PersistenceManager, t *transmission.Transmitter) (*ConfigurationManager, error) {
 
 	once.Do(func() {
 		instance = &ConfigurationManager{
@@ -37,5 +37,5 @@ func New(db out.StockMetadataPort, tx port.TX, r *relayer.RelayerManager, p *per
 		}
 	})
 
-	return instance
+	return instance, nil
 }

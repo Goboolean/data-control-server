@@ -25,21 +25,21 @@ type Subscriber struct {
 
 
 
-func New(c *resolver.ConfigMap, r ws.Receiver) *Subscriber {
+func New(c *resolver.ConfigMap, r ws.Receiver) (*Subscriber, error) {
 
 	host, err := c.GetStringKey("HOST")
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	port, err := c.GetStringKey("PORT")
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	path, err := c.GetStringKey("PATH")
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	address := fmt.Sprintf("%s:%s", host, port)
@@ -53,7 +53,7 @@ func New(c *resolver.ConfigMap, r ws.Receiver) *Subscriber {
 	conn, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
 
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -67,7 +67,7 @@ func New(c *resolver.ConfigMap, r ws.Receiver) *Subscriber {
 
 	go instance.run()
 
-	return instance
+	return instance, nil
 }
 
 

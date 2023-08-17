@@ -6,16 +6,16 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Goboolean/fetch-server/internal/domain/entity"
+	"github.com/Goboolean/fetch-server/internal/domain/vo"
 )
 
 const DEFAULT_BUFFER_SIZE = 10
 
 
 type pipe struct {
-	sinkChan          chan *entity.StockAggregateForm
-	filteredChan      chan *entity.StockAggregateForm
-	classifiedChanMap map[string]chan *entity.StockAggregate
+	sinkChan          chan *vo.StockAggregateForm
+	filteredChan      chan *vo.StockAggregateForm
+	classifiedChanMap map[string]chan *vo.StockAggregate
 
 	connPool map[string] map[int64] conn
 
@@ -26,7 +26,7 @@ type pipe struct {
 type conn struct {
 	ctx context.Context
 	cancel context.CancelFunc
-	ch chan *entity.StockAggregate
+	ch chan *vo.StockAggregate
 }
 
 func newConn(ctx context.Context) conn {
@@ -34,7 +34,7 @@ func newConn(ctx context.Context) conn {
 	return conn{
 		ctx:    ctx,
 		cancel: cancel,
-		ch:     make(chan *entity.StockAggregate, DEFAULT_BUFFER_SIZE),
+		ch:     make(chan *vo.StockAggregate, DEFAULT_BUFFER_SIZE),
 	}
 }
 
@@ -44,7 +44,7 @@ func (p *pipe) getHash() int64 {
 }
 
 
-func (p *pipe) RegisterNewSubscriber(ctx context.Context, stockId string) (<-chan *entity.StockAggregate, error) {
+func (p *pipe) RegisterNewSubscriber(ctx context.Context, stockId string) (<-chan *vo.StockAggregate, error) {
 
 	_, ok := p.connPool[stockId]
 	if !ok {
@@ -74,9 +74,9 @@ func (p *pipe) RegisterNewSubscriber(ctx context.Context, stockId string) (<-cha
 
 // This method should be executed as goroutine
 // It is assured to terminate when channel is closed
-func (p *pipe) filterBadTick(in <-chan *entity.StockAggregateForm, out chan<- *entity.StockAggregateForm) {
+func (p *pipe) filterBadTick(in <-chan *vo.StockAggregateForm, out chan<- *vo.StockAggregateForm) {
 	for stock := range in {
-		if isnil := reflect.DeepEqual(stock, &entity.StockAggregateForm{}); isnil {
+		if isnil := reflect.DeepEqual(stock, &vo.StockAggregateForm{}); isnil {
 			continue
 		}
 		out <- stock
@@ -85,7 +85,7 @@ func (p *pipe) filterBadTick(in <-chan *entity.StockAggregateForm, out chan<- *e
 
 // This method should be executed as goroutine
 // It is assured to terminate when channel is closed
-func (p *pipe) classifyStock(in <-chan *entity.StockAggregateForm, out map[string]chan *entity.StockAggregate) {
+func (p *pipe) classifyStock(in <-chan *vo.StockAggregateForm, out map[string]chan *vo.StockAggregate) {
 	for stock := range in {
 		out[stock.StockID] <- &stock.StockAggregate
 	}
@@ -93,7 +93,7 @@ func (p *pipe) classifyStock(in <-chan *entity.StockAggregateForm, out map[strin
 
 // This method should be executed as goroutine
 // It is assured to terminate when channel is closed
-func (p *pipe) relayStockToSubscriber(in <-chan *entity.StockAggregate, out map[int64] conn) {
+func (p *pipe) relayStockToSubscriber(in <-chan *vo.StockAggregate, out map[int64] conn) {
 	for stock := range in {
 		for sub := range out {
 			out[sub].ch <- stock
@@ -104,10 +104,10 @@ func (p *pipe) relayStockToSubscriber(in <-chan *entity.StockAggregate, out map[
 
 func newPipe() *pipe {
 	return &pipe{
-		filteredChan:      make(chan *entity.StockAggregateForm, DEFAULT_BUFFER_SIZE),
-		classifiedChanMap: make(map[string]chan *entity.StockAggregate),
+		filteredChan:      make(chan *vo.StockAggregateForm, DEFAULT_BUFFER_SIZE),
+		classifiedChanMap: make(map[string]chan *vo.StockAggregate),
 		connPool:          make(map[string]map[int64]conn),
-		sinkChan:          make(chan *entity.StockAggregateForm, DEFAULT_BUFFER_SIZE),
+		sinkChan:          make(chan *vo.StockAggregateForm, DEFAULT_BUFFER_SIZE),
 	}
 }
 
@@ -120,12 +120,12 @@ func (p *pipe) ExecPipe(ctx context.Context) {
 }
 
 func (p *pipe) AddNewPipe(stock string) {
-	p.classifiedChanMap[stock] = make(chan *entity.StockAggregate, DEFAULT_BUFFER_SIZE)
+	p.classifiedChanMap[stock] = make(chan *vo.StockAggregate, DEFAULT_BUFFER_SIZE)
 	p.connPool[stock] = make(map[int64] conn)
 	go p.relayStockToSubscriber(p.classifiedChanMap[stock], p.connPool[stock])
 }
 
-func (p *pipe) PlaceOnStartPoint(data *entity.StockAggregateForm) {
+func (p *pipe) PlaceOnStartPoint(data *vo.StockAggregateForm) {
 	p.sinkChan <- data
 }
 

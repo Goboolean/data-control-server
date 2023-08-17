@@ -15,9 +15,14 @@ import (
 var instance *relayer.RelayerManager
 
 func SetUp() {
-	ws := websocket.NewMockAdapter().(*websocket.Adapter)
+	var err error
+	ws := websocket.NewMockAdapter().(*websocket.MockAdapter)
 	f := mock.New(time.Millisecond * 10, ws)
-	instance = inject.InitMockRelayer(ws)
+
+	instance, err = inject.InitMockRelayer(ws)
+	if err != nil {
+		panic(err)
+	}
 
 	if err := ws.RegisterFetcher(f); err != nil {
 		panic(err)

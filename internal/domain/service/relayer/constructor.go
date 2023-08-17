@@ -4,7 +4,7 @@ import (
 	"context"
 	"sync"
 
-	"github.com/Goboolean/fetch-server/internal/domain/entity"
+	"github.com/Goboolean/fetch-server/internal/domain/vo"
 	"github.com/Goboolean/fetch-server/internal/domain/port"
 	"github.com/Goboolean/fetch-server/internal/domain/port/out"
 	"github.com/Goboolean/fetch-server/internal/domain/service/store"
@@ -28,7 +28,7 @@ var (
 	once     sync.Once
 )
 
-func New(db out.StockPersistencePort, tx port.TX, meta out.StockMetadataPort, ws out.RelayerPort) *RelayerManager {
+func New(db out.StockPersistencePort, tx port.TX, meta out.StockMetadataPort, ws out.RelayerPort) (*RelayerManager, error) {
 
 	once.Do(func() {
 
@@ -45,11 +45,11 @@ func New(db out.StockPersistencePort, tx port.TX, meta out.StockMetadataPort, ws
 		}
 
 		instance.pipe = newPipe()
-	  instance.pipe.sinkChan <- &entity.StockAggregateForm{}
+	  instance.pipe.sinkChan <- &vo.StockAggregateForm{}
 		instance.pipe.ExecPipe(ctx)
 	})
 
-	return instance
+	return instance, nil
 }
 
 func (m *RelayerManager) Close() {

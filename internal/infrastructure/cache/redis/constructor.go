@@ -18,31 +18,31 @@ var (
 	once     sync.Once
 )
 
-func NewInstance(c *resolver.ConfigMap) *Redis {
+func NewInstance(c *resolver.ConfigMap) (*Redis, error) {
 
 	_, err := c.GetStringKey("USER")
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	password, err := c.GetStringKey("PASSWORD")
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	host, err := c.GetStringKey("HOST")
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	port, err := c.GetStringKey("PORT")
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	database, err := c.GetIntKey("DATABASE")
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	address := fmt.Sprintf("%s:%s", host, port)
@@ -62,7 +62,7 @@ func NewInstance(c *resolver.ConfigMap) *Redis {
 		instance = &Redis{client: rdb}
 	})
 
-	return instance
+	return instance, nil
 }
 
 func (r *Redis) Close() error {

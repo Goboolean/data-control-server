@@ -3,9 +3,9 @@ package websocket
 import (
 	"context"
 
-	"github.com/Goboolean/fetch-server/internal/domain/entity"
+	"github.com/Goboolean/fetch-server/internal/domain/vo"
 	"github.com/Goboolean/fetch-server/internal/domain/port/in"
-	"github.com/Goboolean/fetch-server/internal/infrastructure/prometheus"
+	"github.com/Goboolean/fetch-server/internal/util/prometheus"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws"
 )
 
@@ -20,15 +20,13 @@ type Adapter struct {
 	idToSymnbol map[string]string // stockid -> symbol
 
 	port in.RelayerPort
-
-	prom *prometheus.Server
 }
 
 
 // There are two options to register fetcher:
 // 1. compile time: use New()
 // 2. runtime: use StockFetchAdapter.RegisterFetcher()
-func NewAdapter(prom *prometheus.Server, fetchers ...ws.Fetcher) *Adapter {
+func NewAdapter(fetchers ...ws.Fetcher) *Adapter {
 
 	instance := &Adapter{
 		fetcher: make(map[string]ws.Fetcher),
@@ -75,17 +73,17 @@ func (a *Adapter) RegisterReceiver(port in.RelayerPort) {
 }
 
 
-func (s *Adapter) toDomainEntity(agg *ws.StockAggregate) (*entity.StockAggregateForm, error) {
+func (s *Adapter) toDomainEntity(agg *ws.StockAggregate) (*vo.StockAggregateForm, error) {
 	stockId, ok := s.symbolToId[agg.Symbol]
 	if !ok {
 		return nil, ErrSymbolUnrecognized
 	}
 
-	return &entity.StockAggregateForm{
-		StockAggsMeta: entity.StockAggsMeta{
+	return &vo.StockAggregateForm{
+		StockAggsMeta: vo.StockAggsMeta{
 			StockID: stockId,
 		},
-		StockAggregate: entity.StockAggregate{
+		StockAggregate: vo.StockAggregate{
 			Average: agg.Average,
 			Min: agg.Min,
 			Max: agg.Max,
@@ -105,14 +103,14 @@ func (s *Adapter) OnReceiveStockAggs(agg *ws.StockAggregate) error {
 		return err
 	}
 
-	s.port.PlaceStockFormBatch([]*entity.StockAggregateForm{data})
+	s.port.PlaceStockFormBatch([]*vo.StockAggregateForm{data})
 
-	s.prom.FetchCounter()().Inc()
+	prometheus.FetchCounter.Inc()
 	return nil
 }
 
 func (s *Adapter) OnReceiveStockAggsBatch(aggs []*ws.StockAggregate) error {
-	batch := make([]*entity.StockAggregateForm, len(aggs))
+	batch := make([]*vo.StockAggregateForm, len(aggs))
 
 	for _, agg := range aggs {
 		data, err := s.toDomainEntity(agg)
@@ -125,7 +123,7 @@ func (s *Adapter) OnReceiveStockAggsBatch(aggs []*ws.StockAggregate) error {
 
 	s.port.PlaceStockFormBatch(batch)
 
-	s.prom.FetchCounter()().Add(float64(len(aggs)))
+	prometheus.FetchCounter.Add(float64(len(aggs)))
 	return nil
 }
 

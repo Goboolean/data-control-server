@@ -28,7 +28,7 @@ var (
 )
 
 
-func New(tx port.TX, db out.StockPersistencePort, cache out.StockPersistenceCachePort, r *relayer.RelayerManager, o Option) *PersistenceManager {
+func New(tx port.TX, db out.StockPersistencePort, cache out.StockPersistenceCachePort, r *relayer.RelayerManager, o Option) (*PersistenceManager, error) {
 
 	ctx, cancel := context.WithCancel(context.Background())
 
@@ -51,7 +51,7 @@ func New(tx port.TX, db out.StockPersistencePort, cache out.StockPersistenceCach
 	})
 
 	instance.setUseCache()
-	return instance
+	return instance, nil
 }
 
 

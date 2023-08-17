@@ -4,12 +4,12 @@ import (
 	"context"
 	"log"
 
-	"github.com/Goboolean/fetch-server/internal/domain/entity"
+	"github.com/Goboolean/fetch-server/internal/domain/vo"
 )
 
 
 func (t *Transmitter) SubscribeRelayer(ctx context.Context, stockId string) error {
-	received := make([]*entity.StockAggregate, 0)
+	received := make([]*vo.StockAggregate, 0)
 
 	if err := t.broker.CreateStockBroker(ctx, stockId); err != nil {
 		return err

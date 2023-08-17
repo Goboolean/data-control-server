@@ -63,17 +63,17 @@ type ResponseBodyJson struct {
 	}            `json:"output"`
 }
 
-func isResponseValid(data []byte) bool {
+func parseToSubscriptionResponse(data []byte) (string, bool) {
 
 	var res ResponseJson
 	if err := json.Unmarshal([]byte(data), &res); err != nil {
-		return false
+		return "", false
 	}
-	if res.Header.TrID != "" && res.Header.TrKey != "" && res.Header.Encrypt != "" {
-		return false
+	if res.Header.TrID == "" || res.Header.TrKey == "" || res.Header.Encrypt == "" {
+		return "", false
 	}
 
-	return true
+	return res.Header.TrID, true
 }
 
 
