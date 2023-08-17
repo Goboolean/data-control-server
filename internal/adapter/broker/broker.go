@@ -3,7 +3,7 @@ package broker
 import (
 	"context"
 
-	"github.com/Goboolean/fetch-server/internal/domain/entity"
+	"github.com/Goboolean/fetch-server/internal/domain/vo"
 	"github.com/Goboolean/fetch-server/internal/domain/port/out"
 	"github.com/Goboolean/fetch-server/internal/util/prometheus"
 	"github.com/Goboolean/shared/pkg/broker"
@@ -22,7 +22,7 @@ func NewAdapter(conf *broker.Configurator, pub *broker.Publisher) out.Transmissi
 }
 
 
-func (a *Adapter) TransmitStockBatch(ctx context.Context, stock string, batch []*entity.StockAggregate) error {
+func (a *Adapter) TransmitStockBatch(ctx context.Context, stock string, batch []*vo.StockAggregate) error {
 
 	prometheus.BrokerCounter.Add(float64(len(batch)))
 

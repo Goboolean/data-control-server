@@ -13,7 +13,7 @@ import (
 	persistence_adapter "github.com/Goboolean/fetch-server/internal/adapter/persistence"
 	"github.com/Goboolean/fetch-server/internal/adapter/transaction"
 	"github.com/Goboolean/fetch-server/internal/adapter/websocket"
-	"github.com/Goboolean/fetch-server/internal/domain/entity"
+	"github.com/Goboolean/fetch-server/internal/domain/vo"
 	"github.com/Goboolean/fetch-server/internal/domain/service/config"
 	"github.com/Goboolean/fetch-server/internal/domain/service/persistence"
 	"github.com/Goboolean/fetch-server/internal/domain/service/relayer"
@@ -103,7 +103,7 @@ func Test_StockConfiguration(t *testing.T) {
 			return
 		}
 
-		want := entity.StockConfiguration{
+		want := vo.StockConfiguration{
 			StockId: stockId,
 			Relayable: true,
 			Storeable: false,
@@ -128,7 +128,7 @@ func Test_StockConfiguration(t *testing.T) {
 			return
 		}
 
-		want := entity.StockConfiguration{
+		want := vo.StockConfiguration{
 			StockId: stockId,
 			Relayable: true,
 			Storeable: false,
@@ -153,7 +153,7 @@ func Test_StockConfiguration(t *testing.T) {
 			return
 		}
 
-		want := entity.StockConfiguration{
+		want := vo.StockConfiguration{
 			StockId: stockId,
 			Relayable: true,
 			Storeable: true,
@@ -178,7 +178,7 @@ func Test_StockConfiguration(t *testing.T) {
 			return
 		}
 
-		want := entity.StockConfiguration{
+		want := vo.StockConfiguration{
 			StockId: stockId,
 			Relayable: false,
 			Storeable: false,

@@ -3,7 +3,7 @@ package persistence
 import (
 	"context"
 
-	"github.com/Goboolean/fetch-server/internal/domain/entity"
+	"github.com/Goboolean/fetch-server/internal/domain/vo"
 	"github.com/Goboolean/fetch-server/internal/domain/port"
 	"github.com/Goboolean/fetch-server/internal/domain/port/out"
 )
@@ -20,7 +20,7 @@ func NewMockAdapter() out.StockPersistencePort {
 }
 
 
-func (a *MockAdapter) StoreStock(tx port.Transactioner, stockId string, agg *entity.StockAggregate) error {
+func (a *MockAdapter) StoreStock(tx port.Transactioner, stockId string, agg *vo.StockAggregate) error {
 	if _, ok := a.db[stockId]; !ok {
 		a.db[stockId] = 0
 	}
@@ -28,7 +28,7 @@ func (a *MockAdapter) StoreStock(tx port.Transactioner, stockId string, agg *ent
 	return nil
 }
 
-func (a *MockAdapter) StoreStockBatch(tx port.Transactioner, stockId string, batch []*entity.StockAggregate) error {
+func (a *MockAdapter) StoreStockBatch(tx port.Transactioner, stockId string, batch []*vo.StockAggregate) error {
 	if _, ok := a.db[stockId]; !ok {
 		a.db[stockId] = 0
 	}

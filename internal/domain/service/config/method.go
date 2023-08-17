@@ -3,7 +3,7 @@ package config
 import (
 	"context"
 
-	"github.com/Goboolean/fetch-server/internal/domain/entity"
+	"github.com/Goboolean/fetch-server/internal/domain/vo"
 )
 
 func (m *ConfigurationManager) SetStockRelayableTrue(ctx context.Context, stockId string) error {
@@ -31,32 +31,32 @@ func (m *ConfigurationManager) SetStockTransmittableFalse(ctx context.Context, s
 }
 
 
-func (m *ConfigurationManager) GetStockConfiguration(ctx context.Context, stockId string) (entity.StockConfiguration, error) {
+func (m *ConfigurationManager) GetStockConfiguration(ctx context.Context, stockId string) (vo.StockConfiguration, error) {
 
 	tx, err := m.tx.Transaction(context.Background())
 	defer tx.Rollback()
 	if err != nil {
-		return entity.StockConfiguration{}, err
+		return vo.StockConfiguration{}, err
 	}
 
 	exists, err := m.db.CheckStockExists(tx, stockId)
 	if err != nil {
-		return entity.StockConfiguration{}, err
+		return vo.StockConfiguration{}, err
 	}
 
 	if !exists {
-		return entity.StockConfiguration{}, ErrStockNotFound
+		return vo.StockConfiguration{}, ErrStockNotFound
 	}
 	// check stock exist
-	// reflect stock info to entity
+	// reflect stock info to vo
 
 
 	if err := tx.Commit(); err != nil {
-		return entity.StockConfiguration{}, err
+		return vo.StockConfiguration{}, err
 	}
 
 	if isRelayable := m.relayer.IsStockRelayable(stockId); !isRelayable {
-		return entity.StockConfiguration{
+		return vo.StockConfiguration{
 			StockId: stockId,
 			Relayable: false,
 			Storeable: false,
@@ -67,7 +67,7 @@ func (m *ConfigurationManager) GetStockConfiguration(ctx context.Context, stockI
 	isStoreable := m.persistence.IsStockStoreable(stockId)
 	isTransmittable := m.transmitter.IsStockTransmittable(stockId)
 
-	return entity.StockConfiguration{
+	return vo.StockConfiguration{
 		StockId: stockId,
 		Relayable: true,
 		Storeable: isStoreable,
@@ -76,7 +76,7 @@ func (m *ConfigurationManager) GetStockConfiguration(ctx context.Context, stockI
 }
 
 
-func (m *ConfigurationManager) GetAllStockConfiguration(ctx context.Context) ([]entity.StockConfiguration, error) {
+func (m *ConfigurationManager) GetAllStockConfiguration(ctx context.Context) ([]vo.StockConfiguration, error) {
 
 	tx, err := m.tx.Transaction(context.Background())
 	defer tx.Rollback()
@@ -89,7 +89,7 @@ func (m *ConfigurationManager) GetAllStockConfiguration(ctx context.Context) ([]
 		return nil, err
 	}
 
-	confList := make([]entity.StockConfiguration, 0)
+	confList := make([]vo.StockConfiguration, 0)
 
 	for _, meta := range metaList {
 		stockId := meta.StockID
@@ -101,7 +101,7 @@ func (m *ConfigurationManager) GetAllStockConfiguration(ctx context.Context) ([]
 		isStoreable := m.persistence.IsStockStoreable(stockId)
 		isTransmittable := m.transmitter.IsStockTransmittable(stockId)
 
-		conf := entity.StockConfiguration{
+		conf := vo.StockConfiguration{
 			StockId: stockId,
 			Relayable: true,
 			Storeable: isStoreable,

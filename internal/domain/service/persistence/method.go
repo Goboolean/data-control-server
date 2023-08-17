@@ -5,13 +5,13 @@ import (
 	"log"
 	"time"
 
-	"github.com/Goboolean/fetch-server/internal/domain/entity"
+	"github.com/Goboolean/fetch-server/internal/domain/vo"
 )
 
 
 
 func (m *PersistenceManager) SubscribeRelayer(ctx context.Context, stockId string) error {
-	received := make([]*entity.StockAggregate, 0)
+	received := make([]*vo.StockAggregate, 0)
 
 	if err := m.s.StoreStock(stockId); err != nil {
 		return err
@@ -128,7 +128,7 @@ func (m *PersistenceManager) IsStockStoreable(stockId string) bool {
 }
 
 
-func (m *PersistenceManager) InsertStockOnDB(ctx context.Context, stockId string, batch []*entity.StockAggregate) error {
+func (m *PersistenceManager) InsertStockOnDB(ctx context.Context, stockId string, batch []*vo.StockAggregate) error {
 
 	tx, err := m.tx.Transaction(ctx)
 	if err != nil {
@@ -144,7 +144,7 @@ func (m *PersistenceManager) InsertStockOnDB(ctx context.Context, stockId string
 }
 
 
-func (m *PersistenceManager) InsertStockOnCache(ctx context.Context, stockId string, batch []*entity.StockAggregate) error {
+func (m *PersistenceManager) InsertStockOnCache(ctx context.Context, stockId string, batch []*vo.StockAggregate) error {
 	return m.cache.StoreStockBatchOnCache(ctx, stockId, batch)
 }
 
