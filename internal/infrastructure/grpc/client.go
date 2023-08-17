@@ -19,7 +19,7 @@ type Client struct {
 
 func NewClient(c *resolver.ConfigMap) (*Client, error) {
 
-	port, err := c.GetStringKey("SERVER_PORT")
+	port, err := c.GetStringKey("PORT")
 	if err != nil {
 		return nil, err
 	}

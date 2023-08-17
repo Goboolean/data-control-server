@@ -25,9 +25,12 @@ var (
 func SetUp() {
 	var err error
 
-	instance = server.New(&resolver.ConfigMap{
+	instance, err = server.New(&resolver.ConfigMap{
 		"PORT": os.Getenv("SERVER_PORT"),
 	}, grpc_adapter.NewMockAdapter())
+	if err != nil {
+		panic(err)
+	}
 
 	time.Sleep(1 * time.Second)
 
