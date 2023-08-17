@@ -77,7 +77,10 @@ func InitKafkaPublisher() (*broker.Publisher, error) {
 func InitGrpc(configuratorPort in.ConfiguratorPort) (*grpc.Host, error) {
 	configMap := provideGrpcArgs()
 	stockConfiguratorServer := grpc2.NewAdapter(configuratorPort)
-	host := grpc.New(configMap, stockConfiguratorServer)
+	host, err := grpc.New(configMap, stockConfiguratorServer)
+	if err != nil {
+		return nil, err
+	}
 	return host, nil
 }
 
@@ -211,7 +214,10 @@ func InitConfigurationManager(tx port.TX, queries *rdbms.Queries, persistenceMan
 func InitGrpcWithAdapter(configuratorPort in.ConfiguratorPort) (*grpc.Host, error) {
 	configMap := provideGrpcArgs()
 	stockConfiguratorServer := grpc2.NewAdapter(configuratorPort)
-	host := grpc.New(configMap, stockConfiguratorServer)
+	host, err := grpc.New(configMap, stockConfiguratorServer)
+	if err != nil {
+		return nil, err
+	}
 	return host, nil
 }
 
