@@ -61,12 +61,6 @@ func WithMockData() (err error) {
 
 	transactor := inject.InitTransactor(mongoDB, psqlDB)
 	
-	prom, err := inject.InitPrometheus()
-	if err != nil {
-		panic(err)
-	}
-	defer prom.Close()
-
 	ws := inject.InitWs()
 
 
@@ -110,6 +104,15 @@ func WithMockData() (err error) {
 		panic(err)
 	}
 	ws.RegisterReceiver(relayer)
+
+
+	// Initialize util
+	prom, err := inject.InitPrometheus()
+	if err != nil {
+		panic(err)
+	}
+	defer prom.Close()
+
 	
 
 	
