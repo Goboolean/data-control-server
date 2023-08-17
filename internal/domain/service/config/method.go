@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/Goboolean/fetch-server/internal/domain/entity"
-	"github.com/Goboolean/fetch-server/internal/domain/errs"
 )
 
 func (m *ConfigurationManager) SetStockRelayableTrue(ctx context.Context, stockId string) error {
@@ -46,7 +45,7 @@ func (m *ConfigurationManager) GetStockConfiguration(ctx context.Context, stockI
 	}
 
 	if !exists {
-		return entity.StockConfiguration{}, errs.StockNotFound
+		return entity.StockConfiguration{}, ErrStockNotFound
 	}
 	// check stock exist
 	// reflect stock info to entity
