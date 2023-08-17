@@ -1,14 +1,14 @@
 package meta
 
 import (
-	"github.com/Goboolean/fetch-server/internal/domain/entity"
+	"github.com/Goboolean/fetch-server/internal/domain/vo"
 	"github.com/Goboolean/fetch-server/internal/domain/port"
 	"github.com/Goboolean/fetch-server/internal/domain/port/out"
 )
 
 
 
-var data = map[string] entity.StockAggsMeta{
+var data = map[string] vo.StockAggsMeta{
 	"stock.facebook.usa": {
 		StockID: "stock.facebook.usa",
 		Platform: "mock",
@@ -54,12 +54,12 @@ func (a *MockAdapter) CheckStockExists(tx port.Transactioner, stockId string) (b
 	return ok, nil
 }
 
-func (a *MockAdapter) GetStockMetadata(tx port.Transactioner, stockId string) (entity.StockAggsMeta, error) {
+func (a *MockAdapter) GetStockMetadata(tx port.Transactioner, stockId string) (vo.StockAggsMeta, error) {
 	return data[stockId], nil
 }
 
-func (a *MockAdapter) GetAllStockMetadata(tx port.Transactioner) ([]entity.StockAggsMeta, error) {
-	var stocks []entity.StockAggsMeta
+func (a *MockAdapter) GetAllStockMetadata(tx port.Transactioner) ([]vo.StockAggsMeta, error) {
+	var stocks []vo.StockAggsMeta
 	for _, stock := range data {
 		stocks = append(stocks, stock)
 	}

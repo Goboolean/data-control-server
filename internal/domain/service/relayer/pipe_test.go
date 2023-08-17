@@ -4,19 +4,20 @@ import (
 	"context"
 	"math/rand"
 	"reflect"
+	"sync"
 	"testing"
 	"time"
 
-	"github.com/Goboolean/fetch-server/internal/domain/entity"
+	"github.com/Goboolean/fetch-server/internal/domain/vo"
 )
 
 
 
-func generateRandomStockAggregate() entity.StockAggregate {
+func generateRandomStockAggregate() vo.StockAggregate {
 
 	rand.Seed(time.Now().UnixNano())
 
-	return entity.StockAggregate{
+	return vo.StockAggregate{
 		EventType: "stock",
 		Average:  1.0 + rand.Float64()*(2.0),
 		Min:      1.0 + rand.Float64()*(2.0),
@@ -29,12 +30,12 @@ func generateRandomStockAggregate() entity.StockAggregate {
 }
 
 
-func generateRandomStockAggregateForm(stockId string) entity.StockAggregateForm {
+func generateRandomStockAggregateForm(stockId string) vo.StockAggregateForm {
 
 	agg := generateRandomStockAggregate()
 
-	return entity.StockAggregateForm{
-		StockAggsMeta: entity.StockAggsMeta{
+	return vo.StockAggregateForm{
+		StockAggsMeta: vo.StockAggsMeta{
 			StockID: stockId,
 		},
 		StockAggregate: agg,
@@ -48,7 +49,7 @@ func Test_generateRandomStockAggregateForm(t *testing.T) {
 	t.Run("VerifyStockNotNil", func(t *testing.T) {
 		agg := generateRandomStockAggregateForm(stockId)
 
-		if equals := reflect.DeepEqual(agg, &entity.StockAggregateForm{}); equals {
+		if equals := reflect.DeepEqual(agg, &vo.StockAggregateForm{}); equals {
 			t.Error("generateRandomStockAggregateForm() failed: got nil stockAggs")
 			return
 		}
@@ -65,15 +66,15 @@ func Test_filterBadTick(t *testing.T) {
 	
 	var p *pipe
 
-	sink := make(chan *entity.StockAggregateForm, DEFAULT_BUFFER_SIZE)
-	source := make(chan *entity.StockAggregateForm, DEFAULT_BUFFER_SIZE)
+	sink := make(chan *vo.StockAggregateForm, DEFAULT_BUFFER_SIZE)
+	source := make(chan *vo.StockAggregateForm, DEFAULT_BUFFER_SIZE)
 	defer close(sink)
 	defer close(source)
 
 	go p.filterBadTick(sink, source)
 
 	t.Run("FilterNilData", func(t *testing.T) {
-		sink <- &entity.StockAggregateForm{}
+		sink <- &vo.StockAggregateForm{}
 
 		time.Sleep(time.Millisecond * 10)
 	
@@ -124,10 +125,10 @@ func Test_classifyStock(t *testing.T) {
 
 	var p *pipe
 
-	sink := make(chan *entity.StockAggregateForm, DEFAULT_BUFFER_SIZE)
-	source := make(map[string] chan *entity.StockAggregate)
-	source[targetStockId] = make(chan *entity.StockAggregate, DEFAULT_BUFFER_SIZE)
-	source[antiTargetStockId] = make(chan *entity.StockAggregate, DEFAULT_BUFFER_SIZE)
+	sink := make(chan *vo.StockAggregateForm, DEFAULT_BUFFER_SIZE)
+	source := make(map[string] chan *vo.StockAggregate)
+	source[targetStockId] = make(chan *vo.StockAggregate, DEFAULT_BUFFER_SIZE)
+	source[antiTargetStockId] = make(chan *vo.StockAggregate, DEFAULT_BUFFER_SIZE)
 
 	defer func() {
 		close(sink)
@@ -184,7 +185,7 @@ func Test_relayStockToSubscriber(t *testing.T) {
 
 	var p *pipe
 
-	sink := make(chan *entity.StockAggregate, DEFAULT_BUFFER_SIZE)
+	sink := make(chan *vo.StockAggregate, DEFAULT_BUFFER_SIZE)
 	source := make(map[int64]conn)
 
 	source[0] = newConn(context.Background())
@@ -248,7 +249,7 @@ func Test_pipe(t *testing.T) {
 
 	var stockId = "test"
 	var count = 5
-	var ch <-chan *entity.StockAggregate
+	var ch <-chan *vo.StockAggregate
 
 	p.ExecPipe(context.Background())
 
@@ -290,23 +291,33 @@ func Test_pipe(t *testing.T) {
 
 
 	t.Run("CancelSubscribe", func(t *testing.T) {
+
+		var wg sync.WaitGroup
+
+		wg.Add(1)
+		go func(wg *sync.WaitGroup) {
+			defer wg.Done()
+
+			select {
+			case 	_, ok := <- ch:
+				if ok {
+					t.Error("RegisterNewSubscriber() failed: channel should be closed after cancel() is called, not receiving data")
+					return
+				}
+			case <- time.After(10 * time.Millisecond):
+				t.Error("RegisterNewSubscriber() failed: channel is not closed after cancel() is called")
+				return
+			}
+		}(&wg)
+
 		cancel()
+
+		time.Sleep(10 * time.Millisecond)
 
 		agg := generateRandomStockAggregateForm(stockId)
 		p.PlaceOnStartPoint(&agg)
-	
-		time.Sleep(10 * time.Millisecond)
-	
-		select {
-		case 	_, ok := <- ch:
-			if ok {
-				t.Error("RegisterNewSubscriber() failed: channel should be closed after cancel() is called")
-				return
-			}
-		default:
-			t.Error("RegisterNewSubscriber() failed: channel should be closed after cancel() is called")
-			return
-		}
+
+		wg.Wait()
 	})
 
 	t.Run("UnregisterSubscriber", func(t *testing.T) {

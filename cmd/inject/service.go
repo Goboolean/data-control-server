@@ -24,7 +24,6 @@ import (
 	"github.com/Goboolean/fetch-server/internal/domain/service/transmission"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/cache/redis"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/grpc"
-	"github.com/Goboolean/fetch-server/internal/infrastructure/prometheus"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws"
 	"github.com/google/wire"
 )
@@ -64,34 +63,25 @@ var AdapterSet = wire.NewSet(
 
 
 
-func provideTransmissionArgs() transmission.Option {
-	return transmission.Option{}
-}
 
-func providePersistenceArgs() persistence.Option {
-	return persistence.Option{}
-}
-
-
-
-func InitMockRelayer(out.RelayerPort) *relayer.RelayerManager {
+func InitMockRelayer(out.RelayerPort) (*relayer.RelayerManager, error) {
 	wire.Build(MockAdapterSet, relayer.New)
-	return &relayer.RelayerManager{}
+	return &relayer.RelayerManager{}, nil
 }
 
-func InitMockPersistenceManager(*relayer.RelayerManager, persistence.Option) *persistence.PersistenceManager {
+func InitMockPersistenceManager(*relayer.RelayerManager, persistence.Option) (*persistence.PersistenceManager, error) {
 	wire.Build(MockAdapterSet, persistence.New)
-	return &persistence.PersistenceManager{}
+	return &persistence.PersistenceManager{}, nil
 }
 
-func InitMockTransmissionManager(*relayer.RelayerManager, transmission.Option) *transmission.Transmitter {
+func InitMockTransmissionManager(*relayer.RelayerManager, transmission.Option) (*transmission.Transmitter, error) {
 	wire.Build(MockAdapterSet, transmission.New)
-	return &transmission.Transmitter{}
+	return &transmission.Transmitter{}, nil
 }
 
-func InitMockConfigurationManager(*relayer.RelayerManager, *persistence.PersistenceManager, *transmission.Transmitter) *config.ConfigurationManager {
+func InitMockConfigurationManager(*relayer.RelayerManager, *persistence.PersistenceManager, *transmission.Transmitter) (*config.ConfigurationManager, error) {
 	wire.Build(MockAdapterSet, config.New)
-	return &config.ConfigurationManager{}
+	return &config.ConfigurationManager{}, nil
 }
 
 
@@ -101,33 +91,33 @@ func InitTransactor(mongo *mongo.DB, psql *rdbms.PSQL) port.TX {
 	return &transaction.Tx{}
 }
 
-func InitRelayer(port.TX, *mongo.Queries, *rdbms.Queries, out.RelayerPort, *prometheus.Server) *relayer.RelayerManager {
+func InitRelayer(port.TX, *mongo.Queries, *rdbms.Queries, out.RelayerPort) (*relayer.RelayerManager, error) {
 	wire.Build(AdapterSet, relayer.New)
-	return &relayer.RelayerManager{}
+	return &relayer.RelayerManager{}, nil
 }
 
-func InitTransmission(port.TX, transmission.Option, *broker.Configurator, *broker.Publisher, *relayer.RelayerManager, *prometheus.Server) *transmission.Transmitter {
+func InitTransmission(port.TX, transmission.Option, *broker.Configurator, *broker.Publisher, *relayer.RelayerManager) (*transmission.Transmitter, error) {
 	wire.Build(AdapterSet, transmission.New)
-	return &transmission.Transmitter{}
+	return &transmission.Transmitter{}, nil
 }
 
-func InitPersistenceManager(port.TX, persistence.Option, *redis.Queries, *rdbms.Queries, *mongo.Queries, *relayer.RelayerManager, *prometheus.Server) *persistence.PersistenceManager {
+func InitPersistenceManager(port.TX, persistence.Option, *redis.Queries, *rdbms.Queries, *mongo.Queries, *relayer.RelayerManager) (*persistence.PersistenceManager, error) {
 	wire.Build(AdapterSet, persistence.New)
-	return &persistence.PersistenceManager{}
+	return &persistence.PersistenceManager{}, nil
 }
 
-func InitConfigurationManager(port.TX, *rdbms.Queries, *persistence.PersistenceManager, *transmission.Transmitter, *relayer.RelayerManager, *prometheus.Server) *config.ConfigurationManager {
+func InitConfigurationManager(port.TX, *rdbms.Queries, *persistence.PersistenceManager, *transmission.Transmitter, *relayer.RelayerManager) (*config.ConfigurationManager, error) {
 	wire.Build(AdapterSet, config.New)
-	return &config.ConfigurationManager{}
+	return &config.ConfigurationManager{}, nil
 }
 
 
-func InitGrpcWithAdapter(in.ConfiguratorPort) *grpc.Host {
+func InitGrpcWithAdapter(in.ConfiguratorPort) (*grpc.Host, error) {
 	wire.Build(AdapterSet, GrpcSet)
-	return &grpc.Host{}
+	return &grpc.Host{}, nil
 }
 
-func InitWs(*prometheus.Server) *websocket.Adapter {
+func InitWs() *websocket.Adapter {
 	wire.Build(AdapterSet)
 	return &websocket.Adapter{}
 }

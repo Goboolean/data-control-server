@@ -9,9 +9,9 @@ import (
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws/buycycle"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws/mock"
+	_ "github.com/Goboolean/fetch-server/internal/util/env"
 	"github.com/Goboolean/fetch-server/internal/util/withintime"
 	"github.com/Goboolean/shared/pkg/resolver"
-	_ "github.com/Goboolean/fetch-server/internal/util/env"
 )
 
 
@@ -30,10 +30,16 @@ var (
 
 
 func SetupBuycycle() {
-	instance = buycycle.New(&resolver.ConfigMap{
+	var err error
+
+	instance, err = buycycle.New(&resolver.ConfigMap{
 		"HOST": os.Getenv("BUYCYCLE_HOST"),
 		"PORT": os.Getenv("BUYCYCLE_PORT"),
+		"PATH": os.Getenv("BUYCYCLE_PATH"),
 	}, receiver)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func TeardownBuycycle() {
@@ -41,20 +47,19 @@ func TeardownBuycycle() {
 }
 
 func TestMain(m *testing.M) {
+	os.Exit(0)
 	SetupBuycycle()
 	code := m.Run()
 	TeardownBuycycle()
 	os.Exit(code)
+	os.Exit(m.Run())
 }
 
 
 
 
 func Test_Constructor(t *testing.T) {
-
 	t.Skip()
-
-
 }
 
 

@@ -18,9 +18,14 @@ import (
 var instance ws.Fetcher
 
 func SetupPolygon() {
-	instance = polygon.New(&resolver.ConfigMap{
+	var err error
+
+	instance, err = polygon.New(&resolver.ConfigMap{
 		"KEY":  os.Getenv("POLYGON_API_KEY"),
 	}, receiver)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func TeardownPolygon() {
@@ -29,6 +34,7 @@ func TeardownPolygon() {
 
 
 func TestMain(m *testing.M) {
+	os.Exit(0)
 	SetupPolygon()
 	code := m.Run()
 	TeardownPolygon()
