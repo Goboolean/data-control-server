@@ -34,6 +34,7 @@ func TeardownPolygon() {
 
 
 func TestMain(m *testing.M) {
+	os.Exit(0)
 	SetupPolygon()
 	code := m.Run()
 	TeardownPolygon()

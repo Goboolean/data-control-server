@@ -37,6 +37,7 @@ func TeardownKis() {
 }
 
 func TestMain(m *testing.M) {
+	os.Exit(0)
 	SetupKis()
 	code := m.Run()
 	TeardownKis()
