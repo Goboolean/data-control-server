@@ -21,8 +21,10 @@ func New(c *resolver.ConfigMap, adapter api.StockConfiguratorServer) (*Host, err
 	if err != nil {
 		return nil, err
 	}
+
+	address := fmt.Sprintf(":%s", port)
 	
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", port))
+	lis, err := net.Listen("tcp", address)
 	if err != nil {
 		return nil, err
 	}

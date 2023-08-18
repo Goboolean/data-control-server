@@ -44,6 +44,7 @@ func SetUp() {
 
 func TearDown() {
 	instance.Close()
+	client.Close()
 }
 
 func TestMain(m *testing.M) {
