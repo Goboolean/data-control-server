@@ -9,7 +9,6 @@ import (
 type TxSession struct {
 	M   resolver.Transactioner
 	P   resolver.Transactioner
-	R   resolver.Transactioner
 	ctx context.Context
 }
 
@@ -28,12 +27,6 @@ func (t *TxSession) Commit() error {
 		}
 	}
 
-	if t.R != nil {
-		if err := t.R.Commit(); err != nil {
-			return err
-		}
-	}
-
 	return nil
 }
 
@@ -48,12 +41,6 @@ func (t *TxSession) Rollback() error {
 
 	if t.P != nil {
 		if err := t.P.Rollback(); err != nil {
-			return err
-		}
-	}
-
-	if t.R != nil {
-		if err := t.R.Rollback(); err != nil {
 			return err
 		}
 	}
