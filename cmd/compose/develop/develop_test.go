@@ -12,7 +12,7 @@ import (
 	"github.com/Goboolean/fetch-server/internal/domain/port"
 	"github.com/Goboolean/fetch-server/internal/domain/service/config"
 	"github.com/Goboolean/fetch-server/internal/domain/service/persistence"
-	relayer_service "github.com/Goboolean/fetch-server/internal/domain/service/relay"
+	"github.com/Goboolean/fetch-server/internal/domain/service/relay"
 	"github.com/Goboolean/fetch-server/internal/domain/service/transmission"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/cache/redis"
 	grpc_infra "github.com/Goboolean/fetch-server/internal/infrastructure/grpc"
@@ -40,7 +40,7 @@ var (
 	redisQueries *redis.Queries
 	transactor   port.TX
 
-	relayer      *relayer_service.Manager
+	relayer      *relay.Manager
 	transmitter  *transmission.Manager
 	persister    *persistence.Manager
 	configurator *config.Configurator
@@ -283,9 +283,8 @@ func Test_Integration_DataPipelining(t *testing.T) {
 
 	})
 
-	//	t.Run("CheckStockStored", func(t *testing.T) {
-	//		mongoQueries.
-	//
-	//	})
+	t.Run("CheckStockStored", func(t *testing.T) {
+
+	})
 
 }
