@@ -3,6 +3,7 @@ package compose
 import (
 	"context"
 	"fmt"
+	"os"
 	"os/signal"
 	"syscall"
 
@@ -69,19 +70,19 @@ func Released() (err error) {
 	}
 	defer relayer.Close()
 
-	transmitter, err := inject.InitTransmission(transactor, transmission.Option{}, conf, pub, relayer)
+	transmitter, err := inject.InitTransmitter(transactor, transmission.Option{}, conf, pub, relayer)
 	if err != nil {
 		panic(err)
 	}
 	defer transmitter.Close()
 
-	persister, err := inject.InitPersistenceManager(transactor, persistence.Option{}, redisQueries, psqlQueries, mongoQueries, relayer)
+	persister, err := inject.InitPersister(transactor, persistence.Option{}, redisQueries, psqlQueries, mongoQueries, relayer)
 	if err != nil {
 		panic(err)
 	}
 	defer persister.Close()
 
-	configurator, err := inject.InitConfigurationManager(transactor, psqlQueries, persister, transmitter, relayer)
+	configurator, err := inject.InitConfigurator(transactor, psqlQueries, persister, transmitter, relayer)
 	if err != nil {
 		panic(err)
 	}
@@ -115,7 +116,7 @@ func Released() (err error) {
 
 	
 
-	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 	defer cancel()
 
 	defer func() {

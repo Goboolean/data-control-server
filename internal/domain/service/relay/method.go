@@ -1,4 +1,4 @@
-package relayer
+package relay
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 )
 
 
-func (m *RelayerManager) FetchStock(ctx context.Context, stockId string) error {
+func (m *Manager) FetchStock(ctx context.Context, stockId string) error {
 
 	tx, err := m.tx.Transaction(ctx)
 	if err != nil {
@@ -43,7 +43,7 @@ func (m *RelayerManager) FetchStock(ctx context.Context, stockId string) error {
 }
 
 
-func (m *RelayerManager) StopFetchingStock(ctx context.Context, stockId string) error {
+func (m *Manager) StopFetchingStock(ctx context.Context, stockId string) error {
 
 	if err := m.s.UnstoreStock(stockId); err != nil {
 		return err
@@ -60,12 +60,12 @@ func (m *RelayerManager) StopFetchingStock(ctx context.Context, stockId string) 
 }
 
 
-func (m *RelayerManager) IsStockRelayable(stockId string) bool {
+func (m *Manager) IsStockRelayable(stockId string) bool {
 	return m.s.StockExists(stockId)
 }
 
 
-func (m *RelayerManager) PlaceStockFormBatch(stockBatch []*vo.StockAggregateForm) {
+func (m *Manager) PlaceStockFormBatch(stockBatch []*vo.StockAggregateForm) {
 	for _, stock := range stockBatch {
 		m.pipe.PlaceOnStartPoint(stock)
 	}
@@ -73,7 +73,7 @@ func (m *RelayerManager) PlaceStockFormBatch(stockBatch []*vo.StockAggregateForm
 
 // 
 // If call side execute ctx.Done(), then subscription of this stock will be cancelled.
-func (m *RelayerManager) Subscribe(ctx context.Context, stockId string) (<-chan *vo.StockAggregate, error) {
+func (m *Manager) Subscribe(ctx context.Context, stockId string) (<-chan *vo.StockAggregate, error) {
 
 	if exists := m.s.StockExists(stockId); !exists {
 		return nil, ErrStockNotExists

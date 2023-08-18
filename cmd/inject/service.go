@@ -20,15 +20,13 @@ import (
 	"github.com/Goboolean/fetch-server/internal/domain/port/out"
 	"github.com/Goboolean/fetch-server/internal/domain/service/config"
 	"github.com/Goboolean/fetch-server/internal/domain/service/persistence"
-	"github.com/Goboolean/fetch-server/internal/domain/service/relayer"
+	"github.com/Goboolean/fetch-server/internal/domain/service/relay"
 	"github.com/Goboolean/fetch-server/internal/domain/service/transmission"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/cache/redis"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/grpc"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws"
 	"github.com/google/wire"
 )
-
-
 
 func provideFetcher() []ws.Fetcher {
 	return []ws.Fetcher{}
@@ -37,7 +35,6 @@ func provideFetcher() []ws.Fetcher {
 var AdapterArgumentSet = wire.NewSet(
 	provideFetcher,
 )
-
 
 var MockAdapterSet = wire.NewSet(
 	AdapterArgumentSet,
@@ -50,7 +47,6 @@ var MockAdapterSet = wire.NewSet(
 	websocket.NewAdapter,
 )
 
-
 var AdapterSet = wire.NewSet(
 	AdapterArgumentSet,
 	broker_adapter.NewAdapter,
@@ -61,56 +57,50 @@ var AdapterSet = wire.NewSet(
 	websocket.NewAdapter,
 )
 
-
-
-
-func InitMockRelayer(out.RelayerPort) (*relayer.RelayerManager, error) {
-	wire.Build(MockAdapterSet, relayer.New)
-	return &relayer.RelayerManager{}, nil
+func InitMockRelayer(out.RelayerPort) (*relay.Manager, error) {
+	wire.Build(MockAdapterSet, relay.New)
+	return &relay.Manager{}, nil
 }
 
-func InitMockPersistenceManager(*relayer.RelayerManager, persistence.Option) (*persistence.PersistenceManager, error) {
+func InitMockPersister(*relay.Manager, persistence.Option) (*persistence.Manager, error) {
 	wire.Build(MockAdapterSet, persistence.New)
-	return &persistence.PersistenceManager{}, nil
+	return &persistence.Manager{}, nil
 }
 
-func InitMockTransmissionManager(*relayer.RelayerManager, transmission.Option) (*transmission.Transmitter, error) {
+func InitMockTransmitter(*relay.Manager, transmission.Option) (*transmission.Manager, error) {
 	wire.Build(MockAdapterSet, transmission.New)
-	return &transmission.Transmitter{}, nil
+	return &transmission.Manager{}, nil
 }
 
-func InitMockConfigurationManager(*relayer.RelayerManager, *persistence.PersistenceManager, *transmission.Transmitter) (*config.ConfigurationManager, error) {
+func InitMockConfigurator(*relay.Manager, *persistence.Manager, *transmission.Manager) (*config.Configurator, error) {
 	wire.Build(MockAdapterSet, config.New)
-	return &config.ConfigurationManager{}, nil
+	return &config.Configurator{}, nil
 }
-
-
 
 func InitTransactor(mongo *mongo.DB, psql *rdbms.PSQL) port.TX {
 	wire.Build(transaction.New)
 	return &transaction.Tx{}
 }
 
-func InitRelayer(port.TX, *mongo.Queries, *rdbms.Queries, out.RelayerPort) (*relayer.RelayerManager, error) {
-	wire.Build(AdapterSet, relayer.New)
-	return &relayer.RelayerManager{}, nil
+func InitRelayer(port.TX, *mongo.Queries, *rdbms.Queries, out.RelayerPort) (*relay.Manager, error) {
+	wire.Build(AdapterSet, relay.New)
+	return &relay.Manager{}, nil
 }
 
-func InitTransmission(port.TX, transmission.Option, *broker.Configurator, *broker.Publisher, *relayer.RelayerManager) (*transmission.Transmitter, error) {
+func InitTransmitter(port.TX, transmission.Option, *broker.Configurator, *broker.Publisher, *relay.Manager) (*transmission.Manager, error) {
 	wire.Build(AdapterSet, transmission.New)
-	return &transmission.Transmitter{}, nil
+	return &transmission.Manager{}, nil
 }
 
-func InitPersistenceManager(port.TX, persistence.Option, *redis.Queries, *rdbms.Queries, *mongo.Queries, *relayer.RelayerManager) (*persistence.PersistenceManager, error) {
+func InitPersister(port.TX, persistence.Option, *redis.Queries, *rdbms.Queries, *mongo.Queries, *relay.Manager) (*persistence.Manager, error) {
 	wire.Build(AdapterSet, persistence.New)
-	return &persistence.PersistenceManager{}, nil
+	return &persistence.Manager{}, nil
 }
 
-func InitConfigurationManager(port.TX, *rdbms.Queries, *persistence.PersistenceManager, *transmission.Transmitter, *relayer.RelayerManager) (*config.ConfigurationManager, error) {
+func InitConfigurator(port.TX, *rdbms.Queries, *persistence.Manager, *transmission.Manager, *relay.Manager) (*config.Configurator, error) {
 	wire.Build(AdapterSet, config.New)
-	return &config.ConfigurationManager{}, nil
+	return &config.Configurator{}, nil
 }
-
 
 func InitGrpcWithAdapter(in.ConfiguratorPort) (*grpc.Host, error) {
 	wire.Build(AdapterSet, GrpcSet)

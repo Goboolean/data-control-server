@@ -19,7 +19,7 @@ import (
 
 
 var (
-	instance *persistence.PersistenceManager
+	instance *persistence.Manager
 	db out.StockPersistencePort
 	cache out.StockPersistenceCachePort
 )

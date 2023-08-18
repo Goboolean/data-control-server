@@ -10,7 +10,7 @@ import (
 
 
 
-func (m *PersistenceManager) SubscribeRelayer(ctx context.Context, stockId string) error {
+func (m *Manager) SubscribeRelayer(ctx context.Context, stockId string) error {
 	received := make([]*vo.StockAggregate, 0)
 
 	if err := m.s.StoreStock(stockId); err != nil {
@@ -118,17 +118,17 @@ func (m *PersistenceManager) SubscribeRelayer(ctx context.Context, stockId strin
 }
 
 
-func (m *PersistenceManager) UnsubscribeRelayer(stockId string) error {
+func (m *Manager) UnsubscribeRelayer(stockId string) error {
 	return m.s.UnstoreStock(stockId)
 }
 
 
-func (m *PersistenceManager) IsStockStoreable(stockId string) bool {
+func (m *Manager) IsStockStoreable(stockId string) bool {
 	return m.s.StockExists(stockId)
 }
 
 
-func (m *PersistenceManager) InsertStockOnDB(ctx context.Context, stockId string, batch []*vo.StockAggregate) error {
+func (m *Manager) InsertStockOnDB(ctx context.Context, stockId string, batch []*vo.StockAggregate) error {
 
 	tx, err := m.tx.Transaction(ctx)
 	if err != nil {
@@ -144,12 +144,12 @@ func (m *PersistenceManager) InsertStockOnDB(ctx context.Context, stockId string
 }
 
 
-func (m *PersistenceManager) InsertStockOnCache(ctx context.Context, stockId string, batch []*vo.StockAggregate) error {
+func (m *Manager) InsertStockOnCache(ctx context.Context, stockId string, batch []*vo.StockAggregate) error {
 	return m.cache.StoreStockBatchOnCache(ctx, stockId, batch)
 }
 
 
-func (m *PersistenceManager) SynchronizeCache(ctx context.Context, stockId string) error {
+func (m *Manager) SynchronizeCache(ctx context.Context, stockId string) error {
 	stockBatch, err := m.cache.GetAndEmptyCache(ctx, stockId)
 	if err != nil {
 		return err
