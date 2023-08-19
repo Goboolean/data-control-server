@@ -45,3 +45,6 @@ proto-generate:
 
 wire-build:
 	wire cmd/inject/infrastructure.go cmd/inject/service.go
+
+benchmark-app:
+	go test -bench . -cpuprofile cpu.out
