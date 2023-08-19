@@ -10,7 +10,7 @@ import (
 	"github.com/Goboolean/fetch-server/internal/domain/service/transmission"
 )
 
-type Configurator struct {
+type Manager struct {
 	relayer     *relay.Manager
 	persistence *persistence.Manager
 	transmitter *transmission.Manager
@@ -20,14 +20,14 @@ type Configurator struct {
 }
 
 var (
-	instance *Configurator
+	instance *Manager
 	once     sync.Once
 )
 
-func New(db out.StockMetadataPort, tx port.TX, r *relay.Manager, p *persistence.Manager, t *transmission.Manager) (*Configurator, error) {
+func New(db out.StockMetadataPort, tx port.TX, r *relay.Manager, p *persistence.Manager, t *transmission.Manager) (*Manager, error) {
 
 	once.Do(func() {
-		instance = &Configurator{
+		instance = &Manager{
 			relayer:     r,
 			persistence: p,
 			transmitter: t,

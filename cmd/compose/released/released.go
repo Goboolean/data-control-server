@@ -1,4 +1,4 @@
-package compose
+package released
 
 import (
 	"context"
@@ -16,7 +16,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
-func Released() (err error) {
+func Run() (err error) {
 	if err := godotenv.Load(); err != nil {
 		return err
 	}

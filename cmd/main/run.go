@@ -1,16 +1,17 @@
 package main
 
 import (
-	"log"
-
-	"github.com/Goboolean/fetch-server/cmd/compose"
+	"github.com/Goboolean/fetch-server/cmd/compose/released"
 	_ "github.com/Goboolean/fetch-server/internal/util/logger"
-	"github.com/joho/godotenv"
+	log "github.com/sirupsen/logrus"
 )
 
 
 
 func main() {
-	godotenv.Load()
-	log.Fatal(compose.Released())
+	// An option for released, not now
+	//log.Info(released.Run())
+
+	// An option for develop
+	log.Info(released.Run())
 }

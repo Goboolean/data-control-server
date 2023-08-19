@@ -1,4 +1,4 @@
-package compose_test
+package develop_test
 
 import (
 	"context"
@@ -43,7 +43,7 @@ var (
 	relayer      *relay.Manager
 	transmitter  *transmission.Manager
 	persister    *persistence.Manager
-	configurator *config.Configurator
+	Manager *config.Manager
 
 	grpc *grpc_infra.Host
 	ws   *websocket.Adapter
@@ -102,19 +102,20 @@ func SetUp() {
 		panic(err)
 	}
 
-	configurator, err = inject.InitConfigurator(transactor, psqlQueries, persister, transmitter, relayer)
+	Manager, err = inject.InitConfigurator(transactor, psqlQueries, persister, transmitter, relayer)
 	if err != nil {
 		panic(err)
 	}
 
 	// Initialize Infrastructure
-	grpc, err = inject.InitGrpcWithAdapter(configurator)
+	grpc, err = inject.InitGrpcWithAdapter(Manager)
 	if err != nil {
 		panic(err)
 	}
 
 	ws = inject.InitWs()
 
+	// TODO: Check if RegisterReceiver can be first
 	mock = inject.InitMockWebsocket(10*time.Millisecond, ws)
 
 	if err := ws.RegisterFetcher(mock); err != nil {
@@ -130,7 +131,7 @@ func SetUp() {
 }
 
 func TearDown() {
-	// Add defer keyword so that closing sequence follows the order of develop.go
+	// Must add defer keyword so that closing sequence follows the order of develop.go
 
 	defer pub.Close()
 	defer conf.Close()

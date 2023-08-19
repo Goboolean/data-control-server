@@ -21,9 +21,9 @@ import (
 	"github.com/Goboolean/shared/pkg/rdbms"
 )
 
-// This package does not test develop.go directly,
-// It tests the integration of all the packages that develop.go uses.
-// If all of this tests passes and develop.go is not broken, it may considered a success.
+// This package is for bemchmark test
+// It tests 
+
 
 var (
 	pub          *broker.Publisher
@@ -40,7 +40,7 @@ var (
 	relayer      *relay.Manager
 	transmitter  *transmission.Manager
 	persister    *persistence.Manager
-	configurator *config.Configurator
+	Manager *config.Manager
 
 	grpc *grpc_infra.Host
 	ws   *websocket.Adapter
@@ -99,13 +99,13 @@ func SetUp() {
 		panic(err)
 	}
 
-	configurator, err = inject.InitConfigurator(transactor, psqlQueries, persister, transmitter, relayer)
+	Manager, err = inject.InitConfigurator(transactor, psqlQueries, persister, transmitter, relayer)
 	if err != nil {
 		panic(err)
 	}
 
 	// Initialize Infrastructure
-	grpc, err = inject.InitGrpcWithAdapter(configurator)
+	grpc, err = inject.InitGrpcWithAdapter(Manager)
 	if err != nil {
 		panic(err)
 	}
@@ -153,5 +153,7 @@ func TestMain(t *testing.M) {
 
 
 func Test_Benchmark(b *testing.B) {
+
+	// i 
 	
 }

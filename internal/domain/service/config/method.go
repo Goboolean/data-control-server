@@ -6,32 +6,32 @@ import (
 	"github.com/Goboolean/fetch-server/internal/domain/vo"
 )
 
-func (m *Configurator) SetStockRelayableTrue(ctx context.Context, stockId string) error {
+func (m *Manager) SetStockRelayableTrue(ctx context.Context, stockId string) error {
 	return m.relayer.FetchStock(ctx, stockId)
 }
 
-func (m *Configurator) SetStockRelayableFalse(ctx context.Context, stockId string) error {
+func (m *Manager) SetStockRelayableFalse(ctx context.Context, stockId string) error {
 	return m.relayer.StopFetchingStock(ctx, stockId)
 }
 
-func (m *Configurator) SetStockStoreableTrue(ctx context.Context, stockId string) error {
+func (m *Manager) SetStockStoreableTrue(ctx context.Context, stockId string) error {
 	return m.persistence.SubscribeRelayer(ctx, stockId)
 }
 
-func (m *Configurator) SetStockStoreableFalse(ctx context.Context, stockId string) error {
+func (m *Manager) SetStockStoreableFalse(ctx context.Context, stockId string) error {
 	return m.persistence.UnsubscribeRelayer(stockId)
 }
 
-func (m *Configurator) SetStockTransmittableTrue(ctx context.Context, stockId string) error {
+func (m *Manager) SetStockTransmittableTrue(ctx context.Context, stockId string) error {
 	return m.transmitter.SubscribeRelayer(ctx, stockId)
 }
 
-func (m *Configurator) SetStockTransmittableFalse(ctx context.Context, stockId string) error {
+func (m *Manager) SetStockTransmittableFalse(ctx context.Context, stockId string) error {
 	return m.transmitter.UnsubscribeRelayer(stockId)
 }
 
 
-func (m *Configurator) GetStockConfiguration(ctx context.Context, stockId string) (vo.StockConfiguration, error) {
+func (m *Manager) GetStockConfiguration(ctx context.Context, stockId string) (vo.StockConfiguration, error) {
 
 	tx, err := m.tx.Transaction(context.Background())
 	if err != nil {
@@ -76,7 +76,7 @@ func (m *Configurator) GetStockConfiguration(ctx context.Context, stockId string
 }
 
 
-func (m *Configurator) GetAllStockConfiguration(ctx context.Context) ([]vo.StockConfiguration, error) {
+func (m *Manager) GetAllStockConfiguration(ctx context.Context) ([]vo.StockConfiguration, error) {
 
 	tx, err := m.tx.Transaction(context.Background())
 	defer tx.Rollback()

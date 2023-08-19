@@ -21,7 +21,7 @@ import (
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws/mock"
 )
 
-var instance *config.Configurator
+var instance *config.Manager
 
 func SetUp() {
 

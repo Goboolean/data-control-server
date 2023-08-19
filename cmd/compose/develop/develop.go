@@ -1,8 +1,7 @@
-package compose
+package develop
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
@@ -18,7 +17,7 @@ import (
 
 
 
-func Develop() (err error) {
+func Run() (err error) {
 	if err := godotenv.Load(); err != nil {
 		return err
 	}
@@ -114,16 +113,11 @@ func Develop() (err error) {
 
 	defer func() {
 		// Every fatel error will be catched here
-		if panic := recover(); err != nil {
+		if panic := recover(); panic != nil {
 			err = panic.(error)
-			//log.Panic(err)
 		}
 	}()
 
 	<- ctx.Done()
-	if err != nil {
-		return fmt.Errorf("panic occured: %v", err)
-	} else {
-		return nil
-	}
+	return
 }

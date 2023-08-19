@@ -72,9 +72,9 @@ func InitMockTransmitter(*relay.Manager, transmission.Option) (*transmission.Man
 	return &transmission.Manager{}, nil
 }
 
-func InitMockConfigurator(*relay.Manager, *persistence.Manager, *transmission.Manager) (*config.Configurator, error) {
+func InitMockConfigurator(*relay.Manager, *persistence.Manager, *transmission.Manager) (*config.Manager, error) {
 	wire.Build(MockAdapterSet, config.New)
-	return &config.Configurator{}, nil
+	return &config.Manager{}, nil
 }
 
 func InitTransactor(mongo *mongo.DB, psql *rdbms.PSQL) port.TX {
@@ -97,9 +97,9 @@ func InitPersister(port.TX, persistence.Option, *redis.Queries, *rdbms.Queries, 
 	return &persistence.Manager{}, nil
 }
 
-func InitConfigurator(port.TX, *rdbms.Queries, *persistence.Manager, *transmission.Manager, *relay.Manager) (*config.Configurator, error) {
+func InitConfigurator(port.TX, *rdbms.Queries, *persistence.Manager, *transmission.Manager, *relay.Manager) (*config.Manager, error) {
 	wire.Build(AdapterSet, config.New)
-	return &config.Configurator{}, nil
+	return &config.Manager{}, nil
 }
 
 func InitGrpcWithAdapter(in.ConfiguratorPort) (*grpc.Host, error) {
