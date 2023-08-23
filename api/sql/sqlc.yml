@@ -1,0 +1,9 @@
+version: 2
+sql:
+  - queries: ["./queries.sql", "./queries.test.sql"]
+    schema:  ["./schema.sql", "./schema.test.sql"]
+    engine: "postgresql"
+    gen:
+      go:
+        package: "rdbms"
+        out: "../../internal/infrastructure/rdbms"

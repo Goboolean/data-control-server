@@ -2,13 +2,11 @@ APP=fetch-server
 
 MAIN_PATH=cmd/main/run.go
 
-SQLC_PATH = ./api/sqlc/sqlc.yml
-
 GRPC_PROTO_PATH = ./api/grpc/fetch-server.proto
 GRPC_GEN_PATH = .
 
 REDIS_MODEL_PROTO_PATH = ./api/redis-model/model.proto
-REDIS_MODEL_GEN_PATH = ./internal/infrastructure/cache/redis
+REDIS_MODEL_GEN_PATH = ./internal/infrastructure/redis
 
 build-app:
 	docker-compose -f ./build/docker-compose.yml up --build -d
@@ -26,8 +24,17 @@ test-app:
 		exit 1; \
 	fi
 
-sqlc-generate:
-	sqlc generate -f $(SQLC_PATH)
+sqlc-synchronize:
+	curl -s -L https://raw.githubusercontent.com/Goboolean/shared/main/api/sql/schema.sql -o ./api/sql/schema.sql; \
+	curl -s -L https://raw.githubusercontent.com/Goboolean/shared/main/api/sql/schema.test.sql -o ./api/sql/schema.test.sql; \
+
+sqlc-generate: \
+	sqlc-synchronize; \
+	sqlc generate -f ./api/sql/sqlc.yml
+
+sqlc-check: \
+	sqlc-synchronize; \
+	sqlc compile -f ./api/sql/sqlc.yml
 
 grpc-generate:
 	protoc \
