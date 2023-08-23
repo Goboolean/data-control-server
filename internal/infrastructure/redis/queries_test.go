@@ -4,16 +4,13 @@ import (
 	"context"
 	"testing"
 
-	"github.com/Goboolean/fetch-server/internal/infrastructure/cache/redis"
+	"github.com/Goboolean/fetch-server/internal/infrastructure/redis"
 )
-
-
 
 var (
-	stockId = "test"
+	stockId   = "test"
 	stockData = &redis.RedisStockAggregate{}
 )
-
 
 func Test_InsertStockData(t *testing.T) {
 
@@ -36,18 +33,17 @@ func Test_InsertStockData(t *testing.T) {
 		return
 	}
 
-	if lengthUpdated != length + 1 {
+	if lengthUpdated != length+1 {
 		t.Errorf("failed to insert stock data: length = %d, lengthUpdated = %d", length, lengthUpdated)
 		return
 	}
 
 	t.Logf("length = %d, lengthUpdated = %d", length, lengthUpdated)
-	
+
 }
 
-
 func Test_GetAndEmptyCache(t *testing.T) {
-	
+
 	ctx := context.Background()
 
 	if err := queries.InsertStockDataBatch(ctx, stockId, []*redis.RedisStockAggregate{stockData}); err != nil {
@@ -71,7 +67,6 @@ func Test_GetAndEmptyCache(t *testing.T) {
 		t.Errorf("length want = %d, len(batch) received = %d", length, len(batch))
 		return
 	}
-	
 
 	lengthUpdated, err := queries.GetStockBatchStoredLength(ctx, stockId)
 	if err != nil {

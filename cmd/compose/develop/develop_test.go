@@ -14,8 +14,8 @@ import (
 	"github.com/Goboolean/fetch-server/internal/domain/service/persistence"
 	"github.com/Goboolean/fetch-server/internal/domain/service/relay"
 	"github.com/Goboolean/fetch-server/internal/domain/service/transmission"
-	"github.com/Goboolean/fetch-server/internal/infrastructure/cache/redis"
 	grpc_infra "github.com/Goboolean/fetch-server/internal/infrastructure/grpc"
+	"github.com/Goboolean/fetch-server/internal/infrastructure/redis"
 	mock_infra "github.com/Goboolean/fetch-server/internal/infrastructure/ws/mock"
 	_ "github.com/Goboolean/fetch-server/internal/util/env"
 	"github.com/Goboolean/shared/pkg/broker"
@@ -40,10 +40,10 @@ var (
 	redisQueries *redis.Queries
 	transactor   port.TX
 
-	relayer      *relay.Manager
-	transmitter  *transmission.Manager
-	persister    *persistence.Manager
-	Manager *config.Manager
+	relayer     *relay.Manager
+	transmitter *transmission.Manager
+	persister   *persistence.Manager
+	Manager     *config.Manager
 
 	grpc *grpc_infra.Host
 	ws   *websocket.Adapter

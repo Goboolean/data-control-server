@@ -22,8 +22,8 @@ import (
 	"github.com/Goboolean/fetch-server/internal/domain/service/persistence"
 	"github.com/Goboolean/fetch-server/internal/domain/service/relay"
 	"github.com/Goboolean/fetch-server/internal/domain/service/transmission"
-	"github.com/Goboolean/fetch-server/internal/infrastructure/cache/redis"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/grpc"
+	"github.com/Goboolean/fetch-server/internal/infrastructure/redis"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws"
 	"github.com/google/wire"
 )

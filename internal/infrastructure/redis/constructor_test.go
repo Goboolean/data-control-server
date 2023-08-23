@@ -5,17 +5,15 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/Goboolean/fetch-server/internal/infrastructure/cache/redis"
-	"github.com/Goboolean/shared/pkg/resolver"
+	"github.com/Goboolean/fetch-server/internal/infrastructure/redis"
 	_ "github.com/Goboolean/fetch-server/internal/util/env"
+	"github.com/Goboolean/shared/pkg/resolver"
 )
-
 
 var (
 	instance *redis.Redis
-	queries *redis.Queries
+	queries  *redis.Queries
 )
-
 
 func Setup() {
 
@@ -38,11 +36,9 @@ func Setup() {
 	queries = redis.New(instance)
 }
 
-
 func Teardown() {
 	instance.Close()
 }
-
 
 func TestMain(m *testing.M) {
 	Setup()
@@ -50,7 +46,6 @@ func TestMain(m *testing.M) {
 	Teardown()
 	os.Exit(code)
 }
-
 
 func Test_Constructor(t *testing.T) {
 	if err := instance.Ping(); err != nil {

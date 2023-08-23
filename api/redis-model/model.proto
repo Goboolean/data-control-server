@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package api;
 
-option go_package = "github.com/Goboolean/fetch-server/internal/infrastructure/cache/redis";
+option go_package = "github.com/Goboolean/fetch-server/internal/infrastructure/redis";
 
 message RedisStockAggregate {
   string stockId = 1;

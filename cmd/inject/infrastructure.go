@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"github.com/Goboolean/fetch-server/internal/domain/port/in"
-	"github.com/Goboolean/fetch-server/internal/infrastructure/cache/redis"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/grpc"
+	"github.com/Goboolean/fetch-server/internal/infrastructure/redis"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws/buycycle"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws/kis"
@@ -23,7 +23,6 @@ import (
 	"github.com/Goboolean/shared/pkg/resolver"
 	"github.com/google/wire"
 )
-
 
 func provideMongoArgs() *resolver.ConfigMap {
 	return &resolver.ConfigMap{
@@ -89,7 +88,7 @@ func provideKISArgs() *resolver.ConfigMap {
 
 func providePolygonArgs() *resolver.ConfigMap {
 	return &resolver.ConfigMap{
-		"KEY":  os.Getenv("POLYGON_API_KEY"),
+		"KEY": os.Getenv("POLYGON_API_KEY"),
 	}
 }
 
@@ -150,7 +149,6 @@ var PrometheusSet = wire.NewSet(
 	prometheus.New,
 )
 
-
 func InitMongo() (*mongo.DB, error) {
 	wire.Build(MongoSet)
 	return &mongo.DB{}, nil
@@ -175,7 +173,6 @@ func InitKafkaPublisher() (*broker.Publisher, error) {
 	wire.Build(KafkaSet)
 	return &broker.Publisher{}, nil
 }
-
 
 func InitGrpc(in.ConfiguratorPort) (*grpc.Host, error) {
 	wire.Build(GrpcSet, AdapterSet)
@@ -206,7 +203,6 @@ func InitMockWebsocket(time.Duration, ws.Receiver) *mock.MockFetcher {
 	wire.Build(mock.New)
 	return &mock.MockFetcher{}
 }
-
 
 func InitPrometheus() (*prometheus.Server, error) {
 	wire.Build(PrometheusSet)
