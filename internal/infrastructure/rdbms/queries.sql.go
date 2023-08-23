@@ -35,20 +35,6 @@ func (q *Queries) CreateAccessInfo(ctx context.Context, arg CreateAccessInfoPara
 	return err
 }
 
-const deletePlatformInfo = `-- name: DeletePlatformInfo :exec
-DELETE FROM product_platform WHERE product_id = ($1) AND platform_name = ($2)
-`
-
-type DeletePlatformInfoParams struct {
-	ProductID    string
-	PlatformName string
-}
-
-func (q *Queries) DeletePlatformInfo(ctx context.Context, arg DeletePlatformInfoParams) error {
-	_, err := q.db.ExecContext(ctx, deletePlatformInfo, arg.ProductID, arg.PlatformName)
-	return err
-}
-
 const getAllStockMetaList = `-- name: GetAllStockMetaList :many
 SELECT id, "name", symbol, "description", "type", exchange,  "location"  FROM product_meta
 `
@@ -149,78 +135,4 @@ func (q *Queries) GetStockMetaWithPlatform(ctx context.Context, id string) (GetS
 		&i.Identifier,
 	)
 	return i, err
-}
-
-const insertNewStockMeta = `-- name: InsertNewStockMeta :exec
-INSERT INTO product_meta (id, "name", symbol, "description", "type", exchange, "location") 
-VALUES ($1, $2, $3, $4, $5, $6, $7)
-`
-
-type InsertNewStockMetaParams struct {
-	ID          string
-	Name        string
-	Symbol      string
-	Description sql.NullString
-	Type        string
-	Exchange    string
-	Location    sql.NullString
-}
-
-func (q *Queries) InsertNewStockMeta(ctx context.Context, arg InsertNewStockMetaParams) error {
-	_, err := q.db.ExecContext(ctx, insertNewStockMeta,
-		arg.ID,
-		arg.Name,
-		arg.Symbol,
-		arg.Description,
-		arg.Type,
-		arg.Exchange,
-		arg.Location,
-	)
-	return err
-}
-
-const insertNewStockPlatformMeta = `-- name: InsertNewStockPlatformMeta :exec
-INSERT INTO product_platform (product_id, platform_name, identifier)
-VALUES ($1, $2, $3)
-`
-
-type InsertNewStockPlatformMetaParams struct {
-	ProductID    string
-	PlatformName string
-	Identifier   string
-}
-
-func (q *Queries) InsertNewStockPlatformMeta(ctx context.Context, arg InsertNewStockPlatformMetaParams) error {
-	_, err := q.db.ExecContext(ctx, insertNewStockPlatformMeta, arg.ProductID, arg.PlatformName, arg.Identifier)
-	return err
-}
-
-const insertPlatformInfo = `-- name: InsertPlatformInfo :exec
-INSERT INTO product_platform (product_id, platform_name, identifier) VALUES ($1, $2, $3)
-`
-
-type InsertPlatformInfoParams struct {
-	ProductID    string
-	PlatformName string
-	Identifier   string
-}
-
-func (q *Queries) InsertPlatformInfo(ctx context.Context, arg InsertPlatformInfoParams) error {
-	_, err := q.db.ExecContext(ctx, insertPlatformInfo, arg.ProductID, arg.PlatformName, arg.Identifier)
-	return err
-}
-
-const updatePlatformIdentifier = `-- name: UpdatePlatformIdentifier :exec
-UPDATE product_platform SET identifier = ($1) WHERE product_id = ($2) AND platform_name = ($3)
-`
-
-type UpdatePlatformIdentifierParams struct {
-	Identifier   string
-	ProductID    string
-	PlatformName string
-}
-
-func (q *Queries) UpdatePlatformIdentifier(ctx context.Context, arg UpdatePlatformIdentifierParams) error {
-	_, err := q.db.ExecContext(ctx, updatePlatformIdentifier, arg.Identifier, arg.ProductID, arg.PlatformName)
-	return err
 }
