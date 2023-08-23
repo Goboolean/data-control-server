@@ -11,12 +11,9 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
-
 type Server struct {
 	srv *http.Server
 }
-
-
 
 func New(c *resolver.ConfigMap) (*Server, error) {
 
@@ -37,8 +34,8 @@ func New(c *resolver.ConfigMap) (*Server, error) {
 	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
 
 	go func() {
-		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			err = err
+		if webErr := srv.ListenAndServe(); webErr != nil && webErr != http.ErrServerClosed {
+			err = webErr
 		}
 	}()
 	time.Sleep(100 * time.Millisecond)
@@ -47,7 +44,6 @@ func New(c *resolver.ConfigMap) (*Server, error) {
 		srv: srv,
 	}, err
 }
-
 
 func (s *Server) Close() {
 	s.srv.Shutdown(context.Background())
