@@ -6,15 +6,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Goboolean/shared/pkg/broker"
+	"github.com/Goboolean/fetch-server/internal/infrastructure/broker"
 	"github.com/Goboolean/shared/pkg/resolver"
 	"github.com/stretchr/testify/assert"
 )
 
 var (
-	pub       *broker.Publisher
-	data      = &broker.StockAggregate{}
-
+	pub  *broker.Publisher
+	data = &broker.StockAggregate{}
 )
 
 func SetupPublisher() {
@@ -33,8 +32,6 @@ func TeardownPublisher() {
 	pub.Close()
 }
 
-
-
 func TestPublisher(t *testing.T) {
 
 	SetupPublisher()
@@ -43,14 +40,12 @@ func TestPublisher(t *testing.T) {
 	t.Run("Ping", func(t *testing.T) {
 		ctx, cancelFunc := context.WithTimeout(context.Background(), 3*time.Second)
 		defer cancelFunc()
-	
+
 		if err := pub.Ping(ctx); err != nil {
 			t.Errorf("Ping() failed: %v", err)
 		}
 	})
 }
-
-
 
 func Test_SendData(t *testing.T) {
 

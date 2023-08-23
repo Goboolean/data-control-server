@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/Goboolean/shared/pkg/rdbms"
+	"github.com/Goboolean/fetch-server/internal/infrastructure/rdbms"
 	"github.com/Goboolean/shared/pkg/resolver"
 	"github.com/joho/godotenv"
 )
@@ -59,6 +59,3 @@ func Test_Constructor(t *testing.T) {
 		t.Errorf("Ping() failed: %v", err)
 	}
 }
-
-
-

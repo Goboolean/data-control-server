@@ -8,12 +8,10 @@ import (
 
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws/polygon"
+	_ "github.com/Goboolean/fetch-server/internal/util/env"
 	"github.com/Goboolean/fetch-server/internal/util/withintime"
 	"github.com/Goboolean/shared/pkg/resolver"
-	_ "github.com/Goboolean/fetch-server/internal/util/env"
 )
-
-
 
 var instance ws.Fetcher
 
@@ -21,7 +19,7 @@ func SetupPolygon() {
 	var err error
 
 	instance, err = polygon.New(&resolver.ConfigMap{
-		"KEY":  os.Getenv("POLYGON_API_KEY"),
+		"KEY": os.Getenv("POLYGON_API_KEY"),
 	}, receiver)
 	if err != nil {
 		panic(err)
@@ -32,7 +30,6 @@ func TeardownPolygon() {
 	instance.Close()
 }
 
-
 func TestMain(m *testing.M) {
 	os.Exit(0)
 	SetupPolygon()
@@ -40,7 +37,6 @@ func TestMain(m *testing.M) {
 	TeardownPolygon()
 	os.Exit(code)
 }
-
 
 func Test_Constructor(t *testing.T) {
 
@@ -54,12 +50,10 @@ func Test_Constructor(t *testing.T) {
 	})
 }
 
-
-
 var (
-	once sync.Once
+	once                  sync.Once
 	withinDurationChecker *withintime.WithinDurationChecker
-	isMarketOnCache bool
+	isMarketOnCache       bool
 )
 
 // Struct withinDurationChecker is initialized with information of the USA stock market.
@@ -73,21 +67,21 @@ func isMarketOn() bool {
 		withinDurationChecker, err = withintime.New(&withintime.Option{
 			Location: "America/New_York",
 			Inclusion: withintime.ConditionList{
-				time.Monday:    &withintime.Condition{StartTime: "09:30", EndTime:   "16:00",},
-				time.Tuesday:   &withintime.Condition{StartTime: "09:30", EndTime:   "16:00",},
-				time.Wednesday: &withintime.Condition{StartTime: "09:30", EndTime:   "16:00",},
-				time.Thursday:  &withintime.Condition{StartTime: "09:30", EndTime:   "16:00",},
-				time.Friday:    &withintime.Condition{StartTime: "09:30", EndTime:   "16:00",},
+				time.Monday:    &withintime.Condition{StartTime: "09:30", EndTime: "16:00"},
+				time.Tuesday:   &withintime.Condition{StartTime: "09:30", EndTime: "16:00"},
+				time.Wednesday: &withintime.Condition{StartTime: "09:30", EndTime: "16:00"},
+				time.Thursday:  &withintime.Condition{StartTime: "09:30", EndTime: "16:00"},
+				time.Friday:    &withintime.Condition{StartTime: "09:30", EndTime: "16:00"},
 			},
 			Exclusion: withintime.ConditionList{
 				// TODO: add holiday
-				},
-			}, nil)
+			},
+		}, nil)
 
 		if err != nil {
 			panic(err)
 		}
 	})
-	
+
 	return isMarketOnCache
 }

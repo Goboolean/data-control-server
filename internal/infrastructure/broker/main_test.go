@@ -6,19 +6,18 @@ import (
 	"testing"
 	"time"
 
-	_ "github.com/Goboolean/shared/internal/util/env"
-	"github.com/Goboolean/shared/pkg/broker"
+	"github.com/Goboolean/fetch-server/internal/infrastructure/broker"
+	_ "github.com/Goboolean/fetch-server/internal/util/env"
 	"github.com/Goboolean/shared/pkg/resolver"
 )
-
 
 func SetUp() {
 
 	const (
-		existingTopic = "existing-topic" // this code is assured
+		existingTopic    = "existing-topic" // this code is assured
 		nonExistentTopic = "non-existent-topic"
-		testTopic = "test-topic"
-		defaultTopic = "default-topic"
+		testTopic        = "test-topic"
+		defaultTopic     = "default-topic"
 	)
 
 	conf, err := broker.NewConfigurator(&resolver.ConfigMap{
@@ -82,8 +81,6 @@ func SetUp() {
 		}
 	}
 }
-
-
 
 func TestMain(m *testing.M) {
 	SetUp()

@@ -10,10 +10,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-
 const platformName = "buycycle"
-
-
 
 type Subscriber struct {
 	conn *websocket.Conn
@@ -22,8 +19,6 @@ type Subscriber struct {
 	cancel context.CancelFunc
 	r      ws.Receiver
 }
-
-
 
 func New(c *resolver.ConfigMap, r ws.Receiver) (*Subscriber, error) {
 
@@ -70,14 +65,12 @@ func New(c *resolver.ConfigMap, r ws.Receiver) (*Subscriber, error) {
 	return instance, nil
 }
 
-
 func (s *Subscriber) PlatformName() string {
 	return platformName
 }
 
-
 func (s *Subscriber) Close() error {
-	
+
 	if err := s.conn.Close(); err != nil {
 		return err
 	}
@@ -85,7 +78,6 @@ func (s *Subscriber) Close() error {
 	s.cancel()
 	return nil
 }
-
 
 func (s *Subscriber) Ping() error {
 	handler := s.conn.PingHandler()

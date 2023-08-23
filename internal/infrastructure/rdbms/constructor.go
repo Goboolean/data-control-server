@@ -13,8 +13,6 @@ type PSQL struct {
 	db *sql.DB
 }
 
-
-
 func NewDB(c *resolver.ConfigMap) (*PSQL, error) {
 	user, err := c.GetStringKey("USER")
 	if err != nil {

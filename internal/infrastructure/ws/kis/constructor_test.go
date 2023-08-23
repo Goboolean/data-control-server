@@ -7,8 +7,8 @@ import (
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws/kis"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws/mock"
-	"github.com/Goboolean/shared/pkg/resolver"
 	_ "github.com/Goboolean/fetch-server/internal/util/env"
+	"github.com/Goboolean/shared/pkg/resolver"
 )
 
 var instance ws.Fetcher

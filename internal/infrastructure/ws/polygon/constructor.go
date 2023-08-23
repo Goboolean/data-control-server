@@ -10,17 +10,13 @@ import (
 
 const platformName = "polygon"
 
-
-
 type Subscriber struct {
 	conn *polygonws.Client
 
-	r   ws.Receiver
-	ctx context.Context
+	r      ws.Receiver
+	ctx    context.Context
 	cancel context.CancelFunc
 }
-
-
 
 func New(c *resolver.ConfigMap, r ws.Receiver) (*Subscriber, error) {
 
@@ -42,9 +38,9 @@ func New(c *resolver.ConfigMap, r ws.Receiver) (*Subscriber, error) {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	instance := &Subscriber{
-		conn: conn,
-		r:    r,
-		ctx:  ctx,
+		conn:   conn,
+		r:      r,
+		ctx:    ctx,
 		cancel: cancel,
 	}
 
@@ -52,18 +48,15 @@ func New(c *resolver.ConfigMap, r ws.Receiver) (*Subscriber, error) {
 	return instance, nil
 }
 
-
 func (s *Subscriber) PlatformName() string {
 	return platformName
 }
-
 
 func (s *Subscriber) Close() error {
 	s.cancel()
 	s.conn.Close()
 	return nil
 }
-
 
 func (s *Subscriber) Ping() error {
 	// Ping() does not use directly *polygon.Client.

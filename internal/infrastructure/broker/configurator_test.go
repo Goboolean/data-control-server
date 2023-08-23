@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Goboolean/shared/pkg/broker"
+	"github.com/Goboolean/fetch-server/internal/infrastructure/broker"
 	"github.com/Goboolean/shared/pkg/resolver"
 	"github.com/stretchr/testify/assert"
 )
@@ -29,8 +29,6 @@ func SetupConfigurator() {
 func TeardownConfigurator() {
 	conf.Close()
 }
-
-
 
 func Test_Configurator(t *testing.T) {
 
@@ -59,14 +57,14 @@ func Test_CreateTopic(t *testing.T) {
 
 		err := conf.CreateTopic(ctx, topic)
 		assert.NoError(t, err)
-	
+
 		exists, err := conf.TopicExists(ctx, topic)
 		assert.NoError(t, err)
 		assert.True(t, exists)
 	})
 
 	t.Run("CreateExitingTopic", func(t *testing.T) {
-		
+
 		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 		defer cancel()
 
@@ -77,12 +75,11 @@ func Test_CreateTopic(t *testing.T) {
 	t.Cleanup(func() {
 		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 		defer cancel()
-		
+
 		err := conf.DeleteTopic(ctx, topic)
 		assert.NoError(t, err)
 	})
 }
-
 
 func Test_DeleteTopic(t *testing.T) {
 
@@ -93,26 +90,25 @@ func Test_DeleteTopic(t *testing.T) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
-	
+
 	err := conf.CreateTopic(ctx, topic)
 	assert.NoError(t, err)
 
-
 	t.Run("DeleteTopic", func(t *testing.T) {
-		
+
 		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 		defer cancel()
 
 		err := conf.DeleteTopic(ctx, topic)
 		assert.NoError(t, err)
-	
+
 		exists, err := conf.TopicExists(ctx, topic)
 		assert.NoError(t, err)
 		assert.False(t, exists)
 	})
 
 	t.Run("DeleteNonExistingTopic", func(t *testing.T) {
-		
+
 		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 		defer cancel()
 
@@ -120,8 +116,6 @@ func Test_DeleteTopic(t *testing.T) {
 		assert.Error(t, err)
 	})
 }
-
-
 
 func Test_GetTopicList(t *testing.T) {
 
@@ -141,10 +135,8 @@ func Test_GetTopicList(t *testing.T) {
 	}
 }
 
-
-
 func Test_DeleteALlTopics(t *testing.T) {
-	
+
 	SetupConfigurator()
 	defer TeardownConfigurator()
 

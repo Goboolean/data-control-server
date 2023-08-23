@@ -14,13 +14,10 @@ import (
 	_ "github.com/Goboolean/fetch-server/internal/util/env"
 )
 
-
 var (
 	instance *server.Host
-	client *server.Client
+	client   *server.Client
 )
-
-
 
 func SetUp() {
 	var err error
@@ -53,7 +50,6 @@ func TestMain(m *testing.M) {
 	TearDown()
 	os.Exit(code)
 }
-
 
 func Test_Constructur(t *testing.T) {
 

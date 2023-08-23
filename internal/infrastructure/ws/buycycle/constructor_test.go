@@ -14,20 +14,14 @@ import (
 	"github.com/Goboolean/shared/pkg/resolver"
 )
 
-
-
 var instance ws.Fetcher
 
 var (
-	count int = 0
+	count    int         = 0
 	receiver ws.Receiver = mock.NewMockReceiver(func() {
 		count++
 	})
 )
-
-
-
-
 
 func SetupBuycycle() {
 	var err error
@@ -55,18 +49,14 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-
-
-
 func Test_Constructor(t *testing.T) {
 	t.Skip()
 }
 
-
 var (
-	once sync.Once
+	once                  sync.Once
 	withinDurationChecker *withintime.WithinDurationChecker
-	isMarketOnCache bool
+	isMarketOnCache       bool
 )
 
 // Struct withinDurationChecker is initialized with information of the Korea stock market.
@@ -88,8 +78,8 @@ func isMarketOn() bool {
 			},
 			Exclusion: withintime.ConditionList{
 				// TODO: add holiday
-				},
-			}, nil)
+			},
+		}, nil)
 
 		if err != nil {
 			panic(err)
@@ -97,6 +87,6 @@ func isMarketOn() bool {
 
 		isMarketOnCache = withinDurationChecker.IsTimeNowWithinDuration()
 	})
-	
+
 	return isMarketOnCache
 }

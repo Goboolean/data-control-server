@@ -9,15 +9,11 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-
-
 type Client struct {
 	pb.StockConfiguratorClient
 
 	conn *grpc.ClientConn
 }
-
-
 
 func NewClient(c *resolver.ConfigMap) (*Client, error) {
 
@@ -35,11 +31,9 @@ func NewClient(c *resolver.ConfigMap) (*Client, error) {
 
 	return &Client{
 		StockConfiguratorClient: pb.NewStockConfiguratorClient(conn),
-		conn: conn,
+		conn:                    conn,
 	}, nil
 }
-
-
 
 func (c *Client) Close() {
 	c.conn.Close()

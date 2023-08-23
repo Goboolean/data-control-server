@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Goboolean/shared/pkg/broker"
+	"github.com/Goboolean/fetch-server/internal/infrastructure/broker"
 	"github.com/Goboolean/shared/pkg/resolver"
 	"github.com/stretchr/testify/assert"
 )
@@ -14,6 +14,7 @@ import (
 var sub *broker.Subscriber
 
 type SubscribeListenerImpl struct{}
+
 var stockChan = make(chan *broker.StockAggregate)
 
 func (i *SubscribeListenerImpl) OnReceiveStockAggs(name string, data *broker.StockAggregate) {
@@ -24,8 +25,8 @@ func SetupSubscriber() {
 	var err error
 
 	sub, err = broker.NewSubscriber(&resolver.ConfigMap{
-		"HOST": os.Getenv("KAFKA_HOST"),
-		"PORT": os.Getenv("KAFKA_PORT"),
+		"HOST":  os.Getenv("KAFKA_HOST"),
+		"PORT":  os.Getenv("KAFKA_PORT"),
 		"GROUP": "test",
 	}, context.Background(), &SubscribeListenerImpl{})
 	if err != nil {
@@ -36,8 +37,6 @@ func SetupSubscriber() {
 func TeardownSubscriber() {
 	sub.Close()
 }
-
-
 
 func Test_Subscriber(t *testing.T) {
 
@@ -53,17 +52,14 @@ func Test_Subscriber(t *testing.T) {
 	})
 }
 
-
-
 func Test_Subscribe(t *testing.T) {
 
 	var topic = "test-topic"
-	
+
 	SetupSubscriber()
 	SetupPublisher()
 	defer TeardownSubscriber()
 	defer TeardownPublisher()
-
 
 	type args struct {
 		topic string
