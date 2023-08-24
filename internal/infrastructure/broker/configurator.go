@@ -72,7 +72,7 @@ func (c *Configurator) Ping(ctx context.Context) error {
 	// It will return error if there is no response within deadline
 	deadline, ok := ctx.Deadline()
 	if !ok {
-		return errTimeoutRequired
+		return ErrTimeoutRequired
 	}
 
 	_, err := c.AdminClient.GetMetadata(nil, true, int(time.Until(deadline).Milliseconds()))
@@ -121,11 +121,11 @@ func (c *Configurator) DeleteTopic(ctx context.Context, topic string) error {
 	result, err := c.AdminClient.DeleteTopics(ctx, []string{topic})
 
 	if err != nil {
-		return errors.Wrap(errFatalWhileDeletingTopic, err.Error())
+		return errors.Wrap(ErrFatalWhileDeletingTopic, err.Error())
 	}
 
 	if err := result[0].Error; err.Code() != kafka.ErrNoError {
-		return errors.Wrap(errTrivalWhileDeletingTopic, err.String())
+		return errors.Wrap(ErrTrivalWhileDeletingTopic, err.String())
 	}
 
 	return nil
@@ -156,7 +156,7 @@ func (c *Configurator) TopicExists(ctx context.Context, topic string) (bool, err
 
 	deadline, ok := ctx.Deadline()
 	if !ok {
-		return false, errTimeoutRequired
+		return false, ErrTimeoutRequired
 	}
 
 	metadata, err := c.AdminClient.GetMetadata(nil, true, int(time.Until(deadline).Milliseconds()))
@@ -173,7 +173,7 @@ func (c *Configurator) GetTopicList(ctx context.Context) ([]string, error) {
 
 	deadline, ok := ctx.Deadline()
 	if !ok {
-		return nil, errTimeoutRequired
+		return nil, ErrTimeoutRequired
 	}
 
 	metadata, err := c.AdminClient.GetMetadata(nil, true, int(time.Until(deadline).Milliseconds()))

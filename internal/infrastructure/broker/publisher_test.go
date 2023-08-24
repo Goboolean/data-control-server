@@ -60,7 +60,7 @@ func Test_SendData(t *testing.T) {
 	})
 
 	t.Run("SendToNonExistingTopic", func(t *testing.T) {
-		t.Skip("Skip this test because auto.create.topics.enable may be true")
+		t.Skip("Skip this test because auto.create.topics.enable is default true, want false")
 		err := pub.SendData("non-existent-topic", data)
 		assert.Error(t, err)
 	})

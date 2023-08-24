@@ -3,12 +3,13 @@ package broker
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/Goboolean/shared/pkg/resolver"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"google.golang.org/protobuf/proto"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // produce.Flush should be finished within this time
@@ -34,7 +35,7 @@ func NewPublisher(c *resolver.ConfigMap) (*Publisher, error) {
 
 	config := &kafka.ConfigMap{
 		"bootstrap.servers":   address,
-		"acks":                1,    // 0 if no response is required, 1 if only leader response is required, -1 if all in-sync replicas' response is required
+		"acks":                0,    // 0 if no response is required, 1 if only leader response is required, -1 if all in-sync replicas' response is required
 		"go.delivery.reports": true, // Delivery reports (on delivery success/failure) will be sent on the Producer.Events() channel
 	}
 
@@ -48,7 +49,7 @@ func NewPublisher(c *resolver.ConfigMap) (*Publisher, error) {
 
 // It should be called before program ends to free memory
 func (p *Publisher) Close() {
-	p.producer.Close()
+	//p.producer.Close()
 }
 
 // Check if connection to kafka is alive
@@ -90,16 +91,15 @@ func (p *Publisher) SendData(topic string, data *StockAggregate) error {
 			switch ev := e.(type) {
 			case *kafka.Message:
 				if ev.TopicPartition.Error != nil {
-					log.Printf("Delivery failed: %v\n", ev.TopicPartition.Error)
-					log.Printf("binary data: %v\n", ev.Value)
+					log.WithFields(log.Fields{
+						"topic": topic,
+						"data": ev.Value,
+						"message": ev.TopicPartition.Error,
+					}).Error(ErrFailedToDeliveryData)
 				}
 			}
 		}
 	}()
-
-	if remain := p.producer.Flush(int(defaultFlushTimeout.Milliseconds())); remain != 0 {
-		return fmt.Errorf("%d events is stil remaining: ", remain)
-	}
 
 	return nil
 }
@@ -129,17 +129,14 @@ func (p *Publisher) SendDataBatch(topic string, batch []*StockAggregate) error {
 		for e := range p.producer.Events() {
 			switch ev := e.(type) {
 			case *kafka.Message:
-				if ev.TopicPartition.Error != nil {
-					log.Fatalf("Delivery failed: %v\n", ev.TopicPartition.Error)
-					log.Fatalf("binary data: %v\n", ev.Value)
-				}
+				log.WithFields(log.Fields{
+					"topic": topic,
+					"data": ev.Value,
+					"message": ev.TopicPartition.Error,
+				}).Error(ErrFailedToDeliveryData)
 			}
 		}
 	}()
-
-	if remain := p.producer.Flush(int(defaultFlushTimeout.Milliseconds())); remain != 0 {
-		return fmt.Errorf("%d events is stil remaining: ", remain)
-	}
 
 	return nil
 }
