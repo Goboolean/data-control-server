@@ -3,6 +3,7 @@ package broker
 import (
 	"context"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/Goboolean/shared/pkg/resolver"
@@ -14,6 +15,14 @@ import (
 type Configurator struct {
 	AdminClient *kafka.AdminClient
 }
+
+
+
+var (
+	conf *Configurator
+	once sync.Once
+)
+
 
 func NewConfigurator(c *resolver.ConfigMap) (*Configurator, error) {
 
@@ -53,7 +62,7 @@ func NewConfigurator(c *resolver.ConfigMap) (*Configurator, error) {
 
 // It should be called before program ends to free memory
 func (c *Configurator) Close() {
-	c.AdminClient.Close()
+	//c.AdminClient.Close()
 }
 
 // Check if connection to kafka is alive

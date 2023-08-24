@@ -11,6 +11,16 @@ import (
 	"github.com/Goboolean/shared/pkg/resolver"
 )
 
+
+// Issue on kafka broker : each test inturrupts the other test.
+// As the confluent-kafka-go library is a wrapper of the C library, it acts as a singleton,
+// which means calling instance.Close() may close the connection for other tests,
+// resulting in next instance.Close() call to close already closed connection.
+// This issue should be fixed by configuring broker libraries singleton
+// and only the last instance.Close() call should clear the resources.
+// Temporary solution is to replace instance.Close() to do nothing.
+
+
 func SetUp() {
 
 	const (
