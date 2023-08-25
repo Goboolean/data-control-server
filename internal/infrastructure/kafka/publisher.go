@@ -98,7 +98,7 @@ func (p *Publisher) Ping(ctx context.Context) error {
 
 func (p *Publisher) SendData(topic string, data *StockAggregate) error {
 
-	topic = packTopic(topic)
+	topic = prefix + topic
 
 	binaryData, err := proto.Marshal(data)
 
@@ -120,7 +120,7 @@ func (p *Publisher) SendData(topic string, data *StockAggregate) error {
 
 func (p *Publisher) SendDataBatch(topic string, batch []*StockAggregate) error {
 
-	topic = packTopic(topic)
+	topic = prefix + topic
 
 	msgChan := p.producer.ProduceChannel()
 

@@ -2,7 +2,7 @@ package kafka
 
 import "strings"
 
-
+// config is deprecated
 
 // every topic that regards to stock data should be prefixed with this
 var prefix string = "broker."

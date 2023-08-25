@@ -80,7 +80,9 @@ func (c *Configurator) Ping(ctx context.Context) error {
 func (c *Configurator) CreateTopic(ctx context.Context, topic string) error {
 
 	// It returns error when topic already exists
-	topic = packTopic(topic)
+	topic = prefix + topic
+
+	topic = prefix + topic
 
 	exists, err := c.TopicExists(ctx, topic)
 	if err != nil {
@@ -113,7 +115,7 @@ func (c *Configurator) CreateTopic(ctx context.Context, topic string) error {
 func (c *Configurator) DeleteTopic(ctx context.Context, topic string) error {
 
 	// It returns error when the topic does not exist
-	topic = packTopic(topic)
+	topic = prefix + topic
 
 	result, err := c.AdminClient.DeleteTopics(ctx, []string{topic})
 
@@ -149,7 +151,7 @@ func (c *Configurator) DeleteAllTopics(ctx context.Context) error {
 
 // Check if given topic exists
 func (c *Configurator) TopicExists(ctx context.Context, topic string) (bool, error) {
-	topic = packTopic(topic)
+	topic = prefix + topic
 
 	deadline, ok := ctx.Deadline()
 	if !ok {

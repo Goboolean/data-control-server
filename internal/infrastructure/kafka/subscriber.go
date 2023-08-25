@@ -3,6 +3,7 @@ package kafka
 import (
 	"context"
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
@@ -101,7 +102,8 @@ func (s *Subscriber) subscribeMessage(ctx context.Context, wg *sync.WaitGroup) {
 			continue
 		}
 
-		topic := unpackTopic(*msg.TopicPartition.Topic)
+		topic := strings.TrimPrefix(*msg.TopicPartition.Topic, prefix)
+
 		s.listener.OnReceiveStockAggs(topic, &data)
 	}
 }
