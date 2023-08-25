@@ -3,6 +3,7 @@ package broker
 import (
 	"context"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/Goboolean/shared/pkg/resolver"
@@ -17,6 +18,8 @@ var defaultFlushTimeout = time.Second * 3
 
 type Publisher struct {
 	producer *kafka.Producer
+	
+	wg     sync.WaitGroup
 }
 
 func NewPublisher(c *resolver.ConfigMap) (*Publisher, error) {
@@ -44,11 +47,35 @@ func NewPublisher(c *resolver.ConfigMap) (*Publisher, error) {
 		return nil, err
 	}
 
-	return &Publisher{producer: producer}, nil
+	instance := &Publisher{
+		producer: producer,
+	}
+
+	go func() {
+		instance.wg.Add(1)
+		defer instance.wg.Done()
+
+		for e := range producer.Events() {
+			switch ev := e.(type) {
+			case *kafka.Message:
+				if ev.TopicPartition.Error != nil {
+					log.WithFields(log.Fields{
+						"topic": &ev.TopicPartition.Topic,
+						"data": ev.Value,
+						"msg": ev.TopicPartition.Error,
+					}).Error(ErrFailedToDeliveryData)
+				}
+			}
+		}
+	}()
+
+	return instance, nil
 }
 
 // It should be called before program ends to free memory
 func (p *Publisher) Close() {
+	p.wg.Done()
+	p.wg.Wait()
 	//p.producer.Close()
 }
 
@@ -86,20 +113,7 @@ func (p *Publisher) SendData(topic string, data *StockAggregate) error {
 		return err
 	}
 
-	go func() {
-		for e := range p.producer.Events() {
-			switch ev := e.(type) {
-			case *kafka.Message:
-				if ev.TopicPartition.Error != nil {
-					log.WithFields(log.Fields{
-						"topic": topic,
-						"data": ev.Value,
-						"message": ev.TopicPartition.Error,
-					}).Error(ErrFailedToDeliveryData)
-				}
-			}
-		}
-	}()
+	log.WithField("topic", topic).Debug("data sent")
 
 	return nil
 }
@@ -109,8 +123,6 @@ func (p *Publisher) SendDataBatch(topic string, batch []*StockAggregate) error {
 	topic = packTopic(topic)
 
 	msgChan := p.producer.ProduceChannel()
-
-	topic = packTopic(topic)
 
 	for idx := range batch {
 		binaryData, err := proto.Marshal(batch[idx])
@@ -124,19 +136,6 @@ func (p *Publisher) SendDataBatch(topic string, batch []*StockAggregate) error {
 			Value:          binaryData,
 		}
 	}
-
-	go func() {
-		for e := range p.producer.Events() {
-			switch ev := e.(type) {
-			case *kafka.Message:
-				log.WithFields(log.Fields{
-					"topic": topic,
-					"data": ev.Value,
-					"message": ev.TopicPartition.Error,
-				}).Error(ErrFailedToDeliveryData)
-			}
-		}
-	}()
 
 	return nil
 }

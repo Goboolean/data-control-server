@@ -9,8 +9,8 @@ import (
 	"github.com/Goboolean/fetch-server/internal/infrastructure/broker"
 	_ "github.com/Goboolean/fetch-server/internal/util/env"
 	"github.com/Goboolean/shared/pkg/resolver"
+	"github.com/sirupsen/logrus"
 )
-
 
 // Issue on kafka broker : each test inturrupts the other test.
 // As the confluent-kafka-go library is a wrapper of the C library, it acts as a singleton,
@@ -93,6 +93,10 @@ func SetUp() {
 }
 
 func TestMain(m *testing.M) {
+
+	logrus.SetFormatter(&logrus.TextFormatter{})
+	logrus.SetLevel(logrus.DebugLevel)
+
 	SetUp()
 	code := m.Run()
 	os.Exit(code)
