@@ -1,4 +1,4 @@
-package relayer
+package relay
 
 import (
 	"context"
@@ -10,7 +10,7 @@ import (
 	"github.com/Goboolean/fetch-server/internal/domain/service/store"
 )
 
-type RelayerManager struct {
+type Manager struct {
 	s *store.Store
 	ws   out.RelayerPort
 	meta out.StockMetadataPort
@@ -24,17 +24,17 @@ type RelayerManager struct {
 }
 
 var (
-	instance *RelayerManager
+	instance *Manager
 	once     sync.Once
 )
 
-func New(db out.StockPersistencePort, tx port.TX, meta out.StockMetadataPort, ws out.RelayerPort) (*RelayerManager, error) {
+func New(db out.StockPersistencePort, tx port.TX, meta out.StockMetadataPort, ws out.RelayerPort) (*Manager, error) {
 
 	once.Do(func() {
 
 		ctx, cancel := context.WithCancel(context.Background())
 
-		instance = &RelayerManager{
+		instance = &Manager{
 			s:      store.New(ctx),
 			ws:     ws,
 			meta:   meta,
@@ -52,6 +52,6 @@ func New(db out.StockPersistencePort, tx port.TX, meta out.StockMetadataPort, ws
 	return instance, nil
 }
 
-func (m *RelayerManager) Close() {
+func (m *Manager) Close() {
 	m.cancel()
 }

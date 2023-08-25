@@ -1,8 +1,8 @@
-package compose
+package develop
 
 import (
 	"context"
-	"fmt"
+	"os"
 	"os/signal"
 	"syscall"
 
@@ -15,13 +15,16 @@ import (
 	"github.com/joho/godotenv"
 )
 
-func Released() (err error) {
+
+
+func Run() (err error) {
 	if err := godotenv.Load(); err != nil {
 		return err
 	}
 	// Rule:
 	// Every Constructor must be deffered with Close() even if close function has no role.
 	// Ends of Close() method must assure that every goroutine it holds are closed
+	// before Close() returns.
 
 	// Initialize Infrastructure
 	pub, err := inject.InitKafkaPublisher()
@@ -59,9 +62,6 @@ func Released() (err error) {
 
 	transactor := inject.InitTransactor(mongoDB, psqlDB)
 
-	ws := inject.InitWs()
-
-
 	// Initialize Service
 	relayer, err := inject.InitRelayer(transactor, mongoQueries, psqlQueries, nil)
 	if err != nil {
@@ -69,19 +69,19 @@ func Released() (err error) {
 	}
 	defer relayer.Close()
 
-	transmitter, err := inject.InitTransmission(transactor, transmission.Option{}, conf, pub, relayer)
+	transmitter, err := inject.InitTransmitter(transactor, transmission.Option{}, conf, pub, relayer)
 	if err != nil {
 		panic(err)
 	}
 	defer transmitter.Close()
 
-	persister, err := inject.InitPersistenceManager(transactor, persistence.Option{}, redisQueries, psqlQueries, mongoQueries, relayer)
+	persister, err := inject.InitPersister(transactor, persistence.Option{}, redisQueries, psqlQueries, mongoQueries, relayer)
 	if err != nil {
 		panic(err)
 	}
 	defer persister.Close()
 
-	configurator, err := inject.InitConfigurationManager(transactor, psqlQueries, persister, transmitter, relayer)
+	configurator, err := inject.InitConfigurator(transactor, psqlQueries, persister, transmitter, relayer)
 	if err != nil {
 		panic(err)
 	}
@@ -95,37 +95,29 @@ func Released() (err error) {
 	}
 	defer grpc.Close()
 
-	fetcher, err := inject.InitKIS(ws)
+	ws := inject.InitWs()
+
+	kis, err := inject.InitKIS(ws)
 	if err != nil {
 		panic(err)
 	}
+	defer kis.Close()
 
-	if err := ws.RegisterFetcher(fetcher); err != nil {
+	if err := ws.RegisterFetcher(kis); err != nil {
 		panic(err)
 	}
 	ws.RegisterReceiver(relayer)
-
-
-	// Initialize util
-	prom, err := inject.InitPrometheus()
-	if err != nil {
-		panic(err)
-	}
-	defer prom.Close()
-
 	
-
-	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 	defer cancel()
 
 	defer func() {
 		// Every fatel error will be catched here
-		if panic := recover(); err != nil {
+		if panic := recover(); panic != nil {
 			err = panic.(error)
 		}
 	}()
 
 	<- ctx.Done()
-
-	return fmt.Errorf("signal: %v", err)
+	return
 }

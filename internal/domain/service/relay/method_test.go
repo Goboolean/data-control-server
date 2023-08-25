@@ -1,4 +1,4 @@
-package relayer_test
+package relay_test
 
 import (
 	"context"
@@ -8,11 +8,11 @@ import (
 
 	"github.com/Goboolean/fetch-server/cmd/inject"
 	"github.com/Goboolean/fetch-server/internal/adapter/websocket"
-	"github.com/Goboolean/fetch-server/internal/domain/service/relayer"
+	"github.com/Goboolean/fetch-server/internal/domain/service/relay"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws/mock"
 )
 
-var instance *relayer.RelayerManager
+var instance *relay.Manager
 
 func SetUp() {
 	var err error
@@ -187,8 +187,8 @@ func Test_Subscribe(t *testing.T) {
 	t.Run("SubscribeBeforeFetching", func(t *testing.T) {
 		
 		_, err := instance.Subscribe(context.Background(), "stock.tesla.usa")
-		if err != relayer.ErrStockNotExists {
-			t.Errorf("Subscribe() error = %v, wantErr %v", err, relayer.ErrStockNotExists)
+		if err != relay.ErrStockNotExists {
+			t.Errorf("Subscribe() error = %v, wantErr %v", err, relay.ErrStockNotExists)
 			return
 		}
 	})

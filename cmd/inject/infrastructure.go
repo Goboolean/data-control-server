@@ -69,8 +69,7 @@ func provideKafkaArgs() *resolver.ConfigMap {
 
 func provideGrpcArgs() *resolver.ConfigMap {
 	return &resolver.ConfigMap{
-		"HOST": os.Getenv("GRPC_HOST"),
-		"PORT": os.Getenv("GRPC_PORT"),
+		"PORT": os.Getenv("SERVER_PORT"),
 	}
 }
 
@@ -128,6 +127,7 @@ var RedisSet = wire.NewSet(
 var GrpcSet = wire.NewSet(
 	provideGrpcArgs,
 	grpc.New,
+	grpc.NewClient,
 )
 
 var BuycycleSet = wire.NewSet(
@@ -180,6 +180,11 @@ func InitKafkaPublisher() (*broker.Publisher, error) {
 func InitGrpc(in.ConfiguratorPort) (*grpc.Host, error) {
 	wire.Build(GrpcSet, AdapterSet)
 	return &grpc.Host{}, nil
+}
+
+func InitGrpcClient() (*grpc.Client, error) {
+	wire.Build(GrpcSet)
+	return &grpc.Client{}, nil
 }
 
 func InitBuycycle(ws.Receiver) (*buycycle.Subscriber, error) {

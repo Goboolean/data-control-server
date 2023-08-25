@@ -8,7 +8,7 @@ import (
 )
 
 
-func (t *Transmitter) SubscribeRelayer(ctx context.Context, stockId string) error {
+func (t *Manager) SubscribeRelayer(ctx context.Context, stockId string) error {
 	received := make([]*vo.StockAggregate, 0)
 
 	if err := t.broker.CreateStockBroker(ctx, stockId); err != nil {
@@ -69,11 +69,11 @@ func (t *Transmitter) SubscribeRelayer(ctx context.Context, stockId string) erro
 }
 
 
-func (t *Transmitter) UnsubscribeRelayer(stockId string) error {
+func (t *Manager) UnsubscribeRelayer(stockId string) error {
 	return t.s.UnstoreStock(stockId)
 }
 
 
-func (t *Transmitter) IsStockTransmittable(stockId string) bool {
+func (t *Manager) IsStockTransmittable(stockId string) bool {
 	return t.s.StockExists(stockId)
 }

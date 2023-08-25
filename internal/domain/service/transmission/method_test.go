@@ -12,34 +12,32 @@ import (
 	"github.com/Goboolean/fetch-server/internal/adapter/transaction"
 	"github.com/Goboolean/fetch-server/internal/adapter/websocket"
 	"github.com/Goboolean/fetch-server/internal/domain/port/out"
-	"github.com/Goboolean/fetch-server/internal/domain/service/relayer"
+	"github.com/Goboolean/fetch-server/internal/domain/service/relay"
 	"github.com/Goboolean/fetch-server/internal/domain/service/transmission"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws/mock"
 )
 
-
-
 var (
-	instance *transmission.Transmitter
-	kafka out.TransmissionPort
-	relayerManager *relayer.RelayerManager
+	instance       *transmission.Manager
+	kafka          out.TransmissionPort
+	relayer *relay.Manager
 )
 
-func MockRelayer() *relayer.RelayerManager {
+func MockRelayer() *relay.Manager {
 
 	var (
-		db           = persistence.NewMockAdapter()
-		tx           = transaction.NewMock()
-		meta         = meta.NewMockAdapter()
-		ws = websocket.NewMockAdapter().(*websocket.MockAdapter)
-		f = mock.New(time.Millisecond * 10, ws)
+		db   = persistence.NewMockAdapter()
+		tx   = transaction.NewMock()
+		meta = meta.NewMockAdapter()
+		ws   = websocket.NewMockAdapter().(*websocket.MockAdapter)
+		f    = mock.New(time.Millisecond*10, ws)
 	)
 
 	if err := ws.RegisterFetcher(f); err != nil {
 		panic(err)
 	}
 
-	instance, err := relayer.New(db, tx, meta, ws)
+	instance, err := relay.New(db, tx, meta, ws)
 	if err != nil {
 		panic(err)
 	}
@@ -48,21 +46,20 @@ func MockRelayer() *relayer.RelayerManager {
 	return instance
 }
 
-
 func SetUp() {
 	var err error
 
 	var stockId = "stock.google.usa"
-				
-	relayerManager = MockRelayer()
+
+	relayer = MockRelayer()
 	kafka = broker.NewMockAdapter()
 
-	instance, err = transmission.New(kafka, relayerManager, transmission.Option{BatchSize: 2})
+	instance, err = transmission.New(kafka, relayer, transmission.Option{BatchSize: 2})
 	if err != nil {
 		panic(err)
 	}
 
-	if err := relayerManager.FetchStock(context.Background(), stockId); err != nil {
+	if err := relayer.FetchStock(context.Background(), stockId); err != nil {
 		panic(err)
 	}
 }
@@ -71,7 +68,6 @@ func TearDown() {
 	instance.Close()
 }
 
-
 func TestMain(m *testing.M) {
 	SetUp()
 	code := m.Run()
@@ -79,15 +75,12 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-
-
-func Test_Transmitter(t *testing.T) {
+func Test_Manager(t *testing.T) {
 
 	var stockId = "stock.google.usa"
 
 	var count = 0
 
-	
 	t.Run("SubscribeRelayer", func(t *testing.T) {
 		if err := instance.SubscribeRelayer(context.Background(), stockId); err != nil {
 			t.Errorf("SubscribeRelayer() = %v", err)
@@ -96,12 +89,12 @@ func Test_Transmitter(t *testing.T) {
 
 		time.Sleep(time.Millisecond * 100)
 
-		sended, err := kafka.(*broker.MockAdapter).GetTransmittedStockCount(stockId); 
+		sended, err := kafka.(*broker.MockAdapter).GetTransmittedStockCount(stockId)
 		if err != nil {
 			t.Errorf("error getting transmitted stock count: %s", err)
 			return
 		}
-		
+
 		if sended == 0 {
 			t.Errorf("received %d, want many", sended)
 			return
@@ -118,7 +111,7 @@ func Test_Transmitter(t *testing.T) {
 
 		time.Sleep(time.Millisecond * 100)
 
-		sended, err := kafka.(*broker.MockAdapter).GetTransmittedStockCount(stockId);
+		sended, err := kafka.(*broker.MockAdapter).GetTransmittedStockCount(stockId)
 		if err != nil {
 			t.Errorf("error getting transmitted stock count: %s", err)
 			return
@@ -158,7 +151,7 @@ func Test_Transmitter(t *testing.T) {
 			return
 		}
 
-		if err := relayerManager.StopFetchingStock(context.Background(), stockId); err != nil {
+		if err := relayer.StopFetchingStock(context.Background(), stockId); err != nil {
 			t.Errorf("StopFetchingStock() = %v", err)
 			return
 		}
@@ -172,4 +165,3 @@ func Test_Transmitter(t *testing.T) {
 	})
 
 }
-
