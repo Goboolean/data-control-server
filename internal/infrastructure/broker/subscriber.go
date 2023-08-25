@@ -2,13 +2,13 @@ package broker
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"log"
+	"sync"
 	"time"
 
 	"github.com/Goboolean/shared/pkg/resolver"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
+	log "github.com/sirupsen/logrus"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -18,14 +18,15 @@ type SubscribeListener interface {
 
 type Subscriber struct {
 	consumer *kafka.Consumer
-
 	listener SubscribeListener
 
-	ctx context.Context
-	t   *topicManager
+	ctx      context.Context
+	cancel   context.CancelFunc
+	wg 	     sync.WaitGroup
 }
 
-func NewSubscriber(c *resolver.ConfigMap, ctx context.Context, lis SubscribeListener) (*Subscriber, error) {
+
+func NewSubscriber(c *resolver.ConfigMap, lis SubscribeListener) (*Subscriber, error) {
 
 	host, err := c.GetStringKey("HOST")
 	if err != nil {
@@ -57,19 +58,24 @@ func NewSubscriber(c *resolver.ConfigMap, ctx context.Context, lis SubscribeList
 		return nil, err
 	}
 
+	ctx, cancel := context.WithCancel(context.Background())
+
 	instance := &Subscriber{
 		consumer: consumer,
 		listener: lis,
 		ctx:      ctx,
-		t:        newTopicManager(consumer),
+		cancel:   cancel,
 	}
 
-	go instance.subscribeMessage(ctx)
+	go instance.subscribeMessage(ctx, &instance.wg)
 
 	return instance, nil
 }
 
-func (s *Subscriber) subscribeMessage(ctx context.Context) {
+func (s *Subscriber) subscribeMessage(ctx context.Context, wg *sync.WaitGroup) {
+	wg.Add(1)
+	defer wg.Done()
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -78,27 +84,34 @@ func (s *Subscriber) subscribeMessage(ctx context.Context) {
 
 		}
 
-		msg, err := s.consumer.ReadMessage(-1)
-
+		msg, err := s.consumer.ReadMessage(time.Second)
 		if err != nil {
-			log.Fatalf("err: failed to read received message: %v", err)
-
-		} else {
-			var data StockAggregate
-
-			if err := proto.Unmarshal(msg.Value, &data); err != nil {
-				log.Fatalf("err: failed to deserialize message: %v", err)
-			}
-
-			topic := unpackTopic(*msg.TopicPartition.Topic)
-
-			s.listener.OnReceiveStockAggs(topic, &data)
+			log.WithFields(log.Fields{
+				"msg": err,
+			}).Debug(ErrFailedToReadData)
+			continue
 		}
+
+
+		var data StockAggregate
+		if err := proto.Unmarshal(msg.Value, &data); err != nil {
+			log.WithFields(log.Fields{
+				"topic": *msg.TopicPartition.Topic,
+				"data": msg.Value,
+				"msg": err,
+			}).Error(ErrFailedToDeserializeMessage)
+			continue
+		}
+
+		topic := unpackTopic(*msg.TopicPartition.Topic)
+		s.listener.OnReceiveStockAggs(topic, &data)
 	}
 }
 
 func (s *Subscriber) Close() {
-	s.consumer.Close()
+	s.cancel()
+	s.wg.Wait()
+	//s.consumer.Close()
 }
 
 func (s *Subscriber) Ping(ctx context.Context) error {
@@ -114,72 +127,14 @@ func (s *Subscriber) Ping(ctx context.Context) error {
 	return err
 }
 
+// only one subscription psr instance is allowed
 func (s *Subscriber) Subscribe(stock string) error {
 	stock = packTopic(stock)
-
-	if err := s.t.addTopic(stock); err != nil {
-		return err
-	}
-
-	return s.t.renewSupscription()
+	log.WithField("topic", stock).Debug("data sub")
+	return s.consumer.Subscribe(stock, nil)
 }
 
 func (s *Subscriber) Unsubscribe(stock string) error {
 	stock = packTopic(stock)
-
-	if err := s.t.deleteTopic(stock); err != nil {
-		return err
-	}
-
-	return s.t.renewSupscription()
-}
-
-type topicManager struct {
-	consumer *kafka.Consumer
-
-	topicList map[string]struct{}
-}
-
-func newTopicManager(consumer *kafka.Consumer) *topicManager {
-	return &topicManager{
-		consumer:  consumer,
-		topicList: make(map[string]struct{}),
-	}
-}
-
-func (t *topicManager) addTopic(topic string) error {
-
-	_, exists := t.topicList[topic]
-	if exists {
-		return errors.New("topic already exists")
-	}
-
-	t.topicList[topic] = struct{}{}
-	return nil
-}
-
-func (t *topicManager) deleteTopic(topic string) error {
-	topic = packTopic(topic)
-
-	_, exists := t.topicList[topic]
-	if !exists {
-		return errors.New("topic does not exist")
-	}
-
-	delete(t.topicList, topic)
-	return nil
-}
-
-func (t *topicManager) getTopicList() []string {
-	topicList := make([]string, 0)
-
-	for k := range t.topicList {
-		topicList = append(topicList, k)
-	}
-
-	return topicList
-}
-
-func (t *topicManager) renewSupscription() error {
-	return t.consumer.SubscribeTopics(t.getTopicList(), nil)
+	return s.consumer.Unsubscribe()
 }
