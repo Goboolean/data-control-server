@@ -1,16 +1,16 @@
 build-app:
-	docker-compose -f ./build/docker-compose.yml up --build -d
+	docker compose -f ./build/docker-compose.yml up --build -d
 
 clean-app:
 	docker compose -f ./proxy-server/docker-compose.yml down
 
 test-app:
-	docker-compose -f ./build/docker-compose-test.yml up redis --build -d
-	if docker-compose -f ./build/docker-compose-test.yml up server --build ; then \
-		docker-compose -f ./build/docker-compose-test.yml down; \
+	docker compose -f ./build/docker-compose-test.yml up redis --build -d
+	if docker compose -f ./build/docker-compose-test.yml up server --build ; then \
+		docker compose -f ./build/docker-compose-test.yml down; \
 		exit 0; \
 	else \
-		docker-compose -f ./build/docker-compose-test.yml down; \
+		docker compose -f ./build/docker-compose-test.yml down; \
 		exit 1; \
 	fi
 
