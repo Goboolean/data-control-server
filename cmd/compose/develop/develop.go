@@ -9,13 +9,11 @@ import (
 	"github.com/Goboolean/fetch-server/cmd/inject"
 	"github.com/Goboolean/fetch-server/internal/domain/service/persistence"
 	"github.com/Goboolean/fetch-server/internal/domain/service/transmission"
-	"github.com/Goboolean/fetch-server/internal/infrastructure/cache/redis"
+	"github.com/Goboolean/fetch-server/internal/infrastructure/rdbms"
+	"github.com/Goboolean/fetch-server/internal/infrastructure/redis"
 	"github.com/Goboolean/shared/pkg/mongo"
-	"github.com/Goboolean/shared/pkg/rdbms"
 	"github.com/joho/godotenv"
 )
-
-
 
 func Run() (err error) {
 	if err := godotenv.Load(); err != nil {
@@ -85,8 +83,7 @@ func Run() (err error) {
 	if err != nil {
 		panic(err)
 	}
-	defer func(){}()
-
+	defer func() {}()
 
 	// Initialize Infrastructure
 	grpc, err := inject.InitGrpcWithAdapter(configurator)
@@ -107,7 +104,7 @@ func Run() (err error) {
 		panic(err)
 	}
 	ws.RegisterReceiver(relayer)
-	
+
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 	defer cancel()
 
@@ -118,6 +115,6 @@ func Run() (err error) {
 		}
 	}()
 
-	<- ctx.Done()
+	<-ctx.Done()
 	return
 }

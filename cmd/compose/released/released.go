@@ -10,9 +10,9 @@ import (
 	"github.com/Goboolean/fetch-server/cmd/inject"
 	"github.com/Goboolean/fetch-server/internal/domain/service/persistence"
 	"github.com/Goboolean/fetch-server/internal/domain/service/transmission"
-	"github.com/Goboolean/fetch-server/internal/infrastructure/cache/redis"
+	"github.com/Goboolean/fetch-server/internal/infrastructure/rdbms"
+	"github.com/Goboolean/fetch-server/internal/infrastructure/redis"
 	"github.com/Goboolean/shared/pkg/mongo"
-	"github.com/Goboolean/shared/pkg/rdbms"
 	"github.com/joho/godotenv"
 )
 
@@ -62,7 +62,6 @@ func Run() (err error) {
 
 	ws := inject.InitWs()
 
-
 	// Initialize Service
 	relayer, err := inject.InitRelayer(transactor, mongoQueries, psqlQueries, nil)
 	if err != nil {
@@ -86,8 +85,7 @@ func Run() (err error) {
 	if err != nil {
 		panic(err)
 	}
-	defer func(){}()
-
+	defer func() {}()
 
 	// Initialize Infrastructure
 	grpc, err := inject.InitGrpcWithAdapter(configurator)
@@ -106,15 +104,12 @@ func Run() (err error) {
 	}
 	ws.RegisterReceiver(relayer)
 
-
 	// Initialize util
 	prom, err := inject.InitPrometheus()
 	if err != nil {
 		panic(err)
 	}
 	defer prom.Close()
-
-	
 
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 	defer cancel()
@@ -126,7 +121,7 @@ func Run() (err error) {
 		}
 	}()
 
-	<- ctx.Done()
+	<-ctx.Done()
 
 	return fmt.Errorf("signal: %v", err)
 }

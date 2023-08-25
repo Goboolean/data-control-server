@@ -21,8 +21,9 @@ import (
 	persistence2 "github.com/Goboolean/fetch-server/internal/domain/service/persistence"
 	"github.com/Goboolean/fetch-server/internal/domain/service/relay"
 	"github.com/Goboolean/fetch-server/internal/domain/service/transmission"
-	"github.com/Goboolean/fetch-server/internal/infrastructure/cache/redis"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/grpc"
+	"github.com/Goboolean/fetch-server/internal/infrastructure/rdbms"
+	"github.com/Goboolean/fetch-server/internal/infrastructure/redis"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws/buycycle"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws/kis"
@@ -31,7 +32,6 @@ import (
 	"github.com/Goboolean/fetch-server/internal/util/prometheus"
 	"github.com/Goboolean/shared/pkg/broker"
 	"github.com/Goboolean/shared/pkg/mongo"
-	"github.com/Goboolean/shared/pkg/rdbms"
 	"github.com/Goboolean/shared/pkg/resolver"
 	"github.com/google/wire"
 	"os"
@@ -179,14 +179,14 @@ func InitMockTransmitter(manager *relay.Manager, option transmission.Option) (*t
 	return transmissionManager, nil
 }
 
-func InitMockConfigurator(manager *relay.Manager, persistenceManager *persistence2.Manager, transmissionManager *transmission.Manager) (*config.Configurator, error) {
+func InitMockConfigurator(manager *relay.Manager, persistenceManager *persistence2.Manager, transmissionManager *transmission.Manager) (*config.Manager, error) {
 	stockMetadataPort := meta.NewMockAdapter()
 	tx := transaction.NewMock()
-	configurator, err := config.New(stockMetadataPort, tx, manager, persistenceManager, transmissionManager)
+	configManager, err := config.New(stockMetadataPort, tx, manager, persistenceManager, transmissionManager)
 	if err != nil {
 		return nil, err
 	}
-	return configurator, nil
+	return configManager, nil
 }
 
 func InitTransactor(mongo2 *mongo.DB, psql *rdbms.PSQL) port.TX {
@@ -223,13 +223,13 @@ func InitPersister(tx port.TX, option persistence2.Option, queries *redis.Querie
 	return persistenceManager, nil
 }
 
-func InitConfigurator(tx port.TX, queries *rdbms.Queries, manager *persistence2.Manager, transmissionManager *transmission.Manager, relayManager *relay.Manager) (*config.Configurator, error) {
+func InitConfigurator(tx port.TX, queries *rdbms.Queries, manager *persistence2.Manager, transmissionManager *transmission.Manager, relayManager *relay.Manager) (*config.Manager, error) {
 	stockMetadataPort := meta.NewAdapter(queries)
-	configurator, err := config.New(stockMetadataPort, tx, relayManager, manager, transmissionManager)
+	configManager, err := config.New(stockMetadataPort, tx, relayManager, manager, transmissionManager)
 	if err != nil {
 		return nil, err
 	}
-	return configurator, nil
+	return configManager, nil
 }
 
 func InitGrpcWithAdapter(configuratorPort in.ConfiguratorPort) (*grpc.Host, error) {

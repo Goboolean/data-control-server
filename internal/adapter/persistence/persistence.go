@@ -3,16 +3,13 @@ package persistence
 import (
 	"context"
 
-	"github.com/Goboolean/fetch-server/internal/domain/vo"
 	"github.com/Goboolean/fetch-server/internal/domain/port"
 	"github.com/Goboolean/fetch-server/internal/domain/port/out"
+	"github.com/Goboolean/fetch-server/internal/domain/vo"
+	"github.com/Goboolean/fetch-server/internal/infrastructure/rdbms"
 	"github.com/Goboolean/fetch-server/internal/util/prometheus"
 	"github.com/Goboolean/shared/pkg/mongo"
-	"github.com/Goboolean/shared/pkg/rdbms"
 )
-
-
-
 
 type Adapter struct {
 	rdbms *rdbms.Queries
@@ -25,8 +22,6 @@ func NewAdapter(rdbms *rdbms.Queries, mongo *mongo.Queries) out.StockPersistence
 		mongo: mongo,
 	}
 }
-
-
 
 func (a *Adapter) StoreStock(tx port.Transactioner, stockId string, agg *vo.StockAggregate) error {
 	dto := &mongo.StockAggregate{
@@ -44,10 +39,9 @@ func (a *Adapter) StoreStock(tx port.Transactioner, stockId string, agg *vo.Stoc
 		return err
 	}
 
-	prometheus.FetchCounter.Inc()	
+	prometheus.FetchCounter.Inc()
 	return nil
 }
-
 
 func (a *Adapter) StoreStockBatch(tx port.Transactioner, stockId string, aggs []*vo.StockAggregate) error {
 	dtos := make([]*mongo.StockAggregate, 0, len(aggs))
@@ -73,30 +67,26 @@ func (a *Adapter) StoreStockBatch(tx port.Transactioner, stockId string, aggs []
 	return nil
 }
 
-
 func (a *Adapter) CreateStoringStartedLog(ctx context.Context, stockId string) error {
 
 	return a.rdbms.CreateAccessInfo(ctx, rdbms.CreateAccessInfoParams{
 		ProductID: stockId,
-		Status: "started",
+		Status:    "started",
 	})
 }
-
 
 func (a *Adapter) CreateStoringStoppedLog(ctx context.Context, stockId string) error {
 
 	return a.rdbms.CreateAccessInfo(ctx, rdbms.CreateAccessInfoParams{
 		ProductID: stockId,
-		Status: "stopped",
+		Status:    "stopped",
 	})
 }
-
 
 func (a *Adapter) CreateStoringFailedLog(ctx context.Context, stockId string) error {
 
 	return a.rdbms.CreateAccessInfo(ctx, rdbms.CreateAccessInfoParams{
 		ProductID: stockId,
-		Status: "failed",
+		Status:    "failed",
 	})
 }
-

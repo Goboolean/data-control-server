@@ -3,7 +3,7 @@ package vo
 
 
 type StockAggregate struct {
-	EventType string	
+	EventType string
 	Average   float64
 	Min       float64
 	Max       float64

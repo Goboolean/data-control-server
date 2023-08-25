@@ -12,7 +12,6 @@ type TxSession struct {
 	ctx context.Context
 }
 
-
 func (t *TxSession) Commit() error {
 
 	if t.M != nil {
@@ -29,7 +28,6 @@ func (t *TxSession) Commit() error {
 
 	return nil
 }
-
 
 func (t *TxSession) Rollback() error {
 

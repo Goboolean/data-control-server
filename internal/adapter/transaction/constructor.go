@@ -4,19 +4,14 @@ import (
 	"context"
 
 	"github.com/Goboolean/fetch-server/internal/domain/port"
+	"github.com/Goboolean/fetch-server/internal/infrastructure/rdbms"
 	"github.com/Goboolean/shared/pkg/mongo"
-	"github.com/Goboolean/shared/pkg/rdbms"
 )
-
-
-
 
 type Tx struct {
 	m *mongo.DB
 	p *rdbms.PSQL
 }
-
-
 
 func New(m *mongo.DB, p *rdbms.PSQL) port.TX {
 
@@ -26,10 +21,7 @@ func New(m *mongo.DB, p *rdbms.PSQL) port.TX {
 	}
 }
 
-
-
 func (t *Tx) Transaction(ctx context.Context) (port.Transactioner, error) {
-
 
 	m, err := t.m.NewTx(ctx)
 	if err != nil {

@@ -3,26 +3,20 @@ package cache
 import (
 	"context"
 
-	"github.com/Goboolean/fetch-server/internal/domain/vo"
 	"github.com/Goboolean/fetch-server/internal/domain/port/out"
-	"github.com/Goboolean/fetch-server/internal/infrastructure/cache/redis"
+	"github.com/Goboolean/fetch-server/internal/domain/vo"
+	"github.com/Goboolean/fetch-server/internal/infrastructure/redis"
 )
-
-
 
 type Adapter struct {
 	redis *redis.Queries
 }
-
 
 func NewAdapter(r *redis.Queries) out.StockPersistenceCachePort {
 	return &Adapter{
 		redis: r,
 	}
 }
-
-
-
 
 func (a *Adapter) StoreStockOnCache(ctx context.Context, stockId string, stock *vo.StockAggregate) error {
 
@@ -40,9 +34,8 @@ func (a *Adapter) StoreStockOnCache(ctx context.Context, stockId string, stock *
 	return a.redis.InsertStockData(ctx, stockId, dto)
 }
 
-
 func (a *Adapter) StoreStockBatchOnCache(ctx context.Context, stockId string, stockBatch []*vo.StockAggregate) error {
-	
+
 	dtos := make([]*redis.RedisStockAggregate, 0, len(stockBatch))
 
 	for _, stock := range stockBatch {

@@ -10,10 +10,10 @@ import (
 	"github.com/Goboolean/fetch-server/cmd/inject"
 	"github.com/Goboolean/fetch-server/internal/domain/service/persistence"
 	"github.com/Goboolean/fetch-server/internal/domain/service/transmission"
-	"github.com/Goboolean/fetch-server/internal/infrastructure/cache/redis"
+	"github.com/Goboolean/fetch-server/internal/infrastructure/rdbms"
+	"github.com/Goboolean/fetch-server/internal/infrastructure/redis"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws/mock"
 	"github.com/Goboolean/shared/pkg/mongo"
-	"github.com/Goboolean/shared/pkg/rdbms"
 	"github.com/joho/godotenv"
 )
 
@@ -60,9 +60,8 @@ func WithMockData() (err error) {
 	redisQueries := redis.New(redisDB)
 
 	transactor := inject.InitTransactor(mongoDB, psqlDB)
-	
-	ws := inject.InitWs()
 
+	ws := inject.InitWs()
 
 	// Initialize Service
 	relayer, err := inject.InitRelayer(transactor, mongoQueries, psqlQueries, nil)
@@ -87,8 +86,7 @@ func WithMockData() (err error) {
 	if err != nil {
 		panic(err)
 	}
-	defer func(){}()
-
+	defer func() {}()
 
 	// Initialize Infrastructure
 	grpc, err := inject.InitGrpcWithAdapter(configurator)
@@ -97,14 +95,13 @@ func WithMockData() (err error) {
 	}
 	defer grpc.Close()
 
-	fetcher := mock.New(time.Millisecond * 10, ws)
+	fetcher := mock.New(time.Millisecond*10, ws)
 	defer fetcher.Close()
 
 	if err := ws.RegisterFetcher(fetcher); err != nil {
 		panic(err)
 	}
 	ws.RegisterReceiver(relayer)
-
 
 	// Initialize util
 	prom, err := inject.InitPrometheus()
@@ -113,9 +110,6 @@ func WithMockData() (err error) {
 	}
 	defer prom.Close()
 
-	
-
-	
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
 
@@ -126,7 +120,7 @@ func WithMockData() (err error) {
 		}
 	}()
 
-	<- ctx.Done()
+	<-ctx.Done()
 
 	return fmt.Errorf("signal: %v", err)
 }

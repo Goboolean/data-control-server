@@ -14,7 +14,6 @@ const platformName = "kis"
 
 const address = "ops.koreainvestment.com:21000"
 
-
 type Subscriber struct {
 	conn *websocket.Conn
 
@@ -26,8 +25,6 @@ type Subscriber struct {
 
 	subscribed chan string
 }
-
-
 
 func New(c *resolver.ConfigMap, r ws.Receiver) (*Subscriber, error) {
 
@@ -41,10 +38,10 @@ func New(c *resolver.ConfigMap, r ws.Receiver) (*Subscriber, error) {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	instance := &Subscriber{
-		conn:   conn,
-		ctx:    ctx,
-		cancel: cancel,
-		r:      r,
+		conn:       conn,
+		ctx:        ctx,
+		cancel:     cancel,
+		r:          r,
 		subscribed: make(chan string),
 	}
 
