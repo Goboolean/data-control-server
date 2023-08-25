@@ -12,12 +12,12 @@ import (
 	"github.com/Goboolean/fetch-server/internal/domain/service/persistence"
 	"github.com/Goboolean/fetch-server/internal/domain/service/relay"
 	"github.com/Goboolean/fetch-server/internal/domain/service/transmission"
-	"github.com/Goboolean/fetch-server/internal/infrastructure/broker"
 	grpc_infra "github.com/Goboolean/fetch-server/internal/infrastructure/grpc"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/rdbms"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/redis"
 	mock_infra "github.com/Goboolean/fetch-server/internal/infrastructure/ws/mock"
 	_ "github.com/Goboolean/fetch-server/internal/util/env"
+	"github.com/Goboolean/shared/pkg/broker"
 	"github.com/Goboolean/shared/pkg/mongo"
 )
 

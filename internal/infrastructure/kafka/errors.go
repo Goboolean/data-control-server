@@ -1,7 +1,6 @@
-package broker
+package kafka
 
 import "errors"
-
 
 var ErrTimeoutRequired = errors.New("timeout setting on ctx required")
 

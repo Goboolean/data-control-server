@@ -1,4 +1,4 @@
-package broker
+package kafka
 
 import (
 	"context"
@@ -20,11 +20,10 @@ type Subscriber struct {
 	consumer *kafka.Consumer
 	listener SubscribeListener
 
-	ctx      context.Context
-	cancel   context.CancelFunc
-	wg 	     sync.WaitGroup
+	ctx    context.Context
+	cancel context.CancelFunc
+	wg     sync.WaitGroup
 }
-
 
 func NewSubscriber(c *resolver.ConfigMap, lis SubscribeListener) (*Subscriber, error) {
 
@@ -92,13 +91,12 @@ func (s *Subscriber) subscribeMessage(ctx context.Context, wg *sync.WaitGroup) {
 			continue
 		}
 
-
 		var data StockAggregate
 		if err := proto.Unmarshal(msg.Value, &data); err != nil {
 			log.WithFields(log.Fields{
 				"topic": *msg.TopicPartition.Topic,
-				"data": msg.Value,
-				"msg": err,
+				"data":  msg.Value,
+				"msg":   err,
 			}).Error(ErrFailedToDeserializeMessage)
 			continue
 		}

@@ -1,4 +1,4 @@
-package broker
+package kafka
 
 import (
 	"context"
@@ -18,8 +18,8 @@ var defaultFlushTimeout = time.Second * 3
 
 type Publisher struct {
 	producer *kafka.Producer
-	
-	wg     sync.WaitGroup
+
+	wg sync.WaitGroup
 }
 
 func NewPublisher(c *resolver.ConfigMap) (*Publisher, error) {
@@ -61,8 +61,8 @@ func NewPublisher(c *resolver.ConfigMap) (*Publisher, error) {
 				if ev.TopicPartition.Error != nil {
 					log.WithFields(log.Fields{
 						"topic": &ev.TopicPartition.Topic,
-						"data": ev.Value,
-						"msg": ev.TopicPartition.Error,
+						"data":  ev.Value,
+						"msg":   ev.TopicPartition.Error,
 					}).Error(ErrFailedToDeliveryData)
 				}
 			}

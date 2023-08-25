@@ -1,4 +1,4 @@
-package broker
+package kafka
 
 import "testing"
 

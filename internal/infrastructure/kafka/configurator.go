@@ -1,4 +1,4 @@
-package broker
+package kafka
 
 import (
 	"context"
@@ -16,13 +16,10 @@ type Configurator struct {
 	AdminClient *kafka.AdminClient
 }
 
-
-
 var (
 	conf *Configurator
 	once sync.Once
 )
-
 
 func NewConfigurator(c *resolver.ConfigMap) (*Configurator, error) {
 

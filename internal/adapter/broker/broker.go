@@ -5,8 +5,8 @@ import (
 
 	"github.com/Goboolean/fetch-server/internal/domain/port/out"
 	"github.com/Goboolean/fetch-server/internal/domain/vo"
-	"github.com/Goboolean/fetch-server/internal/infrastructure/broker"
 	"github.com/Goboolean/fetch-server/internal/util/prometheus"
+	"github.com/Goboolean/shared/pkg/broker"
 )
 
 type Adapter struct {

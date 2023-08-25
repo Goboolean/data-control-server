@@ -1,4 +1,4 @@
-package broker_test
+package kafka_test
 
 import (
 	"context"
@@ -6,35 +6,33 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Goboolean/fetch-server/internal/infrastructure/broker"
+	"github.com/Goboolean/fetch-server/internal/infrastructure/kafka"
 	"github.com/Goboolean/shared/pkg/resolver"
 	"github.com/stretchr/testify/assert"
 )
 
-var sub *broker.Subscriber
+var sub *kafka.Subscriber
 
-type SubscribeListenerImpl struct{
-	ch chan<- *broker.StockAggregate
+type SubscribeListenerImpl struct {
+	ch chan<- *kafka.StockAggregate
 }
 
-func (i *SubscribeListenerImpl) OnReceiveStockAggs(name string, data *broker.StockAggregate) {
+func (i *SubscribeListenerImpl) OnReceiveStockAggs(name string, data *kafka.StockAggregate) {
 	i.ch <- data
 }
 
-func NewSubscribeListener(ch chan *broker.StockAggregate) *SubscribeListenerImpl {
+func NewSubscribeListener(ch chan *kafka.StockAggregate) *SubscribeListenerImpl {
 	return &SubscribeListenerImpl{
 		ch: ch,
 	}
 }
 
-var received = make(chan *broker.StockAggregate, 10)
-
-
+var received = make(chan *kafka.StockAggregate, 10)
 
 func SetupSubscriber() {
 	var err error
 
-	sub, err = broker.NewSubscriber(&resolver.ConfigMap{
+	sub, err = kafka.NewSubscriber(&resolver.ConfigMap{
 		"HOST":  os.Getenv("KAFKA_HOST"),
 		"PORT":  os.Getenv("KAFKA_PORT"),
 		"GROUP": "test",
@@ -81,7 +79,7 @@ func Test_Subscribe(t *testing.T) {
 		err := sub.Subscribe(topic)
 		assert.NoError(t, err)
 
-		err = pub.SendData(topic, &broker.StockAggregate{})
+		err = pub.SendData(topic, &kafka.StockAggregate{})
 		assert.NoError(t, err)
 
 		select {
@@ -93,8 +91,6 @@ func Test_Subscribe(t *testing.T) {
 	})
 }
 
-
-
 func Test_SubscribeSameGroup(t *testing.T) {
 
 	var topic = "test-topic"
@@ -103,8 +99,8 @@ func Test_SubscribeSameGroup(t *testing.T) {
 	SetupPublisher()
 	defer TeardownPublisher()
 
-	chanA1 := make(chan *broker.StockAggregate)
-	subA1, err := broker.NewSubscriber(&resolver.ConfigMap{
+	chanA1 := make(chan *kafka.StockAggregate)
+	subA1, err := kafka.NewSubscriber(&resolver.ConfigMap{
 		"HOST":  os.Getenv("KAFKA_HOST"),
 		"PORT":  os.Getenv("KAFKA_PORT"),
 		"GROUP": "A",
@@ -114,8 +110,8 @@ func Test_SubscribeSameGroup(t *testing.T) {
 	}
 	defer subA1.Close()
 
-	chanA2 := make(chan *broker.StockAggregate)
-	subA2, err := broker.NewSubscriber(&resolver.ConfigMap{
+	chanA2 := make(chan *kafka.StockAggregate)
+	subA2, err := kafka.NewSubscriber(&resolver.ConfigMap{
 		"HOST":  os.Getenv("KAFKA_HOST"),
 		"PORT":  os.Getenv("KAFKA_PORT"),
 		"GROUP": "A",
@@ -133,7 +129,7 @@ func Test_SubscribeSameGroup(t *testing.T) {
 		assert.NoError(t, err)
 
 		for i := 0; i < count; i++ {
-			err := pub.SendData(topic, &broker.StockAggregate{})
+			err := pub.SendData(topic, &kafka.StockAggregate{})
 			assert.NoError(t, err)
 		}
 
@@ -153,22 +149,20 @@ func Test_SubscribeSameGroup(t *testing.T) {
 		// both A1 A2 should not receive any more messages
 		select {
 		case <-chanA1:
-			assert.Fail(t, "received more than expected")			
+			assert.Fail(t, "received more than expected")
 		case <-chanA2:
 			assert.Fail(t, "received more than expected")
 		}
 	})
 }
 
-
-
 func Test_SubscribeDifferentGroup(t *testing.T) {
 
 	var topic = "test-topic"
 	var count = 5
 
-	chanA := make(chan *broker.StockAggregate)
-	subA, err := broker.NewSubscriber(&resolver.ConfigMap{
+	chanA := make(chan *kafka.StockAggregate)
+	subA, err := kafka.NewSubscriber(&resolver.ConfigMap{
 		"HOST":  os.Getenv("KAFKA_HOST"),
 		"PORT":  os.Getenv("KAFKA_PORT"),
 		"GROUP": "A",
@@ -178,8 +172,8 @@ func Test_SubscribeDifferentGroup(t *testing.T) {
 	}
 	defer subA.Close()
 
-	chanB := make(chan *broker.StockAggregate)
-	subB, err := broker.NewSubscriber(&resolver.ConfigMap{
+	chanB := make(chan *kafka.StockAggregate)
+	subB, err := kafka.NewSubscriber(&resolver.ConfigMap{
 		"HOST":  os.Getenv("KAFKA_HOST"),
 		"PORT":  os.Getenv("KAFKA_PORT"),
 		"GROUP": "B",
@@ -197,7 +191,7 @@ func Test_SubscribeDifferentGroup(t *testing.T) {
 		assert.NoError(t, err)
 
 		for i := 0; i < count; i++ {
-			err := pub.SendData(topic, &broker.StockAggregate{})
+			err := pub.SendData(topic, &kafka.StockAggregate{})
 			assert.NoError(t, err)
 		}
 
@@ -218,7 +212,6 @@ func Test_SubscribeDifferentGroup(t *testing.T) {
 			assert.Fail(t, "received more than expected")
 		}
 
-
 		// B should receive at least ${count} messages
 		for i := 0; i < count; i++ {
 			select {
@@ -229,7 +222,7 @@ func Test_SubscribeDifferentGroup(t *testing.T) {
 				continue
 			}
 		}
-		
+
 		// B should not receive any more messages
 		select {
 		case <-chanB:

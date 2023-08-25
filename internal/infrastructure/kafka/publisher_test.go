@@ -1,4 +1,4 @@
-package broker_test
+package kafka_test
 
 import (
 	"context"
@@ -6,20 +6,20 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Goboolean/fetch-server/internal/infrastructure/broker"
+	"github.com/Goboolean/fetch-server/internal/infrastructure/kafka"
 	"github.com/Goboolean/shared/pkg/resolver"
 	"github.com/stretchr/testify/assert"
 )
 
 var (
-	pub  *broker.Publisher
-	data = &broker.StockAggregate{}
+	pub  *kafka.Publisher
+	data = &kafka.StockAggregate{}
 )
 
 func SetupPublisher() {
 	var err error
 
-	pub, err = broker.NewPublisher(&resolver.ConfigMap{
+	pub, err = kafka.NewPublisher(&resolver.ConfigMap{
 		"HOST": os.Getenv("KAFKA_HOST"),
 		"PORT": os.Getenv("KAFKA_PORT"),
 	})
@@ -66,7 +66,7 @@ func Test_SendData(t *testing.T) {
 	})
 
 	t.Run("SendDataBatch", func(t *testing.T) {
-		var dataBatch = []*broker.StockAggregate{
+		var dataBatch = []*kafka.StockAggregate{
 			{}, {}, {},
 		}
 

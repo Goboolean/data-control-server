@@ -4,14 +4,12 @@ import (
 	"context"
 	"errors"
 
-	"github.com/Goboolean/fetch-server/internal/domain/vo"
 	"github.com/Goboolean/fetch-server/internal/domain/port/out"
+	"github.com/Goboolean/fetch-server/internal/domain/vo"
 )
 
-
-
 type MockAdapter struct {
-	brokerList map[string] int
+	brokerList map[string]int
 }
 
 func NewMockAdapter() out.TransmissionPort {

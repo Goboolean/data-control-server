@@ -1,4 +1,4 @@
-package broker_test
+package kafka_test
 
 import (
 	"context"
@@ -7,17 +7,17 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Goboolean/fetch-server/internal/infrastructure/broker"
+	"github.com/Goboolean/fetch-server/internal/infrastructure/kafka"
 	"github.com/Goboolean/shared/pkg/resolver"
 	"github.com/stretchr/testify/assert"
 )
 
-var conf *broker.Configurator
+var conf *kafka.Configurator
 
 func SetupConfigurator() {
 
 	var err error
-	conf, err = broker.NewConfigurator(&resolver.ConfigMap{
+	conf, err = kafka.NewConfigurator(&resolver.ConfigMap{
 		"HOST": os.Getenv("KAFKA_HOST"),
 		"PORT": os.Getenv("KAFKA_PORT"),
 	})

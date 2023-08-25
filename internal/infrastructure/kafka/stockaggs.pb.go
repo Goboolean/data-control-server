@@ -4,7 +4,7 @@
 // 	protoc        v3.21.12
 // source: stockaggs.proto
 
-package broker
+package kafka
 
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
