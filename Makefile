@@ -1,13 +1,3 @@
-APP=fetch-server
-
-MAIN_PATH=cmd/main/run.go
-
-GRPC_PROTO_PATH = ./api/grpc/fetch-server.proto
-GRPC_GEN_PATH = .
-
-REDIS_MODEL_PROTO_PATH = ./api/redis-model/model.proto
-REDIS_MODEL_GEN_PATH = ./internal/infrastructure/redis
-
 build-app:
 	docker-compose -f ./build/docker-compose.yml up --build -d
 
@@ -24,6 +14,9 @@ test-app:
 		exit 1; \
 	fi
 
+benchmark-app:
+	go test -bench . -cpuprofile cpu.out
+
 sqlc-synchronize:
 	curl -s -L https://raw.githubusercontent.com/Goboolean/shared/main/api/sql/schema.sql -o ./api/sql/schema.sql; \
 	curl -s -L https://raw.githubusercontent.com/Goboolean/shared/main/api/sql/schema.test.sql -o ./api/sql/schema.test.sql; \
@@ -36,11 +29,17 @@ sqlc-check: \
 	sqlc-synchronize; \
 	sqlc compile -f ./api/sql/sqlc.yml
 
+GRPC_PROTO_PATH = ./api/grpc/fetch-server.proto
+GRPC_GEN_PATH = .
+
 grpc-generate:
 	protoc \
 		--go_out=${GRPC_GEN_PATH}  --go_opt=paths=source_relative \
 		--go-grpc_out=$(GRPC_GEN_PATH) --go-grpc_opt=paths=source_relative \
     ${GRPC_PROTO_PATH}	
+
+REDIS_MODEL_PROTO_PATH = ./api/redis-model/model.proto
+REDIS_MODEL_GEN_PATH = ./internal/infrastructure/redis
 
 proto-generate:
 	protoc \
@@ -50,8 +49,11 @@ proto-generate:
 	mv $(REDIS_MODEL_GEN_PATH)/api/redis-model/model.pb.go $(REDIS_MODEL_GEN_PATH)
 	rm -rf $(REDIS_MODEL_GEN_PATH)/api
 
-wire-build:
+wire-generate:
 	wire cmd/inject/infrastructure.go cmd/inject/service.go
 
-benchmark-app:
-	go test -bench . -cpuprofile cpu.out
+all-generate: \
+	sqlc-generate \
+	grpc-generate \
+	proto-generate \
+	wire-generate
