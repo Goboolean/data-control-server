@@ -2,6 +2,7 @@ package kafka_test
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"testing"
 	"time"
@@ -85,10 +86,12 @@ func SetUp() {
 	}
 
 	if !exists {
+		fmt.Println("!!!!!!!!!!!!nvalid")
 		if err := conf.CreateTopic(ctx, defaultTopic); err != nil {
 			panic(err)
 		}
 	}
+
 }
 
 func TestMain(m *testing.M) {

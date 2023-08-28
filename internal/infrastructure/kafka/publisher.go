@@ -38,7 +38,7 @@ func NewPublisher(c *resolver.ConfigMap) (*Publisher, error) {
 
 	config := &kafka.ConfigMap{
 		"bootstrap.servers":   address,
-		"acks":                0,    // 0 if no response is required, 1 if only leader response is required, -1 if all in-sync replicas' response is required
+		"acks":                -1,    // 0 if no response is required, 1 if only leader response is required, -1 if all in-sync replicas' response is required
 		"go.delivery.reports": true, // Delivery reports (on delivery success/failure) will be sent on the Producer.Events() channel
 	}
 
@@ -64,6 +64,12 @@ func NewPublisher(c *resolver.ConfigMap) (*Publisher, error) {
 						"data":  ev.Value,
 						"msg":   ev.TopicPartition.Error,
 					}).Error(ErrFailedToDeliveryData)
+				} else {
+					log.WithFields(log.Fields{
+						"topic": &ev.TopicPartition.Topic,
+						"data":  ev.Value,
+						"msg":   ev.TopicPartition.String(),
+					}).Info("data delivered")
 				}
 			}
 		}
@@ -112,6 +118,10 @@ func (p *Publisher) SendData(topic string, data *StockAggregate) error {
 	}, nil); err != nil {
 		return err
 	}
+
+	//if left := p.producer.Flush(1); left != 0 {
+	//	return fmt.Errorf("failed to flush all data, %d messages left", left)
+	//}
 
 	log.WithField("topic", topic).Debug("data sent")
 

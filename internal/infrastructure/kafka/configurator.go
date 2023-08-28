@@ -82,8 +82,6 @@ func (c *Configurator) CreateTopic(ctx context.Context, topic string) error {
 	// It returns error when topic already exists
 	topic = prefix + topic
 
-	topic = prefix + topic
-
 	exists, err := c.TopicExists(ctx, topic)
 	if err != nil {
 		return err
