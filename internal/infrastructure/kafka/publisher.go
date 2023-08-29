@@ -51,6 +51,8 @@ func NewPublisher(c *resolver.ConfigMap) (*Publisher, error) {
 		producer: producer,
 	}
 
+	
+
 	go func() {
 		instance.wg.Add(1)
 		defer instance.wg.Done()
@@ -60,16 +62,16 @@ func NewPublisher(c *resolver.ConfigMap) (*Publisher, error) {
 			case *kafka.Message:
 				if ev.TopicPartition.Error != nil {
 					log.WithFields(log.Fields{
-						"topic": &ev.TopicPartition.Topic,
+						"topic": *ev.TopicPartition.Topic,
 						"data":  ev.Value,
-						"msg":   ev.TopicPartition.Error,
+						"info":   ev.TopicPartition.Error,
 					}).Error(ErrFailedToDeliveryData)
 				} else {
 					log.WithFields(log.Fields{
-						"topic": &ev.TopicPartition.Topic,
+						"topic": *ev.TopicPartition.Topic,
 						"data":  ev.Value,
-						"msg":   ev.TopicPartition.String(),
-					}).Info("data delivered")
+						"info":   ev.TopicPartition.String(),
+					}).Info("data arrived")
 				}
 			}
 		}

@@ -14,11 +14,6 @@ import (
 
 var (
 	pub  *kafka.Publisher
-	data = &kafka.StockAggregate{
-		Average: 1.0,
-		Min:    1.0,
-		Max:   1.0,
-	}
 )
 
 func SetupPublisher() {
@@ -59,41 +54,28 @@ func Test_SendData(t *testing.T) {
 
 	const topic = "default-topic"
 
+	var data = &kafka.StockAggregate{Average: 1.0,Min: 1.0, Max: 1.0}
+	var dataBatch = []*kafka.StockAggregate{
+		{Average: 1.0,Min: 1.1, Max: 1.2},
+		{Average: 1.2,Min: 1.3, Max: 1.4},
+		{Average: 1.4,Min: 1.5, Max: 1.6},
+	}
+
 	SetupPublisher()
 	defer TeardownPublisher()
 
 	t.Run("SendToExistingTopic", func(t *testing.T) {
 		err := pub.SendData(topic, data)
 		assert.NoError(t, err)
-
-		time.Sleep(3 * time.Second)
 	})
 
 	t.Run("SendToNonExistingTopic", func(t *testing.T) {
-		//t.Skip("Skip this test because auto.create.topics.enable is default true, want false")
+		t.Skip("Skip this test because auto.create.topics.enable is default true, want false")
 		err := pub.SendData("non-existent-topic", data)
 		assert.Error(t, err)
 	})
 
 	t.Run("SendDataBatch", func(t *testing.T) {
-		var dataBatch = []*kafka.StockAggregate{
-			{
-				Average: 1123.0,
-				Min:    14123.0,
-				Max:   1.0,	
-			},
-			{
-				Average: 12314.0,
-				Min:    1.0,
-				Max:   1.0,	
-			},
-			{
-				Average: 1.0,
-				Min:    1342.0,
-				Max:   11235.0,	
-			},
-		}
-
 		err := pub.SendDataBatch(topic, dataBatch)
 		assert.NoError(t, err)
 	})
