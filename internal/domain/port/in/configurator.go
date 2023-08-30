@@ -3,7 +3,7 @@ package in
 import (
 	"context"
 
-	"github.com/Goboolean/fetch-server/internal/domain/entity"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/vo"
 )
 
 type ConfiguratorPort interface {
@@ -14,6 +14,6 @@ type ConfiguratorPort interface {
 	SetStockTransmittableTrue(context.Context, string) error
 	SetStockTransmittableFalse(context.Context, string) error
 
-	GetStockConfiguration(context.Context, string) (entity.StockConfiguration, error)
-	GetAllStockConfiguration(context.Context) ([]entity.StockConfiguration, error)
+	GetStockConfiguration(context.Context, string) (vo.StockConfiguration, error)
+	GetAllStockConfiguration(context.Context) ([]vo.StockConfiguration, error)
 }

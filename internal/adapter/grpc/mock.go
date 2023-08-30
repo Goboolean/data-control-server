@@ -3,7 +3,7 @@ package grpc
 import (
 	"context"
 
-	api "github.com/Goboolean/fetch-server/api/grpc"
+	api "github.com/Goboolean/fetch-server.v1/api/grpc"
 )
 
 type MockAdapter struct {

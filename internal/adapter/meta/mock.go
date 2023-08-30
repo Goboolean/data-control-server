@@ -1,65 +1,60 @@
 package meta
 
 import (
-	"github.com/Goboolean/fetch-server/internal/domain/entity"
-	"github.com/Goboolean/fetch-server/internal/domain/port"
-	"github.com/Goboolean/fetch-server/internal/domain/port/out"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/port"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/port/out"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/vo"
 )
 
-
-
-var data = map[string] entity.StockAggsMeta{
+var data = map[string]vo.StockAggsMeta{
 	"stock.facebook.usa": {
-		StockID: "stock.facebook.usa",
+		StockID:  "stock.facebook.usa",
 		Platform: "mock",
-		Symbol: "FB",
+		Symbol:   "FB",
 	},
 
 	"stock.apple.usa": {
-		StockID: "stock.apple.usa",
+		StockID:  "stock.apple.usa",
 		Platform: "mock",
-		Symbol: "AAPL",
+		Symbol:   "AAPL",
 	},
 
 	"stock.amazon.usa": {
-		StockID: "stock.amazon.usa",
+		StockID:  "stock.amazon.usa",
 		Platform: "mock",
-		Symbol: "AMZN",
+		Symbol:   "AMZN",
 	},
 
 	"stock.netflix.usa": {
-		StockID: "stock.netflix.usa",
+		StockID:  "stock.netflix.usa",
 		Platform: "mock",
-		Symbol: "NFLX",
+		Symbol:   "NFLX",
 	},
 
 	"stock.google.usa": {
-		StockID: "stock.google.usa",
+		StockID:  "stock.google.usa",
 		Platform: "mock",
-		Symbol: "GOOG",
+		Symbol:   "GOOG",
 	},
-
 }
 
-
-type MockAdapter struct {}
+type MockAdapter struct{}
 
 func NewMockAdapter() out.StockMetadataPort {
 	return &MockAdapter{}
 }
-
 
 func (a *MockAdapter) CheckStockExists(tx port.Transactioner, stockId string) (bool, error) {
 	_, ok := data[stockId]
 	return ok, nil
 }
 
-func (a *MockAdapter) GetStockMetadata(tx port.Transactioner, stockId string) (entity.StockAggsMeta, error) {
+func (a *MockAdapter) GetStockMetadata(tx port.Transactioner, stockId string) (vo.StockAggsMeta, error) {
 	return data[stockId], nil
 }
 
-func (a *MockAdapter) GetAllStockMetadata(tx port.Transactioner) ([]entity.StockAggsMeta, error) {
-	var stocks []entity.StockAggsMeta
+func (a *MockAdapter) GetAllStockMetadata(tx port.Transactioner) ([]vo.StockAggsMeta, error) {
+	var stocks []vo.StockAggsMeta
 	for _, stock := range data {
 		stocks = append(stocks, stock)
 	}

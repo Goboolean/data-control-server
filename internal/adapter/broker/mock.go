@@ -4,14 +4,12 @@ import (
 	"context"
 	"errors"
 
-	"github.com/Goboolean/fetch-server/internal/domain/entity"
-	"github.com/Goboolean/fetch-server/internal/domain/port/out"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/port/out"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/vo"
 )
 
-
-
 type MockAdapter struct {
-	brokerList map[string] int
+	brokerList map[string]int
 }
 
 func NewMockAdapter() out.TransmissionPort {
@@ -20,7 +18,7 @@ func NewMockAdapter() out.TransmissionPort {
 	}
 }
 
-func (a *MockAdapter) TransmitStockBatch(ctx context.Context, stockId string, batch []*entity.StockAggregate) error {
+func (a *MockAdapter) TransmitStockBatch(ctx context.Context, stockId string, batch []*vo.StockAggregate) error {
 	if _, ok := a.brokerList[stockId]; !ok {
 		return errors.New("path not exist")
 	}

@@ -3,44 +3,40 @@ package broker
 import (
 	"context"
 
-	"github.com/Goboolean/fetch-server/internal/domain/entity"
-	"github.com/Goboolean/fetch-server/internal/domain/port/out"
-	"github.com/Goboolean/fetch-server/internal/infrastructure/prometheus"
-	"github.com/Goboolean/shared/pkg/broker"
+	"github.com/Goboolean/fetch-server.v1/api/model"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/port/out"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/vo"
+	"github.com/Goboolean/fetch-server.v1/internal/infrastructure/kafka"
+	"github.com/Goboolean/fetch-server.v1/internal/util/prometheus"
 )
 
 type Adapter struct {
-	conf *broker.Configurator
-	pub  *broker.Publisher
-
-	prom *prometheus.Server
+	conf *kafka.Configurator
+	pub  *kafka.Publisher
 }
 
-func NewAdapter(conf *broker.Configurator, pub *broker.Publisher, prom *prometheus.Server) out.TransmissionPort {
+func NewAdapter(conf *kafka.Configurator, pub *kafka.Publisher) out.TransmissionPort {
 	return &Adapter{
 		conf: conf,
 		pub:  pub,
-		prom: prom,
 	}
 }
 
+func (a *Adapter) TransmitStockBatch(ctx context.Context, stock string, batch []*vo.StockAggregate) error {
 
-func (a *Adapter) TransmitStockBatch(ctx context.Context, stock string, batch []*entity.StockAggregate) error {
+	prometheus.BrokerCounter.Add(float64(len(batch)))
 
-	a.prom.BrokerCounter()().Add(float64(len(batch)))
-
-	converted := make([]*broker.StockAggregate, len(batch))
+	converted := make([]*model.StockAggregate, len(batch))
 
 	for idx := range converted {
-		converted[idx] = &broker.StockAggregate{
+		converted[idx] = &model.StockAggregate{
 			EventType: batch[idx].EventType,
-			Average:   float32(batch[idx].Average),
-			Min:       float32(batch[idx].Min),
-			Max:       float32(batch[idx].Max),
-			Start:     float32(batch[idx].Start),
-			End:       float32(batch[idx].End),
-			StartTime: batch[idx].StartTime,
-			EndTime:   batch[idx].EndTime,
+			Volume:    batch[idx].Volume,
+			Min:       batch[idx].Min,
+			Max:       batch[idx].Max,
+			Open:      batch[idx].Open,
+			Closed:    batch[idx].Closed,
+			StartTime: batch[idx].Time,
 		}
 	}
 

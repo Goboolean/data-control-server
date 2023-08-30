@@ -5,13 +5,11 @@ import (
 	"log"
 	"time"
 
-	"github.com/Goboolean/fetch-server/internal/domain/entity"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/vo"
 )
 
-
-
-func (m *PersistenceManager) SubscribeRelayer(ctx context.Context, stockId string) error {
-	received := make([]*entity.StockAggregate, 0)
+func (m *Manager) SubscribeRelayer(ctx context.Context, stockId string) error {
+	received := make([]*vo.StockAggregate, 0)
 
 	if err := m.s.StoreStock(stockId); err != nil {
 		return err
@@ -27,7 +25,6 @@ func (m *PersistenceManager) SubscribeRelayer(ctx context.Context, stockId strin
 		return err
 	}
 
-
 	useCache := m.o.useCache
 	batchSize := m.o.BatchSize
 	syncCount := m.o.SyncCount
@@ -35,14 +32,14 @@ func (m *PersistenceManager) SubscribeRelayer(ctx context.Context, stockId strin
 	cacheChan := make(chan struct{}, 10)
 
 	if m.o.SyncDuration != 0 {
-		go func (ctx context.Context) {
+		go func(ctx context.Context) {
 
 			for {
 				select {
-				case <- ctx.Done():
+				case <-ctx.Done():
 					close(cacheChan)
 					return
-				case <- time.After(syncDuration):
+				case <-time.After(syncDuration):
 					cacheChan <- struct{}{}
 				}
 			}
@@ -59,7 +56,7 @@ func (m *PersistenceManager) SubscribeRelayer(ctx context.Context, stockId strin
 
 		for {
 			select {
-			case <- ctx.Done():
+			case <-ctx.Done():
 				if err := m.InsertStockOnDB(ctx, stockId, received); err != nil {
 					log.Println(err)
 				}
@@ -77,7 +74,7 @@ func (m *PersistenceManager) SubscribeRelayer(ctx context.Context, stockId strin
 				}
 				received = append(received, data)
 
-				if len(received) % batchSize != 0 {
+				if len(received)%batchSize != 0 {
 					continue
 				}
 
@@ -104,7 +101,7 @@ func (m *PersistenceManager) SubscribeRelayer(ctx context.Context, stockId strin
 
 				received = received[:0]
 
-			case <- cacheChan:
+			case <-cacheChan:
 				if err := m.SynchronizeCache(ctx, stockId); err != nil {
 					log.Println(err)
 				}
@@ -117,18 +114,15 @@ func (m *PersistenceManager) SubscribeRelayer(ctx context.Context, stockId strin
 	return nil
 }
 
-
-func (m *PersistenceManager) UnsubscribeRelayer(stockId string) error {
+func (m *Manager) UnsubscribeRelayer(stockId string) error {
 	return m.s.UnstoreStock(stockId)
 }
 
-
-func (m *PersistenceManager) IsStockStoreable(stockId string) bool {
+func (m *Manager) IsStockStoreable(stockId string) bool {
 	return m.s.StockExists(stockId)
 }
 
-
-func (m *PersistenceManager) InsertStockOnDB(ctx context.Context, stockId string, batch []*entity.StockAggregate) error {
+func (m *Manager) InsertStockOnDB(ctx context.Context, stockId string, batch []*vo.StockAggregate) error {
 
 	tx, err := m.tx.Transaction(ctx)
 	if err != nil {
@@ -143,13 +137,11 @@ func (m *PersistenceManager) InsertStockOnDB(ctx context.Context, stockId string
 	return tx.Commit()
 }
 
-
-func (m *PersistenceManager) InsertStockOnCache(ctx context.Context, stockId string, batch []*entity.StockAggregate) error {
+func (m *Manager) InsertStockOnCache(ctx context.Context, stockId string, batch []*vo.StockAggregate) error {
 	return m.cache.StoreStockBatchOnCache(ctx, stockId, batch)
 }
 
-
-func (m *PersistenceManager) SynchronizeCache(ctx context.Context, stockId string) error {
+func (m *Manager) SynchronizeCache(ctx context.Context, stockId string) error {
 	stockBatch, err := m.cache.GetAndEmptyCache(ctx, stockId)
 	if err != nil {
 		return err

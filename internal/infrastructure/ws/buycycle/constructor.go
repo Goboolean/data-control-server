@@ -5,15 +5,12 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/Goboolean/fetch-server/internal/infrastructure/ws"
+	"github.com/Goboolean/fetch-server.v1/internal/infrastructure/ws"
 	"github.com/Goboolean/shared/pkg/resolver"
 	"github.com/gorilla/websocket"
 )
 
-
 const platformName = "buycycle"
-
-
 
 type Subscriber struct {
 	conn *websocket.Conn
@@ -23,23 +20,21 @@ type Subscriber struct {
 	r      ws.Receiver
 }
 
-
-
-func New(c *resolver.ConfigMap, r ws.Receiver) *Subscriber {
+func New(c *resolver.ConfigMap, r ws.Receiver) (*Subscriber, error) {
 
 	host, err := c.GetStringKey("HOST")
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	port, err := c.GetStringKey("PORT")
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	path, err := c.GetStringKey("PATH")
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	address := fmt.Sprintf("%s:%s", host, port)
@@ -53,7 +48,7 @@ func New(c *resolver.ConfigMap, r ws.Receiver) *Subscriber {
 	conn, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
 
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -67,17 +62,15 @@ func New(c *resolver.ConfigMap, r ws.Receiver) *Subscriber {
 
 	go instance.run()
 
-	return instance
+	return instance, nil
 }
-
 
 func (s *Subscriber) PlatformName() string {
 	return platformName
 }
 
-
 func (s *Subscriber) Close() error {
-	
+
 	if err := s.conn.Close(); err != nil {
 		return err
 	}
@@ -85,7 +78,6 @@ func (s *Subscriber) Close() error {
 	s.cancel()
 	return nil
 }
-
 
 func (s *Subscriber) Ping() error {
 	handler := s.conn.PingHandler()

@@ -2,10 +2,12 @@ package kis
 
 import (
 	"bytes"
+	"errors"
+	"io"
 	"log"
+	"time"
 
 	"encoding/json"
-	"io/ioutil"
 	"net/http"
 )
 
@@ -27,7 +29,7 @@ func (s *Subscriber) GetApprovalKey(Appkey string, Secretkey string) (string, er
 	}
 	defer response.Body.Close()
 
-	body, err := ioutil.ReadAll(response.Body)
+	body, err := io.ReadAll(response.Body)
 	if err != nil {
 		return "", err
 	}
@@ -36,6 +38,10 @@ func (s *Subscriber) GetApprovalKey(Appkey string, Secretkey string) (string, er
 
 	if err := json.Unmarshal(body, &res); err != nil {
 		return "", err
+	}
+
+	if res.ApprovalKey == "" {
+		return res.ApprovalKey, errors.New("invalid request")
 	}
 
 	return res.ApprovalKey, nil
@@ -57,20 +63,29 @@ func (s *Subscriber) run() {
 		case <-s.ctx.Done():
 			return
 		default:
-
+			break
 		}
+
 
 		_, message, err := s.conn.ReadMessage()
 		if err != nil {
-			if valid := isResponseValid(message); !valid {
-				log.Println("Error while reading message")
-			}
+			time.Sleep(10 * time.Millisecond)
 			continue
 		}
 
+		// There are two types of response that can be catched here:
+		// 1. StockAggs
+		// 2. StockSubscriptionInfo
+		// If it fails to convert to StockAggs, it may be StockSubscriptionInfo, therefore ignorable.
+
 		agg, err := NewStockAggs(string(message))
 		if err != nil {
-			log.Println("Error while converting to StockAggs")
+			symbol, flag := parseToSubscriptionResponse(message)
+			if !flag {
+				log.Println("")
+			} else {
+				s.subscribed <- symbol
+			}
 			continue
 		}
 

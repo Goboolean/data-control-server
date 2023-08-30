@@ -1,19 +1,19 @@
 package compose
 
 import (
+	"context"
 	"fmt"
-	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
-	"github.com/Goboolean/fetch-server/cmd/inject"
-	"github.com/Goboolean/fetch-server/internal/domain/service/persistence"
-	"github.com/Goboolean/fetch-server/internal/domain/service/transmission"
-	"github.com/Goboolean/fetch-server/internal/infrastructure/cache/redis"
-	"github.com/Goboolean/fetch-server/internal/infrastructure/ws/mock"
-	"github.com/Goboolean/shared/pkg/mongo"
-	"github.com/Goboolean/shared/pkg/rdbms"
+	"github.com/Goboolean/fetch-server.v1/cmd/inject"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/service/persistence"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/service/transmission"
+	"github.com/Goboolean/fetch-server.v1/internal/infrastructure/mongo"
+	"github.com/Goboolean/fetch-server.v1/internal/infrastructure/rdbms"
+	"github.com/Goboolean/fetch-server.v1/internal/infrastructure/redis"
+	"github.com/Goboolean/fetch-server.v1/internal/infrastructure/ws/mock"
 	"github.com/joho/godotenv"
 )
 
@@ -26,58 +26,92 @@ func WithMockData() (err error) {
 	// Ends of Close() method must assure that every goroutine it holds are closed
 
 	// Initialize Infrastructure
-	pub := inject.InitKafkaPublisher()
-	conf := inject.InitKafkaConfigurator()
-	defer conf.Close()
+	pub, err := inject.InitKafkaPublisher()
+	if err != nil {
+		panic(err)
+	}
 	defer pub.Close()
 
-	mongoDB := inject.InitMongo()
-	mongoQueries := mongo.New(mongoDB)
+	conf, err := inject.InitKafkaConfigurator()
+	if err != nil {
+		panic(err)
+	}
+	defer conf.Close()
+
+	mongoDB, err := inject.InitMongo()
+	if err != nil {
+		panic(err)
+	}
 	defer mongoDB.Close()
+	mongoQueries := mongo.New(mongoDB)
 
-	psqlDB := inject.InitPsql()
-	psqlQueries := rdbms.NewQueries(psqlDB)
+	psqlDB, err := inject.InitPsql()
+	if err != nil {
+		panic(err)
+	}
 	defer psqlDB.Close()
+	psqlQueries := rdbms.NewQueries(psqlDB)
 
-	redisDB := inject.InitRedis()
-	redisQueries := redis.New(redisDB)
+	redisDB, err := inject.InitRedis()
+	if err != nil {
+		panic(err)
+	}
 	defer redisDB.Close()
+	redisQueries := redis.New(redisDB)
 
 	transactor := inject.InitTransactor(mongoDB, psqlDB)
-	
-	prom := inject.InitPrometheus()
-	defer prom.Close()
 
-	ws := inject.InitWs(prom)
-
+	ws := inject.InitWs()
 
 	// Initialize Service
-	relayer := inject.InitRelayer(transactor, mongoQueries, psqlQueries, nil, prom)
+	relayer, err := inject.InitRelayer(transactor, mongoQueries, psqlQueries, nil)
+	if err != nil {
+		panic(err)
+	}
 	defer relayer.Close()
-	transmitter := inject.InitTransmission(transactor, transmission.Option{}, conf, pub, relayer, prom)
-	defer transmitter.Close()
-	persister := inject.InitPersistenceManager(transactor, persistence.Option{}, redisQueries, psqlQueries, mongoQueries, relayer, prom)
-	defer persister.Close()
-	configurator := inject.InitConfigurationManager(transactor, psqlQueries, persister, transmitter, relayer, prom)
-	defer func(){}()
 
+	transmitter, err := inject.InitTransmitter(transactor, transmission.Option{}, conf, pub, relayer)
+	if err != nil {
+		panic(err)
+	}
+	defer transmitter.Close()
+
+	persister, err := inject.InitPersister(transactor, persistence.Option{}, redisQueries, psqlQueries, mongoQueries, relayer)
+	if err != nil {
+		panic(err)
+	}
+	defer persister.Close()
+
+	configurator, err := inject.InitConfigurator(transactor, psqlQueries, persister, transmitter, relayer)
+	if err != nil {
+		panic(err)
+	}
+	defer func() {}()
 
 	// Initialize Infrastructure
-	grpc := inject.InitGrpcWithAdapter(configurator)
+	grpc, err := inject.InitGrpcWithAdapter(configurator)
+	if err != nil {
+		panic(err)
+	}
 	defer grpc.Close()
 
-	fetcher := mock.New(time.Millisecond * 10, ws)
+	fetcher := mock.New(time.Millisecond*10, ws)
 	defer fetcher.Close()
 
 	if err := ws.RegisterFetcher(fetcher); err != nil {
 		panic(err)
 	}
 	ws.RegisterReceiver(relayer)
-	
 
-	
-	sigs := make(chan os.Signal, 1)
-	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+	// Initialize util
+	prom, err := inject.InitPrometheus()
+	if err != nil {
+		panic(err)
+	}
+	defer prom.Close()
+
+	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer cancel()
 
 	defer func() {
 		// Every fatel error will be catched here
@@ -86,6 +120,7 @@ func WithMockData() (err error) {
 		}
 	}()
 
-	sig := <- sigs
-	return fmt.Errorf("signal: %v", sig)
+	<-ctx.Done()
+
+	return fmt.Errorf("signal: %v", err)
 }

@@ -6,22 +6,21 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Goboolean/fetch-server/internal/infrastructure/ws"
+	"github.com/Goboolean/fetch-server.v1/internal/infrastructure/ws"
 )
-
 
 var (
 	generater *mockGenerater
-	ch chan *ws.StockAggregate
-	symbol = "MOCK"
+	ch        chan *ws.StockAggregate
+	symbol    = "MOCK"
 )
 
 func SetupMockGenerater() {
 	ctx := context.Background()
 	ch = make(chan *ws.StockAggregate)
-	
+
 	duration := time.Second / 10 // the data is generated every 0.1 second in average.
-	
+
 	generater = newMockGenerater(symbol, ctx, ch, duration)
 }
 
@@ -30,11 +29,9 @@ func TeardownMockGenerater() {
 	generater.Close()
 }
 
-
-
 // It fails the test when it generates empty data.
 func Test_generateRandomStockAggs(t *testing.T) {
-	
+
 	SetupMockGenerater()
 
 	agg := generater.generateRandomStockAggs()
@@ -46,11 +43,9 @@ func Test_generateRandomStockAggs(t *testing.T) {
 	TeardownMockGenerater()
 }
 
-
-
 // It verdicts the test as success when it generates data 5 times for a second.
 func Test_newMockGenerater(t *testing.T) {
-	
+
 	SetupMockGenerater()
 	defer TeardownMockGenerater()
 
@@ -60,10 +55,10 @@ func Test_newMockGenerater(t *testing.T) {
 	t.Run("generateRandomStockAggs", func(t *testing.T) {
 		for count := 5; count >= 0; count-- {
 			select {
-			case <- ctx.Done():
+			case <-ctx.Done():
 				t.Errorf("newMockGenerater() got timeout")
 				return
-			case <- ch:
+			case <-ch:
 				continue
 			}
 		}
@@ -73,15 +68,15 @@ func Test_newMockGenerater(t *testing.T) {
 		generater.Close()
 
 		for len(ch) > 0 {
-			<- ch
+			<-ch
 		}
-	
+
 		select {
-		case <- ch:
+		case <-ch:
 			t.Errorf("newMockGenerater got data after closing")
 			return
-		case <- time.After(time.Second / 10):
+		case <-time.After(time.Second / 10):
 			break
-		}	
+		}
 	})
 }

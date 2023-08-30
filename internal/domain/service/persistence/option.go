@@ -22,20 +22,20 @@ type Option struct {
 }
 
 
-func (m *PersistenceManager) SetBatchSize(batchSize int) {
+func (m *Manager) SetBatchSize(batchSize int) {
 	m.o.BatchSize = batchSize
 }
 
-func (m *PersistenceManager) SetSyncDuration(syncDuration time.Duration) {
+func (m *Manager) SetSyncDuration(syncDuration time.Duration) {
 	m.o.SyncDuration = syncDuration
 	m.setUseCache()
 }
 
-func (m *PersistenceManager) SetSyncCount(syncCount int) {
+func (m *Manager) SetSyncCount(syncCount int) {
 	m.o.SyncCount = syncCount
 	m.setUseCache()
 }
 
-func (m *PersistenceManager) setUseCache() {
+func (m *Manager) setUseCache() {
 	m.o.useCache = m.o.SyncDuration != 0 || m.o.SyncCount != 0 
 }

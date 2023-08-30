@@ -5,9 +5,8 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/Goboolean/fetch-server/internal/infrastructure/ws"
+	"github.com/Goboolean/fetch-server.v1/internal/infrastructure/ws"
 )
-
 
 type getApprovalKeyReqeust struct {
 	GrantType string `json:"grant_type"`
@@ -18,7 +17,6 @@ type getApprovalKeyReqeust struct {
 type getApprovalKeyResponse struct {
 	ApprovalKey string `json:"approval_key"`
 }
-
 
 type HeaderJson struct {
 	ApprovalKey string `json:"approval_key"` // 실시간 접속키
@@ -41,10 +39,9 @@ type RequestJson struct {
 	Body   RequestBodyJson `json:"body"`
 }
 
-
 type ResponseJson struct {
-	Header ResponseHeaderJson     `json:"header"`
-	Body   ResponseBodyJson `json:"body"`
+	Header ResponseHeaderJson `json:"header"`
+	Body   ResponseBodyJson   `json:"body"`
 }
 
 type ResponseHeaderJson struct {
@@ -54,31 +51,30 @@ type ResponseHeaderJson struct {
 }
 
 type ResponseBodyJson struct {
-	RtCd  string `json:"rt_cd"`
-	MsgCd string `json:"msg_cd"`
-	Msg1  string `json:"msg1"`
+	RtCd   string `json:"rt_cd"`
+	MsgCd  string `json:"msg_cd"`
+	Msg1   string `json:"msg1"`
 	Output struct {
 		Iv  string `json:"iv"`
 		Key string `json:"key"`
-	}            `json:"output"`
+	} `json:"output"`
 }
 
-func isResponseValid(data []byte) bool {
+func parseToSubscriptionResponse(data []byte) (string, bool) {
 
 	var res ResponseJson
 	if err := json.Unmarshal([]byte(data), &res); err != nil {
-		return false
+		return "", false
 	}
-	if res.Header.TrID != "" && res.Header.TrKey != "" && res.Header.Encrypt != "" {
-		return false
+	if res.Header.TrID == "" || res.Header.TrKey == "" || res.Header.Encrypt == "" {
+		return "", false
 	}
 
-	return true
+	return res.Header.TrID, true
 }
 
-
 type StockAggs struct {
-	data []string
+	data   []string
 	origin string
 }
 
@@ -88,31 +84,29 @@ func NewStockAggs(str string) (*StockAggs, error) {
 	instance := &StockAggs{data: data}
 
 	switch len(data) {
-		case 26:
-			instance.origin = "usa"
-			return instance, nil
-		case 52:
-			instance.origin = "kor"
-			return instance, nil
-		default:
-			return nil, errors.New("incorrect number of fields in response")
+	case 26:
+		instance.origin = "usa"
+		return instance, nil
+	case 52:
+		instance.origin = "kor"
+		return instance, nil
+	default:
+		return nil, errors.New("incorrect number of fields in response")
 	}
 }
 
 func (s *StockAggs) ToStockAggsDetail() (*ws.StockAggregate, error) {
 	switch s.origin {
-		case "usa":
-			usas := s.parseToUSAStockDetail()
-			return usas.ToStockAggsDetail()
-		case "kor":
-			kors := s.parseToKORStockDetail()
-			return kors.ToStockAggsDetail()
-		default:
-			return nil, errors.New("incorrect origin")
+	case "usa":
+		usas := s.parseToUSAStockDetail()
+		return usas.ToStockAggsDetail()
+	case "kor":
+		kors := s.parseToKORStockDetail()
+		return kors.ToStockAggsDetail()
+	default:
+		return nil, errors.New("incorrect origin")
 	}
 }
-
-
 
 type USAStockDetail struct {
 	RSYM string // 실시간 종목코드
@@ -142,7 +136,6 @@ type USAStockDetail struct {
 	STRN string // 체결강도
 	MTYP string // 시간구분
 }
-
 
 type KORStockDetail struct {
 	MKSC_SHRN_ISCD               string // 유가증권 단축 종목코드
@@ -193,7 +186,6 @@ type KORStockDetail struct {
 	VI_STND_PRC                  string // 정적 VI 발동 기준가
 }
 
-
 func (s *StockAggs) parseToUSAStockDetail() *USAStockDetail {
 
 	data := s.data
@@ -228,7 +220,6 @@ func (s *StockAggs) parseToUSAStockDetail() *USAStockDetail {
 		MTYP: data[25],
 	}
 }
-
 
 func (s *StockAggs) parseToKORStockDetail() *KORStockDetail {
 	data := s.data
@@ -282,7 +273,6 @@ func (s *StockAggs) parseToKORStockDetail() *KORStockDetail {
 		VI_STND_PRC:                  data[45],
 	}
 }
-
 
 func (s *KORStockDetail) ToStockAggsDetail() (*ws.StockAggregate, error) {
 	return &ws.StockAggregate{}, nil

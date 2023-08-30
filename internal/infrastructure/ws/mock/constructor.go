@@ -5,10 +5,8 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/Goboolean/fetch-server/internal/infrastructure/ws"
+	"github.com/Goboolean/fetch-server.v1/internal/infrastructure/ws"
 )
-
-
 
 const platformName = "mock"
 
@@ -19,8 +17,8 @@ const platformName = "mock"
 type MockFetcher struct {
 	r ws.Receiver
 	d time.Duration
-	
-	ctx context.Context
+
+	ctx    context.Context
 	cancel context.CancelFunc
 
 	ch chan *ws.StockAggregate
@@ -28,16 +26,15 @@ type MockFetcher struct {
 	stocks map[string]*mockGenerater
 }
 
-
 func New(d time.Duration, r ws.Receiver) *MockFetcher {
 	rand.Seed(time.Now().UnixNano())
 
 	ctx, cancel := context.WithCancel(context.Background())
 
 	instance := &MockFetcher{
-		d: d,
-		r: r,
-		ctx: ctx,
+		d:      d,
+		r:      r,
+		ctx:    ctx,
 		cancel: cancel,
 	}
 
@@ -47,9 +44,9 @@ func New(d time.Duration, r ws.Receiver) *MockFetcher {
 	go func(ctx context.Context) {
 		for {
 			select {
-			case <- ctx.Done():
+			case <-ctx.Done():
 				return
-			case agg := <- instance.ch:
+			case agg := <-instance.ch:
 				instance.r.OnReceiveStockAggs(agg)
 			}
 		}
@@ -58,12 +55,9 @@ func New(d time.Duration, r ws.Receiver) *MockFetcher {
 	return instance
 }
 
-
 func (s *MockFetcher) PlatformName() string {
 	return platformName
 }
-
-
 
 // Subscribing several topic at once is allowed, but atomicity is not guaranteed.
 func (f *MockFetcher) SubscribeStockAggs(stocks ...string) error {
@@ -92,7 +86,6 @@ func (f *MockFetcher) UnsubscribeStockAggs(stocks ...string) error {
 	return nil
 }
 
-
 // Be sure to call Close() before the program ends.
 func (f *MockFetcher) Close() error {
 	// cancel() call will stop all the goroutines that generates data.
@@ -102,12 +95,11 @@ func (f *MockFetcher) Close() error {
 	return nil
 }
 
-
 // MockFetcher does not explicitly connect to the server.
 // Calling Ping() after Close() will cause error
 func (f *MockFetcher) Ping() error {
 	select {
-	case <- f.ctx.Done():
+	case <-f.ctx.Done():
 		return ErrConnectionClosed
 	default:
 		return nil

@@ -4,11 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/Goboolean/fetch-server/internal/domain/service/store"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/service/store"
 )
-
-
-
 
 func Test_Store(t *testing.T) {
 
@@ -23,12 +20,12 @@ func Test_Store(t *testing.T) {
 			t.Errorf("stock exists before storing")
 			return
 		}
-	
+
 		if err := instance.StoreStock(stockId); err != nil {
 			t.Errorf("failed to store stock: %v", err)
 			return
 		}
-	
+
 		if exists := instance.StockExists(stockId); !exists {
 			t.Errorf("stock not exists after storing")
 			return
@@ -40,10 +37,10 @@ func Test_Store(t *testing.T) {
 			t.Errorf("failed to unstore stock: %v", err)
 			return
 		}
-	
+
 		if exists := instance.StockExists(stockId); exists {
 			t.Errorf("stock exists before storing")
 			return
-		}	
+		}
 	})
 }

@@ -2,8 +2,9 @@ package buycycle
 
 import (
 	"log"
+	"time"
 
-	"github.com/Goboolean/fetch-server/internal/infrastructure/ws"
+	"github.com/Goboolean/fetch-server.v1/internal/infrastructure/ws"
 )
 
 // It is not sure whether rolling back subscription is provided on buycycle opensource.
@@ -14,38 +15,36 @@ func (s *Subscriber) run() {
 		select {
 		case <-s.ctx.Done():
 			return
-		default:
-			
+		case <-time.After(time.Millisecond * 100):
+			break
 		}
 
 		var agg *StockDetail = &StockDetail{}
 		if err := s.conn.ReadJSON(agg); err != nil {
-			log.Fatal(err)
+			log.Fatalf("24: %v", err)
 		}
 
 		var data = &ws.StockAggregate{
 			StockAggsMeta: ws.StockAggsMeta{
-				Symbol: agg.Sign,				
+				Symbol: agg.Sign,
 			},
-			StockAggsDetail: ws.StockAggsDetail{
-				
-			},
+			StockAggsDetail: ws.StockAggsDetail{},
 		}
 
 		if err := s.r.OnReceiveStockAggs(data); err != nil {
-			log.Fatal(err)
+			log.Fatalf("37: %v", err)
 		}
 	}
 }
-
-
 
 func (s *Subscriber) SubscribeStockAggs(symbols ...string) error {
 	for _, symbol := range symbols {
 		req := &RequestJson{
 			Header: HeaderJson{},
-			Body: RequestBodyJson{	
-				Query: struct {Shcode string `json:"shcode"`} {
+			Body: RequestBodyJson{
+				Query: struct {
+					Shcode string `json:"shcode"`
+				}{
 					Shcode: symbol,
 				},
 				// TODO: Add more fields
@@ -59,8 +58,6 @@ func (s *Subscriber) SubscribeStockAggs(symbols ...string) error {
 
 	return nil
 }
-
-
 
 func (s *Subscriber) UnsubscribeStockAggs(stock ...string) error {
 	// TODO: check how Unsubscribe works on buycycle than implement it.

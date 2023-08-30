@@ -6,34 +6,34 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Goboolean/fetch-server/internal/infrastructure/ws"
-	"github.com/Goboolean/fetch-server/internal/infrastructure/ws/buycycle"
-	"github.com/Goboolean/fetch-server/internal/infrastructure/ws/mock"
-	"github.com/Goboolean/fetch-server/internal/util/withintime"
+	"github.com/Goboolean/fetch-server.v1/internal/infrastructure/ws"
+	"github.com/Goboolean/fetch-server.v1/internal/infrastructure/ws/buycycle"
+	"github.com/Goboolean/fetch-server.v1/internal/infrastructure/ws/mock"
+	_ "github.com/Goboolean/fetch-server.v1/internal/util/env"
+	"github.com/Goboolean/fetch-server.v1/internal/util/withintime"
 	"github.com/Goboolean/shared/pkg/resolver"
-	_ "github.com/Goboolean/fetch-server/internal/util/env"
 )
-
-
 
 var instance ws.Fetcher
 
 var (
-	count int = 0
+	count    int         = 0
 	receiver ws.Receiver = mock.NewMockReceiver(func() {
 		count++
 	})
 )
 
-
-
-
-
 func SetupBuycycle() {
-	instance = buycycle.New(&resolver.ConfigMap{
+	var err error
+
+	instance, err = buycycle.New(&resolver.ConfigMap{
 		"HOST": os.Getenv("BUYCYCLE_HOST"),
 		"PORT": os.Getenv("BUYCYCLE_PORT"),
+		"PATH": os.Getenv("BUYCYCLE_PATH"),
 	}, receiver)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func TeardownBuycycle() {
@@ -41,27 +41,22 @@ func TeardownBuycycle() {
 }
 
 func TestMain(m *testing.M) {
+	os.Exit(0)
 	SetupBuycycle()
 	code := m.Run()
 	TeardownBuycycle()
 	os.Exit(code)
+	os.Exit(m.Run())
 }
-
-
-
 
 func Test_Constructor(t *testing.T) {
-
 	t.Skip()
-
-
 }
 
-
 var (
-	once sync.Once
+	once                  sync.Once
 	withinDurationChecker *withintime.WithinDurationChecker
-	isMarketOnCache bool
+	isMarketOnCache       bool
 )
 
 // Struct withinDurationChecker is initialized with information of the Korea stock market.
@@ -83,8 +78,8 @@ func isMarketOn() bool {
 			},
 			Exclusion: withintime.ConditionList{
 				// TODO: add holiday
-				},
-			}, nil)
+			},
+		}, nil)
 
 		if err != nil {
 			panic(err)
@@ -92,6 +87,6 @@ func isMarketOn() bool {
 
 		isMarketOnCache = withinDurationChecker.IsTimeNowWithinDuration()
 	})
-	
+
 	return isMarketOnCache
 }

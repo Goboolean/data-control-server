@@ -6,23 +6,20 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/Goboolean/fetch-server/internal/infrastructure/ws"
+	"github.com/Goboolean/fetch-server.v1/internal/infrastructure/ws"
 )
-
-
 
 type mockGenerater struct {
 	symbol string
 
-	ctx context.Context
+	ctx    context.Context
 	cancel context.CancelFunc
-	ch chan<- *ws.StockAggregate
-	d time.Duration
+	ch     chan<- *ws.StockAggregate
+	d      time.Duration
 
-	curTime time.Time
+	curTime  time.Time
 	curPrice float64
 }
-
 
 func (m *mockGenerater) generateRandomStockAggs() *ws.StockAggregate {
 
@@ -30,39 +27,38 @@ func (m *mockGenerater) generateRandomStockAggs() *ws.StockAggregate {
 	lastPrice := m.curPrice
 
 	curTime := time.Now()
-	curPrice := m.curPrice * (rand.Float64() * 0.2 + 0.9)
+	curPrice := m.curPrice * (rand.Float64()*0.2 + 0.9)
 
 	stockAggs := &ws.StockAggregate{
 		StockAggsMeta: ws.StockAggsMeta{
 			Platform: platformName,
-			Symbol:  m.symbol,
+			Symbol:   m.symbol,
 		},
 		StockAggsDetail: ws.StockAggsDetail{
 			StartTime: lastTime.UnixNano(),
-			EndTime: curTime.UnixNano(),
-			Average: (lastPrice + curPrice) / 2,
-			Min: math.Min(lastPrice, curPrice),
-			Max: math.Max(lastPrice, curPrice),
-			Start: lastPrice,
-			End: curPrice,
+			EndTime:   curTime.UnixNano(),
+			Average:   (lastPrice + curPrice) / 2,
+			Min:       math.Min(lastPrice, curPrice),
+			Max:       math.Max(lastPrice, curPrice),
+			Start:     lastPrice,
+			End:       curPrice,
 		},
 	}
 
-	m.curTime  = curTime
+	m.curTime = curTime
 	m.curPrice = curPrice
 
 	return stockAggs
 }
 
-
 func newMockGenerater(symbol string, ctx context.Context, ch chan<- *ws.StockAggregate, d time.Duration) *mockGenerater {
 	ctx, cancel := context.WithCancel(ctx)
 
 	instance := &mockGenerater{
-		ctx: ctx,
+		ctx:    ctx,
 		cancel: cancel,
-		ch: ch,
-		d: d,
+		ch:     ch,
+		d:      d,
 		symbol: symbol,
 	}
 
@@ -75,7 +71,7 @@ func newMockGenerater(symbol string, ctx context.Context, ch chan<- *ws.StockAgg
 			select {
 			case <-ctx.Done():
 				return
-			case <- time.After(instance.d):
+			case <-time.After(instance.d):
 				agg := instance.generateRandomStockAggs()
 				ch <- agg
 				break
@@ -85,7 +81,6 @@ func newMockGenerater(symbol string, ctx context.Context, ch chan<- *ws.StockAgg
 
 	return instance
 }
-
 
 // GC will not immediately release the memory mockGenerater occupies,
 // therefore be sure to call Close() when you are done with mockGenerater.

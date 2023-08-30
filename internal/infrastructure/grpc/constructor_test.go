@@ -2,54 +2,46 @@ package grpc_test
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"testing"
 	"time"
 
-	pb "github.com/Goboolean/fetch-server/api/grpc"
-	server "github.com/Goboolean/fetch-server/internal/infrastructure/grpc"
-	grpc_adapter "github.com/Goboolean/fetch-server/internal/adapter/grpc"
+	pb "github.com/Goboolean/fetch-server.v1/api/grpc"
+	grpc_adapter "github.com/Goboolean/fetch-server.v1/internal/adapter/grpc"
+	server "github.com/Goboolean/fetch-server.v1/internal/infrastructure/grpc"
 	"github.com/Goboolean/shared/pkg/resolver"
 
-	"google.golang.org/grpc"
-	_ "github.com/Goboolean/fetch-server/internal/util/env"
+	_ "github.com/Goboolean/fetch-server.v1/internal/util/env"
 )
-
 
 var (
 	instance *server.Host
-	client pb.StockConfiguratorClient
+	client   *server.Client
 )
 
+func SetUp() {
+	var err error
 
-
-func NewClient() pb.StockConfiguratorClient {
-
-	address := fmt.Sprintf(":%s", os.Getenv("SERVER_PORT"))
-	conn, err := grpc.Dial(address, grpc.WithInsecure(), grpc.WithBlock())
-
+	instance, err = server.New(&resolver.ConfigMap{
+		"PORT": os.Getenv("SERVER_PORT"),
+	}, grpc_adapter.NewMockAdapter())
 	if err != nil {
 		panic(err)
 	}
 
-	return pb.NewStockConfiguratorClient(conn)
-}
-
-
-func SetUp() {
-
-	instance = server.New(&resolver.ConfigMap{
-		"PORT": os.Getenv("SERVER_PORT"),
-	}, grpc_adapter.NewMockAdapter())
-
 	time.Sleep(1 * time.Second)
 
-	client = NewClient()
+	client, err = server.NewClient(&resolver.ConfigMap{
+		"PORT": os.Getenv("SERVER_PORT"),
+	})
+	if err != nil {
+		panic(err)
+	}
 }
 
 func TearDown() {
 	instance.Close()
+	client.Close()
 }
 
 func TestMain(m *testing.M) {
@@ -58,7 +50,6 @@ func TestMain(m *testing.M) {
 	TearDown()
 	os.Exit(code)
 }
-
 
 func Test_Constructur(t *testing.T) {
 

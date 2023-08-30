@@ -3,18 +3,16 @@ package polygon
 import (
 	"log"
 
-	"github.com/Goboolean/fetch-server/internal/infrastructure/ws"
+	"github.com/Goboolean/fetch-server.v1/internal/infrastructure/ws"
 	polygonws "github.com/polygon-io/client-go/websocket"
 	"github.com/polygon-io/client-go/websocket/models"
 )
-
-
 
 func (s *Subscriber) run() {
 
 	for {
 		select {
-		case <- s.ctx.Done():
+		case <-s.ctx.Done():
 			return
 		case err := <-s.conn.Error():
 			log.Fatal("error: ", err)
@@ -38,8 +36,8 @@ func (s *Subscriber) run() {
 
 				StockAggsDetail: ws.StockAggsDetail{
 					EventType: data.EventType.EventType,
-					Min: 		   data.Low,
-					Max: 		   data.High,
+					Min:       data.Low,
+					Max:       data.High,
 					Start:     data.Open,
 					End:       data.Close,
 					StartTime: data.StartTimestamp,
@@ -53,7 +51,6 @@ func (s *Subscriber) run() {
 		}
 	}
 }
-
 
 func (s *Subscriber) SubscribeStockAggs(stocks ...string) error {
 	return s.conn.Subscribe(polygonws.StocksSecAggs, stocks...)

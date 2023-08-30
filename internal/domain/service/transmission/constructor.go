@@ -4,46 +4,46 @@ import (
 	"context"
 	"sync"
 
-	"github.com/Goboolean/fetch-server/internal/domain/port/out"
-	"github.com/Goboolean/fetch-server/internal/domain/service/relayer"
-	"github.com/Goboolean/fetch-server/internal/domain/service/store"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/port/out"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/service/relay"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/service/store"
 )
 
-type Transmitter struct {
-	relayer *relayer.RelayerManager
-	broker out.TransmissionPort
+type Manager struct {
+	relayer *relay.Manager
+	broker  out.TransmissionPort
 
-	s *store.Store
+	s         *store.Store
 	batchSize int
 
-	ctx context.Context
+	ctx    context.Context
 	cancel context.CancelFunc
 }
 
 var (
-	instance *Transmitter
+	instance *Manager
 	once     sync.Once
 )
 
-func New(broker out.TransmissionPort, relayer *relayer.RelayerManager, o Option) *Transmitter {
+func New(broker out.TransmissionPort, relayer *relay.Manager, o Option) (*Manager, error) {
 
 	ctx, cancel := context.WithCancel(context.Background())
 
 	once.Do(func() {
-		instance = &Transmitter{
+		instance = &Manager{
 			relayer:   relayer,
 			broker:    broker,
 			s:         store.New(ctx),
 			batchSize: o.BatchSize,
 
-			ctx: ctx,
+			ctx:    ctx,
 			cancel: cancel,
 		}
 	})
 
-	return instance
+	return instance, nil
 }
 
-func (t *Transmitter) Close() {
+func (t *Manager) Close() {
 	t.cancel()
 }

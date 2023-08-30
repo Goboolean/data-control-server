@@ -2,43 +2,26 @@ package transaction
 
 import (
 	"context"
-	"sync"
 
-	"github.com/Goboolean/fetch-server/internal/domain/port"
-	"github.com/Goboolean/shared/pkg/mongo"
-	"github.com/Goboolean/shared/pkg/rdbms"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/port"
+	"github.com/Goboolean/fetch-server.v1/internal/infrastructure/mongo"
+	"github.com/Goboolean/fetch-server.v1/internal/infrastructure/rdbms"
 )
-
-
-
 
 type Tx struct {
 	m *mongo.DB
 	p *rdbms.PSQL
 }
 
-var (
-	once sync.Once
-	instance *Tx
-)
-
-
 func New(m *mongo.DB, p *rdbms.PSQL) port.TX {
 
-	once.Do(func() {
-		instance = &Tx{
-			m: m,
-			p: p,
-		}
-	})
-
-	return instance
+	return &Tx{
+		m: m,
+		p: p,
+	}
 }
 
-
-
 func (t *Tx) Transaction(ctx context.Context) (port.Transactioner, error) {
-
 
 	m, err := t.m.NewTx(ctx)
 	if err != nil {
@@ -50,7 +33,5 @@ func (t *Tx) Transaction(ctx context.Context) (port.Transactioner, error) {
 		return nil, err
 	}
 
-	var a *TxSession = &TxSession{M: m, P: p}
-
-	return a, nil
+	return &TxSession{M: m, P: p, ctx: ctx}, nil
 }

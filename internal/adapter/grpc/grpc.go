@@ -1,17 +1,13 @@
 package grpc
 
-
-
 import (
 	"context"
 	"errors"
 	"fmt"
 
-	api "github.com/Goboolean/fetch-server/api/grpc"
-	"github.com/Goboolean/fetch-server/internal/domain/port/in"
+	api "github.com/Goboolean/fetch-server.v1/api/grpc"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/port/in"
 )
-
-
 
 type Adapter struct {
 	service in.ConfiguratorPort
@@ -21,8 +17,6 @@ type Adapter struct {
 func NewAdapter(s in.ConfiguratorPort) api.StockConfiguratorServer {
 	return &Adapter{service: s}
 }
-
-
 
 func (c *Adapter) UpdateStockConfigOne(ctx context.Context, in *api.StockConfig) (*api.ReturnMessage, error) {
 
@@ -87,8 +81,6 @@ func (c *Adapter) UpdateStockConfigOne(ctx context.Context, in *api.StockConfig)
 	return result, nil
 }
 
-
-
 func (c *Adapter) UpdateStockConfigMany(ctx context.Context, in *api.StockConfigList) (*api.ReturnMessageList, error) {
 
 	length := len(in.GetStockConfig())
@@ -98,12 +90,11 @@ func (c *Adapter) UpdateStockConfigMany(ctx context.Context, in *api.StockConfig
 	for i, v := range in.GetStockConfig() {
 
 		var result *api.ReturnMessage
-		
+
 		stockId := v.GetStockId()
 		relayable := v.GetRelayable()
 		transmittable := v.GetTransmittable()
 		storeable := v.GetStoreable()
-
 
 		switch relayable.OptionStatus {
 		case 1:
@@ -170,8 +161,6 @@ func (c *Adapter) UpdateStockConfigMany(ctx context.Context, in *api.StockConfig
 	return &api.ReturnMessageList{ReturnMessage: msgList}, err
 }
 
-
-
 func (c *Adapter) GetStockConfigOne(ctx context.Context, in *api.StockId) (*api.StockConfig, error) {
 
 	conf, err := c.service.GetStockConfiguration(ctx, in.GetStockId())
@@ -180,9 +169,9 @@ func (c *Adapter) GetStockConfigOne(ctx context.Context, in *api.StockId) (*api.
 	}
 
 	var (
-		relayable api.OptionStatus
+		relayable     api.OptionStatus
 		transmittable api.OptionStatus
-		storeable api.OptionStatus
+		storeable     api.OptionStatus
 	)
 
 	if conf.Relayable == true {
@@ -204,13 +193,12 @@ func (c *Adapter) GetStockConfigOne(ctx context.Context, in *api.StockId) (*api.
 	}
 
 	return &api.StockConfig{
-		StockId: conf.StockId,
-		Relayable: &relayable,
+		StockId:       conf.StockId,
+		Relayable:     &relayable,
 		Transmittable: &transmittable,
-		Storeable: &storeable,
+		Storeable:     &storeable,
 	}, err
 }
-
 
 func (c *Adapter) GetStockConfigAll(ctx context.Context, in *api.Null) (*api.StockConfigList, error) {
 
@@ -226,9 +214,9 @@ func (c *Adapter) GetStockConfigAll(ctx context.Context, in *api.Null) (*api.Sto
 		var (
 			result api.StockConfig
 
-			relayable api.OptionStatus
+			relayable     api.OptionStatus
 			transmittable api.OptionStatus
-			storeable api.OptionStatus
+			storeable     api.OptionStatus
 		)
 
 		if conf.Relayable == true {
@@ -236,13 +224,13 @@ func (c *Adapter) GetStockConfigAll(ctx context.Context, in *api.Null) (*api.Sto
 		} else {
 			relayable = api.OptionStatus{OptionStatus: 0}
 		}
-	
+
 		if conf.Transmittable == true {
 			transmittable = api.OptionStatus{OptionStatus: 1}
 		} else {
 			transmittable = api.OptionStatus{OptionStatus: 0}
 		}
-	
+
 		if conf.Storeable == true {
 			storeable = api.OptionStatus{OptionStatus: 1}
 		} else {
@@ -250,13 +238,13 @@ func (c *Adapter) GetStockConfigAll(ctx context.Context, in *api.Null) (*api.Sto
 		}
 
 		result = api.StockConfig{
-			StockId: conf.StockId,
-			Relayable: &relayable,
+			StockId:       conf.StockId,
+			Relayable:     &relayable,
 			Transmittable: &transmittable,
-			Storeable: &storeable,
+			Storeable:     &storeable,
 		}
 
-		resultList[i] = &result		
+		resultList[i] = &result
 	}
 
 	return &api.StockConfigList{StockConfig: resultList}, nil

@@ -3,31 +3,31 @@ package config
 import (
 	"sync"
 
-	"github.com/Goboolean/fetch-server/internal/domain/port"
-	"github.com/Goboolean/fetch-server/internal/domain/port/out"
-	"github.com/Goboolean/fetch-server/internal/domain/service/persistence"
-	"github.com/Goboolean/fetch-server/internal/domain/service/relayer"
-	"github.com/Goboolean/fetch-server/internal/domain/service/transmission"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/port"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/port/out"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/service/persistence"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/service/relay"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/service/transmission"
 )
 
-type ConfigurationManager struct {
-	relayer     *relayer.RelayerManager
-	persistence *persistence.PersistenceManager
-	transmitter *transmission.Transmitter
+type Manager struct {
+	relayer     *relay.Manager
+	persistence *persistence.Manager
+	transmitter *transmission.Manager
 
 	db out.StockMetadataPort
 	tx port.TX
 }
 
 var (
-	instance *ConfigurationManager
+	instance *Manager
 	once     sync.Once
 )
 
-func New(db out.StockMetadataPort, tx port.TX, r *relayer.RelayerManager, p *persistence.PersistenceManager, t *transmission.Transmitter) *ConfigurationManager {
+func New(db out.StockMetadataPort, tx port.TX, r *relay.Manager, p *persistence.Manager, t *transmission.Manager) (*Manager, error) {
 
 	once.Do(func() {
-		instance = &ConfigurationManager{
+		instance = &Manager{
 			relayer:     r,
 			persistence: p,
 			transmitter: t,
@@ -37,5 +37,5 @@ func New(db out.StockMetadataPort, tx port.TX, r *relayer.RelayerManager, p *per
 		}
 	})
 
-	return instance
+	return instance, nil
 }

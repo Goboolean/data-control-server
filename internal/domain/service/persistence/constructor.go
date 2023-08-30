@@ -4,36 +4,36 @@ import (
 	"context"
 	"sync"
 
-	"github.com/Goboolean/fetch-server/internal/domain/port"
-	"github.com/Goboolean/fetch-server/internal/domain/port/out"
-	"github.com/Goboolean/fetch-server/internal/domain/service/relayer"
-	"github.com/Goboolean/fetch-server/internal/domain/service/store"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/port"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/port/out"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/service/relay"
+	relayer "github.com/Goboolean/fetch-server.v1/internal/domain/service/relay"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/service/store"
 )
 
-type PersistenceManager struct {
-	o 			Option
+type Manager struct {
+	o       Option
 	db      out.StockPersistencePort
 	cache   out.StockPersistenceCachePort
-	relayer *relayer.RelayerManager
+	relayer *relayer.Manager
 	s       *store.Store
 
-	tx      port.TX
-	ctx     context.Context
-	cancel  context.CancelFunc
+	tx     port.TX
+	ctx    context.Context
+	cancel context.CancelFunc
 }
 
 var (
-	instance *PersistenceManager
+	instance *Manager
 	once     sync.Once
 )
 
-
-func New(tx port.TX, db out.StockPersistencePort, cache out.StockPersistenceCachePort, r *relayer.RelayerManager, o Option) *PersistenceManager {
+func New(tx port.TX, db out.StockPersistencePort, cache out.StockPersistenceCachePort, r *relay.Manager, o Option) (*Manager, error) {
 
 	ctx, cancel := context.WithCancel(context.Background())
 
 	once.Do(func() {
-		instance = &PersistenceManager{
+		instance = &Manager{
 			o:       o,
 			db:      db,
 			cache:   cache,
@@ -41,8 +41,8 @@ func New(tx port.TX, db out.StockPersistencePort, cache out.StockPersistenceCach
 			s:       store.New(ctx),
 			tx:      tx,
 
-			ctx:     ctx,
-			cancel:  cancel,
+			ctx:    ctx,
+			cancel: cancel,
 		}
 
 		if o.BatchSize == 0 {
@@ -51,10 +51,9 @@ func New(tx port.TX, db out.StockPersistencePort, cache out.StockPersistenceCach
 	})
 
 	instance.setUseCache()
-	return instance
+	return instance, nil
 }
 
-
-func (m *PersistenceManager) Close() {
+func (m *Manager) Close() {
 	m.cancel()
 }

@@ -3,17 +3,15 @@ package cache
 import (
 	"context"
 
-	"github.com/Goboolean/fetch-server/internal/domain/entity"
-	"github.com/Goboolean/fetch-server/internal/domain/port/out"
-	"github.com/Goboolean/fetch-server/internal/infrastructure/cache/redis"
+	"github.com/Goboolean/fetch-server.v1/api/model"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/port/out"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/vo"
+	"github.com/Goboolean/fetch-server.v1/internal/infrastructure/redis"
 )
-
-
 
 type Adapter struct {
 	redis *redis.Queries
 }
-
 
 func NewAdapter(r *redis.Queries) out.StockPersistenceCachePort {
 	return &Adapter{
@@ -21,64 +19,51 @@ func NewAdapter(r *redis.Queries) out.StockPersistenceCachePort {
 	}
 }
 
+func (a *Adapter) StoreStockOnCache(ctx context.Context, stockId string, stock *vo.StockAggregate) error {
 
-
-
-func (a *Adapter) StoreStockOnCache(ctx context.Context, stockId string, stock *entity.StockAggregate) error {
-
-	dto := &redis.RedisStockAggregate{
+	dto := &model.StockAggregate{
 		EventType: stock.EventType,
-		Avg:       stock.Average,
 		Min:       stock.Min,
 		Max:       stock.Max,
-		Start:     stock.Start,
-		End:       stock.End,
-		StartTime: stock.StartTime,
-		EndTime:   stock.EndTime,
+		StartTime: stock.Time,
 	}
 
 	return a.redis.InsertStockData(ctx, stockId, dto)
 }
 
+func (a *Adapter) StoreStockBatchOnCache(ctx context.Context, stockId string, stockBatch []*vo.StockAggregate) error {
 
-func (a *Adapter) StoreStockBatchOnCache(ctx context.Context, stockId string, stockBatch []*entity.StockAggregate) error {
-	
-	dtos := make([]*redis.RedisStockAggregate, 0, len(stockBatch))
+	dtos := make([]*model.StockAggregate, 0, len(stockBatch))
 
 	for _, stock := range stockBatch {
-		dtos = append(dtos, &redis.RedisStockAggregate{
+		dtos = append(dtos, &model.StockAggregate{
 			EventType: stock.EventType,
-			Avg:       stock.Average,
+			Open:      stock.Open,
 			Min:       stock.Min,
 			Max:       stock.Max,
-			Start:     stock.Start,
-			End:       stock.End,
-			StartTime: stock.StartTime,
-			EndTime:   stock.EndTime,
+			StartTime: stock.Time,
 		})
 	}
 
 	return a.redis.InsertStockDataBatch(ctx, stockId, dtos)
 }
 
-func (a *Adapter) GetAndEmptyCache(ctx context.Context, stockId string) ([]*entity.StockAggregate, error) {
+func (a *Adapter) GetAndEmptyCache(ctx context.Context, stockId string) ([]*vo.StockAggregate, error) {
 
 	dtos, err := a.redis.GetAndEmptyCache(ctx, stockId)
 	if err != nil {
 		return nil, err
 	}
 
-	stockBatch := make([]*entity.StockAggregate, 0, len(dtos))
+	stockBatch := make([]*vo.StockAggregate, 0, len(dtos))
 	for idx, dto := range dtos {
-		stockBatch[idx] = &entity.StockAggregate{
+		stockBatch[idx] = &vo.StockAggregate{
 			EventType: dto.EventType,
-			Average:   dto.Avg,
 			Min:       dto.Min,
 			Max:       dto.Max,
-			Start:     dto.Start,
-			End:       dto.End,
-			StartTime: dto.StartTime,
-			EndTime:   dto.EndTime,
+			Open:      dto.Open,
+			Closed:    dto.Closed,
+			Time:      dto.StartTime,
 		}
 	}
 

@@ -6,22 +6,23 @@ package inject
 import (
 	"os"
 	"strconv"
+	"time"
 
-	"github.com/Goboolean/fetch-server/internal/domain/port/in"
-	"github.com/Goboolean/fetch-server/internal/infrastructure/cache/redis"
-	"github.com/Goboolean/fetch-server/internal/infrastructure/grpc"
-	"github.com/Goboolean/fetch-server/internal/infrastructure/prometheus"
-	"github.com/Goboolean/fetch-server/internal/infrastructure/ws"
-	"github.com/Goboolean/fetch-server/internal/infrastructure/ws/buycycle"
-	"github.com/Goboolean/fetch-server/internal/infrastructure/ws/kis"
-	"github.com/Goboolean/fetch-server/internal/infrastructure/ws/polygon"
-	"github.com/Goboolean/shared/pkg/broker"
-	"github.com/Goboolean/shared/pkg/mongo"
-	"github.com/Goboolean/shared/pkg/rdbms"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/port/in"
+	"github.com/Goboolean/fetch-server.v1/internal/infrastructure/grpc"
+	"github.com/Goboolean/fetch-server.v1/internal/infrastructure/kafka"
+	"github.com/Goboolean/fetch-server.v1/internal/infrastructure/mongo"
+	"github.com/Goboolean/fetch-server.v1/internal/infrastructure/rdbms"
+	"github.com/Goboolean/fetch-server.v1/internal/infrastructure/redis"
+	"github.com/Goboolean/fetch-server.v1/internal/infrastructure/ws"
+	"github.com/Goboolean/fetch-server.v1/internal/infrastructure/ws/buycycle"
+	"github.com/Goboolean/fetch-server.v1/internal/infrastructure/ws/kis"
+	"github.com/Goboolean/fetch-server.v1/internal/infrastructure/ws/mock"
+	"github.com/Goboolean/fetch-server.v1/internal/infrastructure/ws/polygon"
+	"github.com/Goboolean/fetch-server.v1/internal/util/prometheus"
 	"github.com/Goboolean/shared/pkg/resolver"
 	"github.com/google/wire"
 )
-
 
 func provideMongoArgs() *resolver.ConfigMap {
 	return &resolver.ConfigMap{
@@ -67,8 +68,7 @@ func provideKafkaArgs() *resolver.ConfigMap {
 
 func provideGrpcArgs() *resolver.ConfigMap {
 	return &resolver.ConfigMap{
-		"HOST": os.Getenv("GRPC_HOST"),
-		"PORT": os.Getenv("GRPC_PORT"),
+		"PORT": os.Getenv("SERVER_PORT"),
 	}
 }
 
@@ -88,7 +88,7 @@ func provideKISArgs() *resolver.ConfigMap {
 
 func providePolygonArgs() *resolver.ConfigMap {
 	return &resolver.ConfigMap{
-		"KEY":  os.Getenv("POLYGON_API_KEY"),
+		"KEY": os.Getenv("POLYGON_API_KEY"),
 	}
 }
 
@@ -112,9 +112,9 @@ var PsqlSet = wire.NewSet(
 
 var KafkaSet = wire.NewSet(
 	provideKafkaArgs,
-	broker.NewConfigurator,
-	broker.NewPublisher,
-	broker.NewSubscriber,
+	kafka.NewConfigurator,
+	kafka.NewPublisher,
+	kafka.NewSubscriber,
 )
 
 var RedisSet = wire.NewSet(
@@ -126,6 +126,7 @@ var RedisSet = wire.NewSet(
 var GrpcSet = wire.NewSet(
 	provideGrpcArgs,
 	grpc.New,
+	grpc.NewClient,
 )
 
 var BuycycleSet = wire.NewSet(
@@ -148,69 +149,62 @@ var PrometheusSet = wire.NewSet(
 	prometheus.New,
 )
 
-
-func InitMongo() *mongo.DB {
+func InitMongo() (*mongo.DB, error) {
 	wire.Build(MongoSet)
-	return &mongo.DB{}
+	return &mongo.DB{}, nil
 }
 
-func InitMongoQueries() *mongo.Queries {
-	wire.Build(MongoSet)
-	return &mongo.Queries{}
-}
-
-func InitPsql() *rdbms.PSQL{
+func InitPsql() (*rdbms.PSQL, error) {
 	wire.Build(PsqlSet)
-	return &rdbms.PSQL{}
+	return &rdbms.PSQL{}, nil
 }
 
-func InitPsqlQueries() *rdbms.Queries {
-	wire.Build(PsqlSet)
-	return &rdbms.Queries{}
-}
-
-func InitRedis() *redis.Redis {
+func InitRedis() (*redis.Redis, error) {
 	wire.Build(RedisSet)
-	return &redis.Redis{}
+	return &redis.Redis{}, nil
 }
 
-func InitRedisQueries() *redis.Queries {
-	wire.Build(RedisSet)
-	return &redis.Queries{}
-}
-
-func InitKafkaConfigurator() *broker.Configurator {
+func InitKafkaConfigurator() (*kafka.Configurator, error) {
 	wire.Build(KafkaSet)
-	return &broker.Configurator{}
+	return &kafka.Configurator{}, nil
 }
 
-func InitKafkaPublisher() *broker.Publisher {
+func InitKafkaPublisher() (*kafka.Publisher, error) {
 	wire.Build(KafkaSet)
-	return &broker.Publisher{}
+	return &kafka.Publisher{}, nil
 }
 
-
-func InitGrpc(in.ConfiguratorPort) *grpc.Host {
+func InitGrpc(in.ConfiguratorPort) (*grpc.Host, error) {
 	wire.Build(GrpcSet, AdapterSet)
-	return &grpc.Host{}
+	return &grpc.Host{}, nil
 }
 
-func InitBuycycle(ws.Receiver) *buycycle.Subscriber {
+func InitGrpcClient() (*grpc.Client, error) {
+	wire.Build(GrpcSet)
+	return &grpc.Client{}, nil
+}
+
+func InitBuycycle(ws.Receiver) (*buycycle.Subscriber, error) {
 	wire.Build(BuycycleSet)
-	return &buycycle.Subscriber{}
+	return &buycycle.Subscriber{}, nil
 }
 
-func InitKIS(ws.Receiver) *kis.Subscriber {
+func InitKIS(ws.Receiver) (*kis.Subscriber, error) {
 	wire.Build(KISSet)
-	return &kis.Subscriber{}
+	return &kis.Subscriber{}, nil
 }
 
-func InitPolygon(ws.Receiver) *polygon.Subscriber {
+func InitPolygon(ws.Receiver) (*polygon.Subscriber, error) {
 	wire.Build(PolygonSet)
-	return &polygon.Subscriber{}
+	return &polygon.Subscriber{}, nil
 }
 
-func InitPrometheus() *prometheus.Server {
+func InitMockWebsocket(time.Duration, ws.Receiver) *mock.MockFetcher {
+	wire.Build(mock.New)
+	return &mock.MockFetcher{}
+}
+
+func InitPrometheus() (*prometheus.Server, error) {
 	wire.Build(PrometheusSet)
-	return &prometheus.Server{}
+	return &prometheus.Server{}, nil
 }

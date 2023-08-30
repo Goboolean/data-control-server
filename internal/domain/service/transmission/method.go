@@ -4,12 +4,11 @@ import (
 	"context"
 	"log"
 
-	"github.com/Goboolean/fetch-server/internal/domain/entity"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/vo"
 )
 
-
-func (t *Transmitter) SubscribeRelayer(ctx context.Context, stockId string) error {
-	received := make([]*entity.StockAggregate, 0)
+func (t *Manager) SubscribeRelayer(ctx context.Context, stockId string) error {
+	received := make([]*vo.StockAggregate, 0)
 
 	if err := t.broker.CreateStockBroker(ctx, stockId); err != nil {
 		return err
@@ -29,11 +28,10 @@ func (t *Transmitter) SubscribeRelayer(ctx context.Context, stockId string) erro
 		return err
 	}
 
-
 	go func(ctx context.Context) {
 		for {
 			select {
-			case <- ctx.Done():
+			case <-ctx.Done():
 				return
 
 			case data, ok := <-ch:
@@ -48,7 +46,7 @@ func (t *Transmitter) SubscribeRelayer(ctx context.Context, stockId string) erro
 
 				received = append(received, data)
 
-				if len(received) % t.batchSize == 0 {
+				if len(received)%t.batchSize == 0 {
 					ctx, cancel := context.WithCancel(ctx)
 					defer cancel()
 
@@ -68,12 +66,10 @@ func (t *Transmitter) SubscribeRelayer(ctx context.Context, stockId string) erro
 	return nil
 }
 
-
-func (t *Transmitter) UnsubscribeRelayer(stockId string) error {
+func (t *Manager) UnsubscribeRelayer(stockId string) error {
 	return t.s.UnstoreStock(stockId)
 }
 
-
-func (t *Transmitter) IsStockTransmittable(stockId string) bool {
+func (t *Manager) IsStockTransmittable(stockId string) bool {
 	return t.s.StockExists(stockId)
 }
