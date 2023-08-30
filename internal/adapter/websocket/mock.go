@@ -79,13 +79,11 @@ func (s *MockAdapter) toDomainEntity(agg *ws.StockAggregate) (*vo.StockAggregate
 			StockID: stockId,
 		},
 		StockAggregate: vo.StockAggregate{
-			Average: agg.Average,
 			Min: agg.Min,
 			Max: agg.Max,
-			Start: agg.Start,
-			End: agg.End,
-			StartTime: agg.StartTime,
-			EndTime: agg.EndTime,
+			Open: agg.Start,
+			Closed: agg.End,
+			Time: agg.StartTime,
 		},
 	}, nil
 }

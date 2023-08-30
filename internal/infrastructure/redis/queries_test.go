@@ -4,12 +4,12 @@ import (
 	"context"
 	"testing"
 
-	"github.com/Goboolean/fetch-server/internal/infrastructure/redis"
+	"github.com/Goboolean/fetch-server/api/model"
 )
 
 var (
 	stockId   = "test"
-	stockData = &redis.RedisStockAggregate{}
+	stockData = &model.StockAggregate{}
 )
 
 func Test_InsertStockData(t *testing.T) {
@@ -46,7 +46,7 @@ func Test_GetAndEmptyCache(t *testing.T) {
 
 	ctx := context.Background()
 
-	if err := queries.InsertStockDataBatch(ctx, stockId, []*redis.RedisStockAggregate{stockData}); err != nil {
+	if err := queries.InsertStockDataBatch(ctx, stockId, []*model.StockAggregate{stockData}); err != nil {
 		t.Errorf("failed to insert stock data: %v", err)
 		return
 	}

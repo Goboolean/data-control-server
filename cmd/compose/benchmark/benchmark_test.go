@@ -13,21 +13,21 @@ import (
 	"github.com/Goboolean/fetch-server/internal/domain/service/relay"
 	"github.com/Goboolean/fetch-server/internal/domain/service/transmission"
 	grpc_infra "github.com/Goboolean/fetch-server/internal/infrastructure/grpc"
+	"github.com/Goboolean/fetch-server/internal/infrastructure/kafka"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/mongo"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/rdbms"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/redis"
 	mock_infra "github.com/Goboolean/fetch-server/internal/infrastructure/ws/mock"
 	_ "github.com/Goboolean/fetch-server/internal/util/env"
-	"github.com/Goboolean/shared/pkg/broker"
 )
 
 // This package is for bemchmark test
 // It tests
 
 var (
-	pub          *broker.Publisher
-	conf         *broker.Configurator
-	sub          *broker.Subscriber
+	pub          *kafka.Publisher
+	conf         *kafka.Configurator
+	sub          *kafka.Subscriber
 	mongoDB      *mongo.DB
 	mongoQueries *mongo.Queries
 	psqlDB       *rdbms.PSQL

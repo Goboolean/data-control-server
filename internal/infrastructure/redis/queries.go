@@ -3,6 +3,7 @@ package redis
 import (
 	"context"
 
+	"github.com/Goboolean/fetch-server/api/model"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -18,7 +19,7 @@ func New(db *Redis) *Queries {
 
 
 
-func (q *Queries) InsertStockData(ctx context.Context, stockId string, stockItem *RedisStockAggregate) error {
+func (q *Queries) InsertStockData(ctx context.Context, stockId string, stockItem *model.StockAggregate) error {
 
 	data, err := proto.Marshal(stockItem)
 
@@ -38,7 +39,7 @@ func (q *Queries) GetStockBatchStoredLength(ctx context.Context, stockId string)
 
 
 
-func (q *Queries) InsertStockDataBatch(ctx context.Context, stock string, stockBatch []*RedisStockAggregate) error {
+func (q *Queries) InsertStockDataBatch(ctx context.Context, stock string, stockBatch []*model.StockAggregate) error {
 
 	dataBatch := make([]interface{}, len(stockBatch))
 
@@ -56,7 +57,7 @@ func (q *Queries) InsertStockDataBatch(ctx context.Context, stock string, stockB
 }
 
 
-func (q *Queries) GetAndEmptyCache(ctx context.Context, stockId string) ([]*RedisStockAggregate, error) {
+func (q *Queries) GetAndEmptyCache(ctx context.Context, stockId string) ([]*model.StockAggregate, error) {
 
 	pipe := q.db.client.TxPipeline()
 
@@ -73,10 +74,10 @@ func (q *Queries) GetAndEmptyCache(ctx context.Context, stockId string) ([]*Redi
 	length, _ := getLenCmd.Result()
 	data, _ := getListCmd.Result()
 
-	stockBatch := make([]*RedisStockAggregate, length)
+	stockBatch := make([]*model.StockAggregate, length)
 
 	for idx := range data {
-		var stockItem RedisStockAggregate
+		var stockItem model.StockAggregate
 
 		if err := proto.Unmarshal([]byte(data[idx]), &stockItem); err != nil {
 			return nil, err

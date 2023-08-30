@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Goboolean/fetch-server/api/model"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/kafka"
 	"github.com/Goboolean/shared/pkg/resolver"
 	"github.com/stretchr/testify/assert"
@@ -54,11 +55,11 @@ func Test_SendData(t *testing.T) {
 
 	const topic = "default-topic"
 
-	var data = &kafka.StockAggregate{Average: 1.0,Min: 1.0, Max: 1.0}
-	var dataBatch = []*kafka.StockAggregate{
-		{Average: 1.0,Min: 1.1, Max: 1.2},
-		{Average: 1.2,Min: 1.3, Max: 1.4},
-		{Average: 1.4,Min: 1.5, Max: 1.6},
+	var data = &model.StockAggregate{Min: 1.0, Max: 1.0}
+	var dataBatch = []*model.StockAggregate{
+		{Min: 1.1, Max: 1.2},
+		{Min: 1.3, Max: 1.4},
+		{Min: 1.5, Max: 1.6},
 	}
 
 	SetupPublisher()

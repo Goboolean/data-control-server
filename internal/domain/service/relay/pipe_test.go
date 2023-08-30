@@ -19,13 +19,11 @@ func generateRandomStockAggregate() vo.StockAggregate {
 
 	return vo.StockAggregate{
 		EventType: "stock",
-		Average:  1.0 + rand.Float64()*(2.0),
 		Min:      1.0 + rand.Float64()*(2.0),
 		Max:      1.0 + rand.Float64()*(2.0),
-		Start: 	  1.0 + rand.Float64()*(2.0),
-		End:      1.0 + rand.Float64()*(2.0),
-		StartTime: time.Now().Unix(),
-		EndTime:  time.Now().Unix(),		
+		Open: 	  1.0 + rand.Float64()*(2.0),
+		Closed:   1.0 + rand.Float64()*(2.0),
+		Time: time.Now().Unix(),
 	}
 }
 

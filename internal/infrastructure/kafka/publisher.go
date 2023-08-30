@@ -6,6 +6,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Goboolean/fetch-server/api/model"
 	"github.com/Goboolean/shared/pkg/resolver"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"google.golang.org/protobuf/proto"
@@ -104,7 +105,7 @@ func (p *Publisher) Ping(ctx context.Context) error {
 	return err
 }
 
-func (p *Publisher) SendData(topic string, data *StockAggregate) error {
+func (p *Publisher) SendData(topic string, data *model.StockAggregate) error {
 
 	topic = prefix + topic
 
@@ -130,7 +131,7 @@ func (p *Publisher) SendData(topic string, data *StockAggregate) error {
 	return nil
 }
 
-func (p *Publisher) SendDataBatch(topic string, batch []*StockAggregate) error {
+func (p *Publisher) SendDataBatch(topic string, batch []*model.StockAggregate) error {
 
 	topic = prefix + topic
 

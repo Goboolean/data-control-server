@@ -7,7 +7,7 @@
 package inject
 
 import (
-	broker2 "github.com/Goboolean/fetch-server/internal/adapter/broker"
+	"github.com/Goboolean/fetch-server/internal/adapter/broker"
 	"github.com/Goboolean/fetch-server/internal/adapter/cache"
 	grpc2 "github.com/Goboolean/fetch-server/internal/adapter/grpc"
 	"github.com/Goboolean/fetch-server/internal/adapter/meta"
@@ -22,6 +22,8 @@ import (
 	"github.com/Goboolean/fetch-server/internal/domain/service/relay"
 	"github.com/Goboolean/fetch-server/internal/domain/service/transmission"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/grpc"
+	"github.com/Goboolean/fetch-server/internal/infrastructure/kafka"
+	"github.com/Goboolean/fetch-server/internal/infrastructure/mongo"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/rdbms"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/redis"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws"
@@ -30,8 +32,6 @@ import (
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws/mock"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws/polygon"
 	"github.com/Goboolean/fetch-server/internal/util/prometheus"
-	"github.com/Goboolean/shared/pkg/broker"
-	"github.com/Goboolean/fetch-server/internal/infrastructure/mongo"
 	"github.com/Goboolean/shared/pkg/resolver"
 	"github.com/google/wire"
 	"os"
@@ -68,18 +68,18 @@ func InitRedis() (*redis.Redis, error) {
 	return redisRedis, nil
 }
 
-func InitKafkaConfigurator() (*broker.Configurator, error) {
+func InitKafkaConfigurator() (*kafka.Configurator, error) {
 	configMap := provideKafkaArgs()
-	configurator, err := broker.NewConfigurator(configMap)
+	configurator, err := kafka.NewConfigurator(configMap)
 	if err != nil {
 		return nil, err
 	}
 	return configurator, nil
 }
 
-func InitKafkaPublisher() (*broker.Publisher, error) {
+func InitKafkaPublisher() (*kafka.Publisher, error) {
 	configMap := provideKafkaArgs()
-	publisher, err := broker.NewPublisher(configMap)
+	publisher, err := kafka.NewPublisher(configMap)
 	if err != nil {
 		return nil, err
 	}
@@ -171,7 +171,7 @@ func InitMockPersister(manager *relay.Manager, option persistence2.Option) (*per
 }
 
 func InitMockTransmitter(manager *relay.Manager, option transmission.Option) (*transmission.Manager, error) {
-	transmissionPort := broker2.NewMockAdapter()
+	transmissionPort := broker.NewMockAdapter()
 	transmissionManager, err := transmission.New(transmissionPort, manager, option)
 	if err != nil {
 		return nil, err
@@ -204,8 +204,8 @@ func InitRelayer(tx port.TX, queries *mongo.Queries, rdbmsQueries *rdbms.Queries
 	return manager, nil
 }
 
-func InitTransmitter(tx port.TX, option transmission.Option, configurator *broker.Configurator, publisher *broker.Publisher, manager *relay.Manager) (*transmission.Manager, error) {
-	transmissionPort := broker2.NewAdapter(configurator, publisher)
+func InitTransmitter(tx port.TX, option transmission.Option, configurator *kafka.Configurator, publisher *kafka.Publisher, manager *relay.Manager) (*transmission.Manager, error) {
+	transmissionPort := broker.NewAdapter(configurator, publisher)
 	transmissionManager, err := transmission.New(transmissionPort, manager, option)
 	if err != nil {
 		return nil, err
@@ -333,7 +333,7 @@ var PsqlSet = wire.NewSet(
 )
 
 var KafkaSet = wire.NewSet(
-	provideKafkaArgs, broker.NewConfigurator, broker.NewPublisher, broker.NewSubscriber,
+	provideKafkaArgs, kafka.NewConfigurator, kafka.NewPublisher, kafka.NewSubscriber,
 )
 
 var RedisSet = wire.NewSet(
@@ -371,9 +371,9 @@ var AdapterArgumentSet = wire.NewSet(
 )
 
 var MockAdapterSet = wire.NewSet(
-	AdapterArgumentSet, grpc2.NewAdapter, broker2.NewMockAdapter, cache.NewMockAdapter, meta.NewMockAdapter, persistence.NewMockAdapter, transaction.NewMock, websocket.NewAdapter,
+	AdapterArgumentSet, grpc2.NewAdapter, broker.NewMockAdapter, cache.NewMockAdapter, meta.NewMockAdapter, persistence.NewMockAdapter, transaction.NewMock, websocket.NewAdapter,
 )
 
 var AdapterSet = wire.NewSet(
-	AdapterArgumentSet, broker2.NewAdapter, grpc2.NewAdapter, cache.NewAdapter, meta.NewAdapter, persistence.NewAdapter, websocket.NewAdapter,
+	AdapterArgumentSet, broker.NewAdapter, grpc2.NewAdapter, cache.NewAdapter, meta.NewAdapter, persistence.NewAdapter, websocket.NewAdapter,
 )

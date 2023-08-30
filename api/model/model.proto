@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package model;
+
+option go_package = "github.com/Goboolean/fetch-server/api/model";
+
+
+message StockQuote {
+    string stockId = 1;
+    int64  time    = 2;
+    double price   = 3;
+}
+
+
+message StockAggregate {
+    string stockId   = 1;
+    string eventType = 2;
+    int64  startTime = 3;
+    double open      = 4;
+    double closed    = 5;
+    double min       = 6;
+    double max       = 7;
+    double volume    = 8;
+}

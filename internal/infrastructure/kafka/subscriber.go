@@ -7,6 +7,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Goboolean/fetch-server/api/model"
 	"github.com/Goboolean/shared/pkg/resolver"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	log "github.com/sirupsen/logrus"
@@ -14,7 +15,7 @@ import (
 )
 
 type SubscribeListener interface {
-	OnReceiveStockAggs(name string, stock *StockAggregate)
+	OnReceiveStockAggs(name string, stock *model.StockAggregate)
 }
 
 type Subscriber struct {
@@ -87,18 +88,18 @@ func (s *Subscriber) subscribeMessage(ctx context.Context, wg *sync.WaitGroup) {
 		msg, err := s.consumer.ReadMessage(time.Second)
 		if err != nil {
 			log.WithFields(log.Fields{
-				"msg": err,
-			}).Debug(ErrFailedToReadData)
+				"error": err,
+			}).Debug("data was not received for 1 second")
 			continue
 		}
 
-		var data StockAggregate
+		var data model.StockAggregate
 		if err := proto.Unmarshal(msg.Value, &data); err != nil {
 			log.WithFields(log.Fields{
 				"topic": *msg.TopicPartition.Topic,
 				"data":  msg.Value,
-				"msg":   err,
-			}).Error(ErrFailedToDeserializeMessage)
+				"error":   err,
+			}).Error("failed to deserialize data")
 			continue
 		}
 

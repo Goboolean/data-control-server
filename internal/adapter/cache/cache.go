@@ -3,6 +3,7 @@ package cache
 import (
 	"context"
 
+	"github.com/Goboolean/fetch-server/api/model"
 	"github.com/Goboolean/fetch-server/internal/domain/port/out"
 	"github.com/Goboolean/fetch-server/internal/domain/vo"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/redis"
@@ -20,15 +21,11 @@ func NewAdapter(r *redis.Queries) out.StockPersistenceCachePort {
 
 func (a *Adapter) StoreStockOnCache(ctx context.Context, stockId string, stock *vo.StockAggregate) error {
 
-	dto := &redis.RedisStockAggregate{
+	dto := &model.StockAggregate{
 		EventType: stock.EventType,
-		Avg:       stock.Average,
 		Min:       stock.Min,
 		Max:       stock.Max,
-		Start:     stock.Start,
-		End:       stock.End,
-		StartTime: stock.StartTime,
-		EndTime:   stock.EndTime,
+		StartTime: stock.Time,
 	}
 
 	return a.redis.InsertStockData(ctx, stockId, dto)
@@ -36,18 +33,15 @@ func (a *Adapter) StoreStockOnCache(ctx context.Context, stockId string, stock *
 
 func (a *Adapter) StoreStockBatchOnCache(ctx context.Context, stockId string, stockBatch []*vo.StockAggregate) error {
 
-	dtos := make([]*redis.RedisStockAggregate, 0, len(stockBatch))
+	dtos := make([]*model.StockAggregate, 0, len(stockBatch))
 
 	for _, stock := range stockBatch {
-		dtos = append(dtos, &redis.RedisStockAggregate{
+		dtos = append(dtos, &model.StockAggregate{
 			EventType: stock.EventType,
-			Avg:       stock.Average,
+			Open: 	stock.Open,
 			Min:       stock.Min,
 			Max:       stock.Max,
-			Start:     stock.Start,
-			End:       stock.End,
-			StartTime: stock.StartTime,
-			EndTime:   stock.EndTime,
+			StartTime: stock.Time,
 		})
 	}
 
@@ -65,13 +59,11 @@ func (a *Adapter) GetAndEmptyCache(ctx context.Context, stockId string) ([]*vo.S
 	for idx, dto := range dtos {
 		stockBatch[idx] = &vo.StockAggregate{
 			EventType: dto.EventType,
-			Average:   dto.Avg,
 			Min:       dto.Min,
 			Max:       dto.Max,
-			Start:     dto.Start,
-			End:       dto.End,
-			StartTime: dto.StartTime,
-			EndTime:   dto.EndTime,
+			Open:      dto.Open,
+			Closed:    dto.Closed,
+			Time:      dto.StartTime,
 		}
 	}
 
