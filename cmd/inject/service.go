@@ -11,9 +11,9 @@ import (
 	persistence_adapter "github.com/Goboolean/fetch-server/internal/adapter/persistence"
 	"github.com/Goboolean/fetch-server/internal/adapter/transaction"
 	"github.com/Goboolean/fetch-server/internal/adapter/websocket"
+	"github.com/Goboolean/fetch-server/internal/infrastructure/mongo"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/rdbms"
 	"github.com/Goboolean/shared/pkg/broker"
-	"github.com/Goboolean/shared/pkg/mongo"
 
 	"github.com/Goboolean/fetch-server/internal/domain/port"
 	"github.com/Goboolean/fetch-server/internal/domain/port/in"

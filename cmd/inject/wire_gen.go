@@ -31,7 +31,7 @@ import (
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws/polygon"
 	"github.com/Goboolean/fetch-server/internal/util/prometheus"
 	"github.com/Goboolean/shared/pkg/broker"
-	"github.com/Goboolean/shared/pkg/mongo"
+	"github.com/Goboolean/fetch-server/internal/infrastructure/mongo"
 	"github.com/Goboolean/shared/pkg/resolver"
 	"github.com/google/wire"
 	"os"
