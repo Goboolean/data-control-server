@@ -6,18 +6,15 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Goboolean/shared/pkg/mongo"
+	"github.com/Goboolean/fetch-server/internal/infrastructure/mongo"
 )
-
-
 
 func Test_InsertStockBatch(t *testing.T) {
 
 	var (
-		stockId = "stock.goboolean.test"
-		stockBatch = []*mongo.StockAggregate{{},{},{}}
+		stockId    = "stock.goboolean.test"
+		stockBatch = []*mongo.StockAggregate{{}, {}, {}}
 	)
-
 
 	tx, err := instance.NewTx(context.Background())
 	if err != nil {
@@ -44,8 +41,6 @@ func isEqual(send, received []*mongo.StockAggregate) bool {
 	}
 	return true
 }
-
-
 
 func Test_FetchAllStockBatch(t *testing.T) {
 
@@ -74,13 +69,11 @@ func Test_FetchAllStockBatch(t *testing.T) {
 	}
 }
 
-
-
 func Test_FetchAllStockBatchMassive(t *testing.T) {
 
 	var (
-		stockId = "stock.goboolean.test"
-		stockBatch = []*mongo.StockAggregate{{},{},{}}
+		stockId    = "stock.goboolean.test"
+		stockBatch = []*mongo.StockAggregate{{}, {}, {}}
 	)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
@@ -99,7 +92,7 @@ func Test_FetchAllStockBatchMassive(t *testing.T) {
 
 	received := make([]*mongo.StockAggregate, 0)
 
-	loop:
+loop:
 	for {
 		select {
 		case <-ctx.Done():
@@ -117,5 +110,3 @@ func Test_FetchAllStockBatchMassive(t *testing.T) {
 		t.Errorf("FetchAllStockBatchMassive() failed: send and received are not equal")
 	}
 }
-
-
