@@ -6,12 +6,12 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/Goboolean/fetch-server/cmd/inject"
-	"github.com/Goboolean/fetch-server/internal/domain/service/persistence"
-	"github.com/Goboolean/fetch-server/internal/domain/service/transmission"
-	"github.com/Goboolean/fetch-server/internal/infrastructure/mongo"
-	"github.com/Goboolean/fetch-server/internal/infrastructure/rdbms"
-	"github.com/Goboolean/fetch-server/internal/infrastructure/redis"
+	"github.com/Goboolean/fetch-server.v1/cmd/inject"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/service/persistence"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/service/transmission"
+	"github.com/Goboolean/fetch-server.v1/internal/infrastructure/mongo"
+	"github.com/Goboolean/fetch-server.v1/internal/infrastructure/rdbms"
+	"github.com/Goboolean/fetch-server.v1/internal/infrastructure/redis"
 	"github.com/joho/godotenv"
 )
 

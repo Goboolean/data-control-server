@@ -8,10 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Goboolean/fetch-server/internal/domain/vo"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/vo"
 )
-
-
 
 func generateRandomStockAggregate() vo.StockAggregate {
 
@@ -19,14 +17,13 @@ func generateRandomStockAggregate() vo.StockAggregate {
 
 	return vo.StockAggregate{
 		EventType: "stock",
-		Min:      1.0 + rand.Float64()*(2.0),
-		Max:      1.0 + rand.Float64()*(2.0),
-		Open: 	  1.0 + rand.Float64()*(2.0),
-		Closed:   1.0 + rand.Float64()*(2.0),
-		Time: time.Now().Unix(),
+		Min:       1.0 + rand.Float64()*(2.0),
+		Max:       1.0 + rand.Float64()*(2.0),
+		Open:      1.0 + rand.Float64()*(2.0),
+		Closed:    1.0 + rand.Float64()*(2.0),
+		Time:      time.Now().Unix(),
 	}
 }
-
 
 func generateRandomStockAggregateForm(stockId string) vo.StockAggregateForm {
 
@@ -41,7 +38,7 @@ func generateRandomStockAggregateForm(stockId string) vo.StockAggregateForm {
 }
 
 func Test_generateRandomStockAggregateForm(t *testing.T) {
-	
+
 	var stockId = "stock.test.abc"
 
 	t.Run("VerifyStockNotNil", func(t *testing.T) {
@@ -54,14 +51,11 @@ func Test_generateRandomStockAggregateForm(t *testing.T) {
 	})
 }
 
-
-
 func Test_filterBadTick(t *testing.T) {
 
 	var count = 5
 	var stockId = "test"
 
-	
 	var p *pipe
 
 	sink := make(chan *vo.StockAggregateForm, DEFAULT_BUFFER_SIZE)
@@ -75,9 +69,9 @@ func Test_filterBadTick(t *testing.T) {
 		sink <- &vo.StockAggregateForm{}
 
 		time.Sleep(time.Millisecond * 10)
-	
+
 		select {
-		case <- source:
+		case <-source:
 			t.Error("filterBadTick() failed: failed to filter out vague data (bad tick)")
 			return
 		default:
@@ -90,21 +84,21 @@ func Test_filterBadTick(t *testing.T) {
 			agg := generateRandomStockAggregateForm(stockId)
 			sink <- &agg
 		}
-	
+
 		time.Sleep(time.Millisecond * 10)
-	
+
 		for i := 0; i < count; i++ {
 			select {
-			case <- source:
+			case <-source:
 				break
 			default:
 				t.Error("filterBadTick() failed: failed to transmit data from startPoint to endpoint")
 				return
 			}
 		}
-	
+
 		select {
-		case <- source:
+		case <-source:
 			t.Error("filterBadTick() failed: endPoint received non existent data")
 			return
 		default:
@@ -113,7 +107,6 @@ func Test_filterBadTick(t *testing.T) {
 	})
 
 }
-
 
 func Test_classifyStock(t *testing.T) {
 
@@ -124,7 +117,7 @@ func Test_classifyStock(t *testing.T) {
 	var p *pipe
 
 	sink := make(chan *vo.StockAggregateForm, DEFAULT_BUFFER_SIZE)
-	source := make(map[string] chan *vo.StockAggregate)
+	source := make(map[string]chan *vo.StockAggregate)
 	source[targetStockId] = make(chan *vo.StockAggregate, DEFAULT_BUFFER_SIZE)
 	source[antiTargetStockId] = make(chan *vo.StockAggregate, DEFAULT_BUFFER_SIZE)
 
@@ -144,29 +137,29 @@ func Test_classifyStock(t *testing.T) {
 			agg := generateRandomStockAggregateForm(targetStockId)
 			sink <- &agg
 		}
-	
+
 		time.Sleep(time.Millisecond)
-	
+
 		select {
-			case <- source[antiTargetStockId]:
-				t.Error("received non existent data")
-				return
-			default:
-				break
+		case <-source[antiTargetStockId]:
+			t.Error("received non existent data")
+			return
+		default:
+			break
 		}
-	
+
 		for i := 0; i < count; i++ {
 			select {
-			case <- source[targetStockId]:
+			case <-source[targetStockId]:
 				break
 			default:
 				t.Error("filterBadTick() failed: failed to transmit data from startPoint to endpoint")
 				return
 			}
 		}
-	
+
 		select {
-		case <- source[targetStockId]:
+		case <-source[targetStockId]:
 			t.Error("filterBadTick() failed: endPoint received non existent data")
 			return
 		default:
@@ -175,7 +168,6 @@ func Test_classifyStock(t *testing.T) {
 	})
 
 }
-
 
 func Test_relayStockToSubscriber(t *testing.T) {
 
@@ -194,43 +186,43 @@ func Test_relayStockToSubscriber(t *testing.T) {
 
 		ch1 := source[0].ch
 		ch2 := source[1].ch
-	
+
 		select {
-		case <- ch1:
+		case <-ch1:
 			t.Error("filterBadTick() failed: source received non existent data")
 			return
 		default:
 			break
 		}
-	
+
 		for i := 0; i < count; i++ {
 			agg := generateRandomStockAggregate()
 			sink <- &agg
 		}
-	
+
 		time.Sleep(10 * time.Millisecond)
-	
+
 		for i := 0; i < count; i++ {
 			select {
-			case <- ch1:
+			case <-ch1:
 				break
 			default:
 				t.Error("filterBadTick() failed: failed to transmit data from sink to source")
 				return
 			}
 		}
-	
+
 		select {
-		case <- ch1:
+		case <-ch1:
 			t.Error("filterBadTick() failed: source received non existent data")
 			return
 		default:
 			break
 		}
-	
+
 		for i := 0; i < count; i++ {
 			select {
-			case <- ch2:
+			case <-ch2:
 				break
 			default:
 				t.Error("filterBadTick() failed: failed to transmit data from sink to source")
@@ -239,7 +231,6 @@ func Test_relayStockToSubscriber(t *testing.T) {
 		}
 	})
 }
-
 
 func Test_pipe(t *testing.T) {
 
@@ -254,7 +245,6 @@ func Test_pipe(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	
 	t.Run("RegisterNewSubscriber", func(t *testing.T) {
 
 		p.AddNewPipe(stockId)
@@ -267,14 +257,13 @@ func Test_pipe(t *testing.T) {
 		}
 	})
 
-
 	t.Run("PlaceOnStartPoint", func(t *testing.T) {
 
 		for i := 0; i < count; i++ {
 			agg := generateRandomStockAggregateForm(stockId)
 			p.PlaceOnStartPoint(&agg)
 		}
-	
+
 		time.Sleep(10 * time.Millisecond)
 
 		if len(ch) != count {
@@ -283,10 +272,9 @@ func Test_pipe(t *testing.T) {
 		}
 
 		for len(ch) > 0 {
-			<- ch
+			<-ch
 		}
 	})
-
 
 	t.Run("CancelSubscribe", func(t *testing.T) {
 
@@ -297,12 +285,12 @@ func Test_pipe(t *testing.T) {
 			defer wg.Done()
 
 			select {
-			case 	_, ok := <- ch:
+			case _, ok := <-ch:
 				if ok {
 					t.Error("RegisterNewSubscriber() failed: channel should be closed after cancel() is called, not receiving data")
 					return
 				}
-			case <- time.After(10 * time.Millisecond):
+			case <-time.After(10 * time.Millisecond):
 				t.Error("RegisterNewSubscriber() failed: channel is not closed after cancel() is called")
 				return
 			}
@@ -336,7 +324,7 @@ func Test_pipe(t *testing.T) {
 		time.Sleep(10 * time.Millisecond)
 
 		select {
-		case 	_, ok := <- ch:
+		case _, ok := <-ch:
 			if ok {
 				t.Error("RegisterNewSubscriber() failed: channel should be closed after cancel() is called")
 				return

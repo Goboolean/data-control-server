@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Goboolean/fetch-server/api/model"
+	"github.com/Goboolean/fetch-server.v1/api/model"
 	"github.com/Goboolean/shared/pkg/resolver"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	log "github.com/sirupsen/logrus"
@@ -98,7 +98,7 @@ func (s *Subscriber) subscribeMessage(ctx context.Context, wg *sync.WaitGroup) {
 			log.WithFields(log.Fields{
 				"topic": *msg.TopicPartition.Topic,
 				"data":  msg.Value,
-				"error":   err,
+				"error": err,
 			}).Error("failed to deserialize data")
 			continue
 		}

@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/Goboolean/fetch-server/internal/infrastructure/mongo"
+	"github.com/Goboolean/fetch-server.v1/internal/infrastructure/mongo"
 	"github.com/Goboolean/shared/pkg/resolver"
 	"github.com/joho/godotenv"
 )

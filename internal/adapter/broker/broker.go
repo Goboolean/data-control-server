@@ -3,11 +3,11 @@ package broker
 import (
 	"context"
 
-	"github.com/Goboolean/fetch-server/api/model"
-	"github.com/Goboolean/fetch-server/internal/domain/port/out"
-	"github.com/Goboolean/fetch-server/internal/domain/vo"
-	"github.com/Goboolean/fetch-server/internal/infrastructure/kafka"
-	"github.com/Goboolean/fetch-server/internal/util/prometheus"
+	"github.com/Goboolean/fetch-server.v1/api/model"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/port/out"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/vo"
+	"github.com/Goboolean/fetch-server.v1/internal/infrastructure/kafka"
+	"github.com/Goboolean/fetch-server.v1/internal/util/prometheus"
 )
 
 type Adapter struct {

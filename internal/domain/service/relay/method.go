@@ -3,9 +3,8 @@ package relay
 import (
 	"context"
 
-	"github.com/Goboolean/fetch-server/internal/domain/vo"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/vo"
 )
-
 
 func (m *Manager) FetchStock(ctx context.Context, stockId string) error {
 
@@ -42,7 +41,6 @@ func (m *Manager) FetchStock(ctx context.Context, stockId string) error {
 	return tx.Commit()
 }
 
-
 func (m *Manager) StopFetchingStock(ctx context.Context, stockId string) error {
 
 	if err := m.s.UnstoreStock(stockId); err != nil {
@@ -59,11 +57,9 @@ func (m *Manager) StopFetchingStock(ctx context.Context, stockId string) error {
 	return nil
 }
 
-
 func (m *Manager) IsStockRelayable(stockId string) bool {
 	return m.s.StockExists(stockId)
 }
-
 
 func (m *Manager) PlaceStockFormBatch(stockBatch []*vo.StockAggregateForm) {
 	for _, stock := range stockBatch {
@@ -71,7 +67,6 @@ func (m *Manager) PlaceStockFormBatch(stockBatch []*vo.StockAggregateForm) {
 	}
 }
 
-// 
 // If call side execute ctx.Done(), then subscription of this stock will be cancelled.
 func (m *Manager) Subscribe(ctx context.Context, stockId string) (<-chan *vo.StockAggregate, error) {
 

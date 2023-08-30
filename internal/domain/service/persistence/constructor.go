@@ -4,11 +4,11 @@ import (
 	"context"
 	"sync"
 
-	"github.com/Goboolean/fetch-server/internal/domain/port"
-	"github.com/Goboolean/fetch-server/internal/domain/port/out"
-	"github.com/Goboolean/fetch-server/internal/domain/service/relay"
-	relayer "github.com/Goboolean/fetch-server/internal/domain/service/relay"
-	"github.com/Goboolean/fetch-server/internal/domain/service/store"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/port"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/port/out"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/service/relay"
+	relayer "github.com/Goboolean/fetch-server.v1/internal/domain/service/relay"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/service/store"
 )
 
 type Manager struct {

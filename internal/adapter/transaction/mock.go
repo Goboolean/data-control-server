@@ -3,12 +3,10 @@ package transaction
 import (
 	"context"
 
-	"github.com/Goboolean/fetch-server/internal/domain/port"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/port"
 )
 
-
-
-type MockTx struct {}
+type MockTx struct{}
 
 func NewMock() port.TX {
 	return &MockTx{}

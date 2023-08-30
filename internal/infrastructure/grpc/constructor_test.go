@@ -6,12 +6,12 @@ import (
 	"testing"
 	"time"
 
-	pb "github.com/Goboolean/fetch-server/api/grpc"
-	grpc_adapter "github.com/Goboolean/fetch-server/internal/adapter/grpc"
-	server "github.com/Goboolean/fetch-server/internal/infrastructure/grpc"
+	pb "github.com/Goboolean/fetch-server.v1/api/grpc"
+	grpc_adapter "github.com/Goboolean/fetch-server.v1/internal/adapter/grpc"
+	server "github.com/Goboolean/fetch-server.v1/internal/infrastructure/grpc"
 	"github.com/Goboolean/shared/pkg/resolver"
 
-	_ "github.com/Goboolean/fetch-server/internal/util/env"
+	_ "github.com/Goboolean/fetch-server.v1/internal/util/env"
 )
 
 var (

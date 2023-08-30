@@ -5,10 +5,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/Goboolean/fetch-server/internal/domain/vo"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/vo"
 )
-
-
 
 func (m *Manager) SubscribeRelayer(ctx context.Context, stockId string) error {
 	received := make([]*vo.StockAggregate, 0)
@@ -27,7 +25,6 @@ func (m *Manager) SubscribeRelayer(ctx context.Context, stockId string) error {
 		return err
 	}
 
-
 	useCache := m.o.useCache
 	batchSize := m.o.BatchSize
 	syncCount := m.o.SyncCount
@@ -35,14 +32,14 @@ func (m *Manager) SubscribeRelayer(ctx context.Context, stockId string) error {
 	cacheChan := make(chan struct{}, 10)
 
 	if m.o.SyncDuration != 0 {
-		go func (ctx context.Context) {
+		go func(ctx context.Context) {
 
 			for {
 				select {
-				case <- ctx.Done():
+				case <-ctx.Done():
 					close(cacheChan)
 					return
-				case <- time.After(syncDuration):
+				case <-time.After(syncDuration):
 					cacheChan <- struct{}{}
 				}
 			}
@@ -59,7 +56,7 @@ func (m *Manager) SubscribeRelayer(ctx context.Context, stockId string) error {
 
 		for {
 			select {
-			case <- ctx.Done():
+			case <-ctx.Done():
 				if err := m.InsertStockOnDB(ctx, stockId, received); err != nil {
 					log.Println(err)
 				}
@@ -77,7 +74,7 @@ func (m *Manager) SubscribeRelayer(ctx context.Context, stockId string) error {
 				}
 				received = append(received, data)
 
-				if len(received) % batchSize != 0 {
+				if len(received)%batchSize != 0 {
 					continue
 				}
 
@@ -104,7 +101,7 @@ func (m *Manager) SubscribeRelayer(ctx context.Context, stockId string) error {
 
 				received = received[:0]
 
-			case <- cacheChan:
+			case <-cacheChan:
 				if err := m.SynchronizeCache(ctx, stockId); err != nil {
 					log.Println(err)
 				}
@@ -117,16 +114,13 @@ func (m *Manager) SubscribeRelayer(ctx context.Context, stockId string) error {
 	return nil
 }
 
-
 func (m *Manager) UnsubscribeRelayer(stockId string) error {
 	return m.s.UnstoreStock(stockId)
 }
 
-
 func (m *Manager) IsStockStoreable(stockId string) bool {
 	return m.s.StockExists(stockId)
 }
-
 
 func (m *Manager) InsertStockOnDB(ctx context.Context, stockId string, batch []*vo.StockAggregate) error {
 
@@ -143,11 +137,9 @@ func (m *Manager) InsertStockOnDB(ctx context.Context, stockId string, batch []*
 	return tx.Commit()
 }
 
-
 func (m *Manager) InsertStockOnCache(ctx context.Context, stockId string, batch []*vo.StockAggregate) error {
 	return m.cache.StoreStockBatchOnCache(ctx, stockId, batch)
 }
-
 
 func (m *Manager) SynchronizeCache(ctx context.Context, stockId string) error {
 	stockBatch, err := m.cache.GetAndEmptyCache(ctx, stockId)

@@ -4,24 +4,21 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Goboolean/fetch-server/internal/infrastructure/ws"
-	"github.com/Goboolean/fetch-server/internal/infrastructure/ws/mock"
+	"github.com/Goboolean/fetch-server.v1/internal/infrastructure/ws"
+	"github.com/Goboolean/fetch-server.v1/internal/infrastructure/ws/mock"
 )
 
-
-
 var (
-	count = 0
+	count                = 0
 	receiver ws.Receiver = mock.NewMockReceiver(func() {
 		count++
 	})
 )
 
-
 func Test_SubscribeStockAggs(t *testing.T) {
 
 	const (
-		symbol = "AAPL"
+		symbol      = "AAPL"
 		falseSymbol = "FALSE"
 	)
 
@@ -41,12 +38,12 @@ func Test_SubscribeStockAggs(t *testing.T) {
 		}
 
 		countBeforeSubscription := count
-	
+
 		time.Sleep(time.Second * 2 / 3)
 
 		countAfterSubscription := count
 		diff := countAfterSubscription - countBeforeSubscription
-	
+
 		if diff == 0 {
 			t.Errorf("SubscrbeStockAggs() received %d, want many", diff)
 			return
@@ -67,7 +64,7 @@ func Test_SubscribeStockAggs(t *testing.T) {
 		}
 
 		countBeforeUnsubscription := count
-	
+
 		time.Sleep(time.Second * 2 / 3)
 
 		countAfterUnsubscription := count

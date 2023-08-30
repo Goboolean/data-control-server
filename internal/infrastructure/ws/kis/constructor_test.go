@@ -4,10 +4,10 @@ import (
 	"os"
 	"testing"
 
-	"github.com/Goboolean/fetch-server/internal/infrastructure/ws"
-	"github.com/Goboolean/fetch-server/internal/infrastructure/ws/kis"
-	"github.com/Goboolean/fetch-server/internal/infrastructure/ws/mock"
-	_ "github.com/Goboolean/fetch-server/internal/util/env"
+	"github.com/Goboolean/fetch-server.v1/internal/infrastructure/ws"
+	"github.com/Goboolean/fetch-server.v1/internal/infrastructure/ws/kis"
+	"github.com/Goboolean/fetch-server.v1/internal/infrastructure/ws/mock"
+	_ "github.com/Goboolean/fetch-server.v1/internal/util/env"
 	"github.com/Goboolean/shared/pkg/resolver"
 )
 

@@ -1,8 +1,6 @@
 package mock
 
-import "github.com/Goboolean/fetch-server/internal/infrastructure/ws"
-
-
+import "github.com/Goboolean/fetch-server.v1/internal/infrastructure/ws"
 
 // This class is not for product, but for testing.
 // any test package can use this class to test the function of receiver.

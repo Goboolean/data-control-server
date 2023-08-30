@@ -3,12 +3,9 @@ package cache
 import (
 	"context"
 
-	"github.com/Goboolean/fetch-server/internal/domain/vo"
-	"github.com/Goboolean/fetch-server/internal/domain/port/out"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/port/out"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/vo"
 )
-
-
-
 
 type MockAdapter struct {
 	cache map[string][]*vo.StockAggregate
@@ -23,7 +20,7 @@ func NewMockAdapter() out.StockPersistenceCachePort {
 func (a *MockAdapter) StoreStockOnCache(ctx context.Context, stockId string, stock *vo.StockAggregate) error {
 
 	if _, ok := a.cache[stockId]; !ok {
-		a.cache[stockId] = make([]*vo.StockAggregate, 0)		
+		a.cache[stockId] = make([]*vo.StockAggregate, 0)
 	}
 
 	a.cache[stockId] = append(a.cache[stockId], stock)
@@ -34,7 +31,7 @@ func (a *MockAdapter) StoreStockOnCache(ctx context.Context, stockId string, sto
 func (a *MockAdapter) StoreStockBatchOnCache(ctx context.Context, stockId string, batch []*vo.StockAggregate) error {
 
 	if _, ok := a.cache[stockId]; !ok {
-		a.cache[stockId] = make([]*vo.StockAggregate, 0)		
+		a.cache[stockId] = make([]*vo.StockAggregate, 0)
 	}
 
 	a.cache[stockId] = append(a.cache[stockId], batch...)
@@ -50,11 +47,9 @@ func (a *MockAdapter) GetAndEmptyCache(ctx context.Context, stockId string) ([]*
 	return batch, nil
 }
 
-
-
 func (a *MockAdapter) GetStoredStockCount(stockId string) int {
 	if _, ok := a.cache[stockId]; !ok {
-		a.cache[stockId] = make([]*vo.StockAggregate, 0)		
+		a.cache[stockId] = make([]*vo.StockAggregate, 0)
 	}
 	return len(a.cache[stockId])
 }

@@ -3,10 +3,8 @@ package buycycle
 import (
 	"strconv"
 
-	"github.com/Goboolean/fetch-server/internal/infrastructure/ws"
+	"github.com/Goboolean/fetch-server.v1/internal/infrastructure/ws"
 )
-
-
 
 type HeaderJson struct {
 	Uuid string `json:"uuid"`
@@ -22,11 +20,9 @@ type RequestBodyJson struct {
 }
 
 type RequestJson struct {
-	Header     HeaderJson `json:"header"`
-	Body  RequestBodyJson `json:"body"`
+	Header HeaderJson      `json:"header"`
+	Body   RequestBodyJson `json:"body"`
 }
-
-
 
 type ResponseBodyJson struct {
 	OutBlock []StockDetail `json:"outblock"`
@@ -99,17 +95,17 @@ func (s *StockDetail) ToStockAggsDetail() (*ws.StockAggsDetail, error) {
 	}
 
 	return &ws.StockAggsDetail{
-		Average: avg,
-		Min: min,
-		Max: max,
-		Start: start,
-		End: end,
+		Average:   avg,
+		Min:       min,
+		Max:       max,
+		Start:     start,
+		End:       end,
 		StartTime: startTime,
-		EndTime: endTime,
+		EndTime:   endTime,
 	}, nil
 }
 
 type ResponseJson struct {
-	Header     HeaderJson `json:"header"`
-	Body ResponseBodyJson `json:"body"`
+	Header HeaderJson       `json:"header"`
+	Body   ResponseBodyJson `json:"body"`
 }

@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Goboolean/fetch-server/internal/infrastructure/mongo"
+	"github.com/Goboolean/fetch-server.v1/internal/infrastructure/mongo"
 )
 
 func Test_InsertStockBatch(t *testing.T) {

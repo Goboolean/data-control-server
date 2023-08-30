@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package grpcapi;
 
-option go_package = "github.com/Goboolean/fetch-server/api/grpc;grpcapi";
+option go_package = "github.com/Goboolean/fetch-server.v1/api/grpc;grpcapi";
 
 // defines set of stock configuration control services
 service StockConfigurator {

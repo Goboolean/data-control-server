@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/Goboolean/fetch-server/internal/infrastructure/ws"
+	"github.com/Goboolean/fetch-server.v1/internal/infrastructure/ws"
 	"github.com/Goboolean/shared/pkg/resolver"
 	"github.com/gorilla/websocket"
 )

@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Goboolean/fetch-server/api/model"
-	"github.com/Goboolean/fetch-server/internal/infrastructure/kafka"
+	"github.com/Goboolean/fetch-server.v1/api/model"
+	"github.com/Goboolean/fetch-server.v1/internal/infrastructure/kafka"
 	"github.com/Goboolean/shared/pkg/resolver"
 	"github.com/stretchr/testify/assert"
 )
@@ -62,7 +62,6 @@ func Test_Subscriber(t *testing.T) {
 	})
 }
 
-
 func Test_Subscribe(t *testing.T) {
 
 	var topic = "default-topic"
@@ -110,7 +109,6 @@ func Test_Subscribe(t *testing.T) {
 		}
 	})
 }
-
 
 func Test_SubscribeSameGroup(t *testing.T) {
 

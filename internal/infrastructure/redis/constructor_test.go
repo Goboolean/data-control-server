@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/Goboolean/fetch-server/internal/infrastructure/redis"
-	_ "github.com/Goboolean/fetch-server/internal/util/env"
+	"github.com/Goboolean/fetch-server.v1/internal/infrastructure/redis"
+	_ "github.com/Goboolean/fetch-server.v1/internal/util/env"
 	"github.com/Goboolean/shared/pkg/resolver"
 )
 

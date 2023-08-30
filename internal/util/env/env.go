@@ -10,7 +10,7 @@ import (
 
 // Just import this package to get all the env variables at the root of the project
 // Import this package anonymously as shown below:
-// import _ "github.com/Goboolean/fetch-server/internal/util/env"
+// import _ "github.com/Goboolean/fetch-server.v1/internal/util/env"
 
 func init() {
 	path, err := filepath.Abs(".")

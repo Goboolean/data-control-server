@@ -1,53 +1,48 @@
 package meta
 
 import (
-	"github.com/Goboolean/fetch-server/internal/domain/vo"
-	"github.com/Goboolean/fetch-server/internal/domain/port"
-	"github.com/Goboolean/fetch-server/internal/domain/port/out"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/port"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/port/out"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/vo"
 )
 
-
-
-var data = map[string] vo.StockAggsMeta{
+var data = map[string]vo.StockAggsMeta{
 	"stock.facebook.usa": {
-		StockID: "stock.facebook.usa",
+		StockID:  "stock.facebook.usa",
 		Platform: "mock",
-		Symbol: "FB",
+		Symbol:   "FB",
 	},
 
 	"stock.apple.usa": {
-		StockID: "stock.apple.usa",
+		StockID:  "stock.apple.usa",
 		Platform: "mock",
-		Symbol: "AAPL",
+		Symbol:   "AAPL",
 	},
 
 	"stock.amazon.usa": {
-		StockID: "stock.amazon.usa",
+		StockID:  "stock.amazon.usa",
 		Platform: "mock",
-		Symbol: "AMZN",
+		Symbol:   "AMZN",
 	},
 
 	"stock.netflix.usa": {
-		StockID: "stock.netflix.usa",
+		StockID:  "stock.netflix.usa",
 		Platform: "mock",
-		Symbol: "NFLX",
+		Symbol:   "NFLX",
 	},
 
 	"stock.google.usa": {
-		StockID: "stock.google.usa",
+		StockID:  "stock.google.usa",
 		Platform: "mock",
-		Symbol: "GOOG",
+		Symbol:   "GOOG",
 	},
-
 }
 
-
-type MockAdapter struct {}
+type MockAdapter struct{}
 
 func NewMockAdapter() out.StockMetadataPort {
 	return &MockAdapter{}
 }
-
 
 func (a *MockAdapter) CheckStockExists(tx port.Transactioner, stockId string) (bool, error) {
 	_, ok := data[stockId]

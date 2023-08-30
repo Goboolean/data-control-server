@@ -4,14 +4,14 @@ import (
 	"context"
 	"sync"
 
-	"github.com/Goboolean/fetch-server/internal/domain/vo"
-	"github.com/Goboolean/fetch-server/internal/domain/port"
-	"github.com/Goboolean/fetch-server/internal/domain/port/out"
-	"github.com/Goboolean/fetch-server/internal/domain/service/store"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/port"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/port/out"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/service/store"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/vo"
 )
 
 type Manager struct {
-	s *store.Store
+	s    *store.Store
 	ws   out.RelayerPort
 	meta out.StockMetadataPort
 
@@ -35,17 +35,17 @@ func New(db out.StockPersistencePort, tx port.TX, meta out.StockMetadataPort, ws
 		ctx, cancel := context.WithCancel(context.Background())
 
 		instance = &Manager{
-			s:      store.New(ctx),
-			ws:     ws,
-			meta:   meta,
-			tx:     tx,
+			s:    store.New(ctx),
+			ws:   ws,
+			meta: meta,
+			tx:   tx,
 
-			ctx: 	  ctx,
+			ctx:    ctx,
 			cancel: cancel,
 		}
 
 		instance.pipe = newPipe()
-	  instance.pipe.sinkChan <- &vo.StockAggregateForm{}
+		instance.pipe.sinkChan <- &vo.StockAggregateForm{}
 		instance.pipe.ExecPipe(ctx)
 	})
 

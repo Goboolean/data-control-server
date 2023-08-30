@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/Goboolean/fetch-server/api/model"
+	"github.com/Goboolean/fetch-server.v1/api/model"
 )
 
 var (

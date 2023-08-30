@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package model;
 
-option go_package = "github.com/Goboolean/fetch-server/api/model";
+option go_package = "github.com/Goboolean/fetch-server.v1/api/model";
 
 
 message StockQuote {

@@ -6,21 +6,21 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Goboolean/fetch-server/internal/adapter/broker"
-	"github.com/Goboolean/fetch-server/internal/adapter/meta"
-	"github.com/Goboolean/fetch-server/internal/adapter/persistence"
-	"github.com/Goboolean/fetch-server/internal/adapter/transaction"
-	"github.com/Goboolean/fetch-server/internal/adapter/websocket"
-	"github.com/Goboolean/fetch-server/internal/domain/port/out"
-	"github.com/Goboolean/fetch-server/internal/domain/service/relay"
-	"github.com/Goboolean/fetch-server/internal/domain/service/transmission"
-	"github.com/Goboolean/fetch-server/internal/infrastructure/ws/mock"
+	"github.com/Goboolean/fetch-server.v1/internal/adapter/broker"
+	"github.com/Goboolean/fetch-server.v1/internal/adapter/meta"
+	"github.com/Goboolean/fetch-server.v1/internal/adapter/persistence"
+	"github.com/Goboolean/fetch-server.v1/internal/adapter/transaction"
+	"github.com/Goboolean/fetch-server.v1/internal/adapter/websocket"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/port/out"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/service/relay"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/service/transmission"
+	"github.com/Goboolean/fetch-server.v1/internal/infrastructure/ws/mock"
 )
 
 var (
-	instance       *transmission.Manager
-	kafka          out.TransmissionPort
-	relayer *relay.Manager
+	instance *transmission.Manager
+	kafka    out.TransmissionPort
+	relayer  *relay.Manager
 )
 
 func MockRelayer() *relay.Manager {

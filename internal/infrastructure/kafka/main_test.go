@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Goboolean/fetch-server/internal/infrastructure/kafka"
-	_ "github.com/Goboolean/fetch-server/internal/util/env"
+	"github.com/Goboolean/fetch-server.v1/internal/infrastructure/kafka"
+	_ "github.com/Goboolean/fetch-server.v1/internal/util/env"
 	"github.com/Goboolean/shared/pkg/resolver"
 	"github.com/sirupsen/logrus"
 )
@@ -27,10 +27,10 @@ func SetUp() {
 	// in same package, we need to make sure that topic information does not interrupt the other test.
 
 	const (
-		existingTopic    = "existing-topic" // it is assured to be exist
+		existingTopic    = "existing-topic"     // it is assured to be exist
 		nonExistentTopic = "non-existent-topic" // it is assured to be not exist
-		testTopic        = "test-topic" // it does not exist at first state, and it is assured to be deleted at last state
-		defaultTopic     = "default-topic" // exists at first state, and it is assured to be exist at last state
+		testTopic        = "test-topic"         // it does not exist at first state, and it is assured to be deleted at last state
+		defaultTopic     = "default-topic"      // exists at first state, and it is assured to be exist at last state
 	)
 
 	conf, err := kafka.NewConfigurator(&resolver.ConfigMap{

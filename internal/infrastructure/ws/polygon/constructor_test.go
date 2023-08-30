@@ -6,10 +6,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Goboolean/fetch-server/internal/infrastructure/ws"
-	"github.com/Goboolean/fetch-server/internal/infrastructure/ws/polygon"
-	_ "github.com/Goboolean/fetch-server/internal/util/env"
-	"github.com/Goboolean/fetch-server/internal/util/withintime"
+	"github.com/Goboolean/fetch-server.v1/internal/infrastructure/ws"
+	"github.com/Goboolean/fetch-server.v1/internal/infrastructure/ws/polygon"
+	_ "github.com/Goboolean/fetch-server.v1/internal/util/env"
+	"github.com/Goboolean/fetch-server.v1/internal/util/withintime"
 	"github.com/Goboolean/shared/pkg/resolver"
 )
 

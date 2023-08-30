@@ -3,9 +3,9 @@ package transaction
 import (
 	"context"
 
-	"github.com/Goboolean/fetch-server/internal/domain/port"
-	"github.com/Goboolean/fetch-server/internal/infrastructure/mongo"
-	"github.com/Goboolean/fetch-server/internal/infrastructure/rdbms"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/port"
+	"github.com/Goboolean/fetch-server.v1/internal/infrastructure/mongo"
+	"github.com/Goboolean/fetch-server.v1/internal/infrastructure/rdbms"
 )
 
 type Tx struct {

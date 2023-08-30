@@ -3,8 +3,8 @@ package out
 import (
 	"context"
 
-	"github.com/Goboolean/fetch-server/internal/domain/vo"
-	"github.com/Goboolean/fetch-server/internal/domain/port"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/port"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/vo"
 )
 
 type StockPersistencePort interface {

@@ -3,11 +3,11 @@ package config
 import (
 	"sync"
 
-	"github.com/Goboolean/fetch-server/internal/domain/port"
-	"github.com/Goboolean/fetch-server/internal/domain/port/out"
-	"github.com/Goboolean/fetch-server/internal/domain/service/persistence"
-	"github.com/Goboolean/fetch-server/internal/domain/service/relay"
-	"github.com/Goboolean/fetch-server/internal/domain/service/transmission"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/port"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/port/out"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/service/persistence"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/service/relay"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/service/transmission"
 )
 
 type Manager struct {

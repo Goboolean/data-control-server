@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Goboolean/fetch-server/api/model"
+	"github.com/Goboolean/fetch-server.v1/api/model"
 	"github.com/Goboolean/shared/pkg/resolver"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"google.golang.org/protobuf/proto"
@@ -39,7 +39,7 @@ func NewPublisher(c *resolver.ConfigMap) (*Publisher, error) {
 
 	config := &kafka.ConfigMap{
 		"bootstrap.servers":   address,
-		"acks":                -1,    // 0 if no response is required, 1 if only leader response is required, -1 if all in-sync replicas' response is required
+		"acks":                -1,   // 0 if no response is required, 1 if only leader response is required, -1 if all in-sync replicas' response is required
 		"go.delivery.reports": true, // Delivery reports (on delivery success/failure) will be sent on the Producer.Events() channel
 	}
 
@@ -52,8 +52,6 @@ func NewPublisher(c *resolver.ConfigMap) (*Publisher, error) {
 		producer: producer,
 	}
 
-	
-
 	go func() {
 		instance.wg.Add(1)
 		defer instance.wg.Done()
@@ -65,13 +63,13 @@ func NewPublisher(c *resolver.ConfigMap) (*Publisher, error) {
 					log.WithFields(log.Fields{
 						"topic": *ev.TopicPartition.Topic,
 						"data":  ev.Value,
-						"info":   ev.TopicPartition.Error,
+						"info":  ev.TopicPartition.Error,
 					}).Error(ErrFailedToDeliveryData)
 				} else {
 					log.WithFields(log.Fields{
 						"topic": *ev.TopicPartition.Topic,
 						"data":  ev.Value,
-						"info":   ev.TopicPartition.String(),
+						"info":  ev.TopicPartition.String(),
 					}).Info("data arrived")
 				}
 			}

@@ -3,7 +3,7 @@ package grpc
 import (
 	"fmt"
 
-	pb "github.com/Goboolean/fetch-server/api/grpc"
+	pb "github.com/Goboolean/fetch-server.v1/api/grpc"
 	"github.com/Goboolean/shared/pkg/resolver"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"

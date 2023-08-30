@@ -3,11 +3,9 @@ package redis
 import (
 	"context"
 
-	"github.com/Goboolean/fetch-server/api/model"
+	"github.com/Goboolean/fetch-server.v1/api/model"
 	"google.golang.org/protobuf/proto"
 )
-
-
 
 type Queries struct {
 	db *Redis
@@ -16,8 +14,6 @@ type Queries struct {
 func New(db *Redis) *Queries {
 	return &Queries{db: db}
 }
-
-
 
 func (q *Queries) InsertStockData(ctx context.Context, stockId string, stockItem *model.StockAggregate) error {
 
@@ -31,13 +27,10 @@ func (q *Queries) InsertStockData(ctx context.Context, stockId string, stockItem
 	return result.Err()
 }
 
-
 func (q *Queries) GetStockBatchStoredLength(ctx context.Context, stockId string) (int, error) {
 	result := q.db.client.LLen(ctx, stockId)
 	return int(result.Val()), result.Err()
 }
-
-
 
 func (q *Queries) InsertStockDataBatch(ctx context.Context, stock string, stockBatch []*model.StockAggregate) error {
 
@@ -55,7 +48,6 @@ func (q *Queries) InsertStockDataBatch(ctx context.Context, stock string, stockB
 
 	return q.db.client.RPush(ctx, stock, dataBatch...).Err()
 }
-
 
 func (q *Queries) GetAndEmptyCache(ctx context.Context, stockId string) ([]*model.StockAggregate, error) {
 

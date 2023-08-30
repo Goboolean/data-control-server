@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net"
 
-	api "github.com/Goboolean/fetch-server/api/grpc"
+	api "github.com/Goboolean/fetch-server.v1/api/grpc"
 	"github.com/Goboolean/shared/pkg/resolver"
 	"google.golang.org/grpc"
 )

@@ -6,27 +6,25 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Goboolean/fetch-server/internal/domain/vo"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/vo"
 )
 
 const DEFAULT_BUFFER_SIZE = 10
-
 
 type pipe struct {
 	sinkChan          chan *vo.StockAggregateForm
 	filteredChan      chan *vo.StockAggregateForm
 	classifiedChanMap map[string]chan *vo.StockAggregate
 
-	connPool map[string] map[int64] conn
+	connPool map[string]map[int64]conn
 
 	wg *sync.WaitGroup
 }
 
-
 type conn struct {
-	ctx context.Context
+	ctx    context.Context
 	cancel context.CancelFunc
-	ch chan *vo.StockAggregate
+	ch     chan *vo.StockAggregate
 }
 
 func newConn(ctx context.Context) conn {
@@ -38,11 +36,9 @@ func newConn(ctx context.Context) conn {
 	}
 }
 
-
 func (p *pipe) getHash() int64 {
 	return time.Now().UnixNano()
 }
-
 
 func (p *pipe) RegisterNewSubscriber(ctx context.Context, stockId string) (<-chan *vo.StockAggregate, error) {
 
@@ -55,11 +51,11 @@ func (p *pipe) RegisterNewSubscriber(ctx context.Context, stockId string) (<-cha
 	hash := p.getHash()
 
 	p.connPool[stockId][hash] = conn
-	
+
 	go func(ctx context.Context) {
 		for {
 			select {
-			case <- ctx.Done():
+			case <-ctx.Done():
 				delete(p.connPool[stockId], hash)
 				close(conn.ch)
 				return
@@ -69,8 +65,6 @@ func (p *pipe) RegisterNewSubscriber(ctx context.Context, stockId string) (<-cha
 
 	return conn.ch, nil
 }
-
-
 
 // This method should be executed as goroutine
 // It is assured to terminate when channel is closed
@@ -93,14 +87,13 @@ func (p *pipe) classifyStock(in <-chan *vo.StockAggregateForm, out map[string]ch
 
 // This method should be executed as goroutine
 // It is assured to terminate when channel is closed
-func (p *pipe) relayStockToSubscriber(in <-chan *vo.StockAggregate, out map[int64] conn) {
+func (p *pipe) relayStockToSubscriber(in <-chan *vo.StockAggregate, out map[int64]conn) {
 	for stock := range in {
 		for sub := range out {
 			out[sub].ch <- stock
 		}
 	}
 }
-
 
 func newPipe() *pipe {
 	return &pipe{
@@ -111,7 +104,6 @@ func newPipe() *pipe {
 	}
 }
 
-
 // Run as goroutine, and control lifeccle with ctx.
 func (p *pipe) ExecPipe(ctx context.Context) {
 
@@ -121,7 +113,7 @@ func (p *pipe) ExecPipe(ctx context.Context) {
 
 func (p *pipe) AddNewPipe(stock string) {
 	p.classifiedChanMap[stock] = make(chan *vo.StockAggregate, DEFAULT_BUFFER_SIZE)
-	p.connPool[stock] = make(map[int64] conn)
+	p.connPool[stock] = make(map[int64]conn)
 	go p.relayStockToSubscriber(p.classifiedChanMap[stock], p.connPool[stock])
 }
 

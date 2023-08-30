@@ -3,10 +3,10 @@ package cache
 import (
 	"context"
 
-	"github.com/Goboolean/fetch-server/api/model"
-	"github.com/Goboolean/fetch-server/internal/domain/port/out"
-	"github.com/Goboolean/fetch-server/internal/domain/vo"
-	"github.com/Goboolean/fetch-server/internal/infrastructure/redis"
+	"github.com/Goboolean/fetch-server.v1/api/model"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/port/out"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/vo"
+	"github.com/Goboolean/fetch-server.v1/internal/infrastructure/redis"
 )
 
 type Adapter struct {
@@ -38,7 +38,7 @@ func (a *Adapter) StoreStockBatchOnCache(ctx context.Context, stockId string, st
 	for _, stock := range stockBatch {
 		dtos = append(dtos, &model.StockAggregate{
 			EventType: stock.EventType,
-			Open: 	stock.Open,
+			Open:      stock.Open,
 			Min:       stock.Min,
 			Max:       stock.Max,
 			StartTime: stock.Time,

@@ -6,10 +6,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Goboolean/fetch-server/cmd/inject"
-	"github.com/Goboolean/fetch-server/internal/adapter/websocket"
-	"github.com/Goboolean/fetch-server/internal/domain/service/relay"
-	"github.com/Goboolean/fetch-server/internal/infrastructure/ws/mock"
+	"github.com/Goboolean/fetch-server.v1/cmd/inject"
+	"github.com/Goboolean/fetch-server.v1/internal/adapter/websocket"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/service/relay"
+	"github.com/Goboolean/fetch-server.v1/internal/infrastructure/ws/mock"
 )
 
 var instance *relay.Manager
@@ -17,7 +17,7 @@ var instance *relay.Manager
 func SetUp() {
 	var err error
 	ws := websocket.NewMockAdapter().(*websocket.MockAdapter)
-	f := mock.New(time.Millisecond * 10, ws)
+	f := mock.New(time.Millisecond*10, ws)
 
 	instance, err = inject.InitMockRelayer(ws)
 	if err != nil {
@@ -40,8 +40,6 @@ func TestMain(m *testing.M) {
 	TearDown()
 	os.Exit(code)
 }
-
-
 
 func Test_FetchStock(t *testing.T) {
 
@@ -92,7 +90,7 @@ func Test_FetchStock(t *testing.T) {
 			t.Errorf("StopFetchingStock() = %v", err)
 			return
 		}
-	
+
 		if relayable := instance.IsStockRelayable(stockId); relayable {
 			t.Errorf("IsStockRelayable() = %v, = %v", relayable, false)
 			return
@@ -101,11 +99,9 @@ func Test_FetchStock(t *testing.T) {
 
 }
 
-
 func Test_Subscribe(t *testing.T) {
 
 	var stockId = "stock.apple.usa"
-
 
 	var count = 0
 	ctx, cancel := context.WithCancel(context.Background())
@@ -137,12 +133,11 @@ func Test_Subscribe(t *testing.T) {
 
 		time.Sleep(time.Millisecond * 100)
 
-		if (count <= 5) {
+		if count <= 5 {
 			t.Errorf("Subscribe() = %v, want many", count)
 			return
 		}
 	})
-
 
 	t.Run("Unsubscribe", func(t *testing.T) {
 		cancel()
@@ -155,7 +150,6 @@ func Test_Subscribe(t *testing.T) {
 			return
 		}
 	})
-
 
 	t.Run("SubscribeMultiple", func(t *testing.T) {
 
@@ -185,7 +179,7 @@ func Test_Subscribe(t *testing.T) {
 	})
 
 	t.Run("SubscribeBeforeFetching", func(t *testing.T) {
-		
+
 		_, err := instance.Subscribe(context.Background(), "stock.tesla.usa")
 		if err != relay.ErrStockNotExists {
 			t.Errorf("Subscribe() error = %v, wantErr %v", err, relay.ErrStockNotExists)

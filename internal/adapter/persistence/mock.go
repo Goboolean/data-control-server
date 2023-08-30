@@ -3,13 +3,10 @@ package persistence
 import (
 	"context"
 
-	"github.com/Goboolean/fetch-server/internal/domain/vo"
-	"github.com/Goboolean/fetch-server/internal/domain/port"
-	"github.com/Goboolean/fetch-server/internal/domain/port/out"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/port"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/port/out"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/vo"
 )
-
-
-
 
 type MockAdapter struct {
 	db map[string]int
@@ -18,7 +15,6 @@ type MockAdapter struct {
 func NewMockAdapter() out.StockPersistencePort {
 	return &MockAdapter{db: make(map[string]int)}
 }
-
 
 func (a *MockAdapter) StoreStock(tx port.Transactioner, stockId string, agg *vo.StockAggregate) error {
 	if _, ok := a.db[stockId]; !ok {
@@ -48,14 +44,12 @@ func (a *MockAdapter) CreateStoringStoppedLog(context.Context, string) error {
 	return nil
 }
 
-
 func (a *MockAdapter) GetStoredStockCount(stockId string) int {
 	if _, ok := a.db[stockId]; !ok {
 		a.db[stockId] = 0
 	}
 	return a.db[stockId]
 }
-
 
 func (a *MockAdapter) Clear() {
 	for k := range a.db {

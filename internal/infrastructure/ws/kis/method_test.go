@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Goboolean/fetch-server/internal/infrastructure/ws/kis"
+	"github.com/Goboolean/fetch-server.v1/internal/infrastructure/ws/kis"
 )
 
 func Test_Method(t *testing.T) {

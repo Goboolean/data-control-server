@@ -7,14 +7,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Goboolean/fetch-server/api/model"
-	"github.com/Goboolean/fetch-server/internal/infrastructure/kafka"
+	"github.com/Goboolean/fetch-server.v1/api/model"
+	"github.com/Goboolean/fetch-server.v1/internal/infrastructure/kafka"
 	"github.com/Goboolean/shared/pkg/resolver"
 	"github.com/stretchr/testify/assert"
 )
 
 var (
-	pub  *kafka.Publisher
+	pub *kafka.Publisher
 )
 
 func SetupPublisher() {

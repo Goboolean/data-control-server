@@ -3,7 +3,7 @@ package config
 import (
 	"context"
 
-	"github.com/Goboolean/fetch-server/internal/domain/vo"
+	"github.com/Goboolean/fetch-server.v1/internal/domain/vo"
 )
 
 func (m *Manager) SetStockRelayableTrue(ctx context.Context, stockId string) error {
@@ -30,7 +30,6 @@ func (m *Manager) SetStockTransmittableFalse(ctx context.Context, stockId string
 	return m.transmitter.UnsubscribeRelayer(stockId)
 }
 
-
 func (m *Manager) GetStockConfiguration(ctx context.Context, stockId string) (vo.StockConfiguration, error) {
 
 	tx, err := m.tx.Transaction(context.Background())
@@ -50,16 +49,15 @@ func (m *Manager) GetStockConfiguration(ctx context.Context, stockId string) (vo
 	// check stock exist
 	// reflect stock info to vo
 
-
 	if err := tx.Commit(); err != nil {
 		return vo.StockConfiguration{}, err
 	}
 
 	if isRelayable := m.relayer.IsStockRelayable(stockId); !isRelayable {
 		return vo.StockConfiguration{
-			StockId: stockId,
-			Relayable: false,
-			Storeable: false,
+			StockId:       stockId,
+			Relayable:     false,
+			Storeable:     false,
 			Transmittable: false,
 		}, nil
 	}
@@ -68,13 +66,12 @@ func (m *Manager) GetStockConfiguration(ctx context.Context, stockId string) (vo
 	isTransmittable := m.transmitter.IsStockTransmittable(stockId)
 
 	return vo.StockConfiguration{
-		StockId: stockId,
-		Relayable: true,
-		Storeable: isStoreable,
+		StockId:       stockId,
+		Relayable:     true,
+		Storeable:     isStoreable,
 		Transmittable: isTransmittable,
 	}, nil
 }
-
 
 func (m *Manager) GetAllStockConfiguration(ctx context.Context) ([]vo.StockConfiguration, error) {
 
@@ -93,7 +90,7 @@ func (m *Manager) GetAllStockConfiguration(ctx context.Context) ([]vo.StockConfi
 
 	for _, meta := range metaList {
 		stockId := meta.StockID
-		
+
 		if !m.relayer.IsStockRelayable(stockId) {
 			continue
 		}
@@ -102,9 +99,9 @@ func (m *Manager) GetAllStockConfiguration(ctx context.Context) ([]vo.StockConfi
 		isTransmittable := m.transmitter.IsStockTransmittable(stockId)
 
 		conf := vo.StockConfiguration{
-			StockId: stockId,
-			Relayable: true,
-			Storeable: isStoreable,
+			StockId:       stockId,
+			Relayable:     true,
+			Storeable:     isStoreable,
 			Transmittable: isTransmittable,
 		}
 

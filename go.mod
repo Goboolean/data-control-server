@@ -1,4 +1,4 @@
-module github.com/Goboolean/fetch-server
+module github.com/Goboolean/fetch-server.v1
 
 go 1.18
 
