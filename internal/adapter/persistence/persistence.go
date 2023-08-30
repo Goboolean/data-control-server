@@ -25,14 +25,11 @@ func NewAdapter(rdbms *rdbms.Queries, mongo *mongo.Queries) out.StockPersistence
 
 func (a *Adapter) StoreStock(tx port.Transactioner, stockId string, agg *vo.StockAggregate) error {
 	dto := &mongo.StockAggregate{
-		EventType: agg.EventType,
-		Avg:       agg.Average,
-		Min:       agg.Min,
-		Max:       agg.Max,
-		Start:     agg.Start,
-		End:       agg.End,
-		StartTime: agg.StartTime,
-		EndTime:   agg.EndTime,
+		Min:    agg.Min,
+		Max:    agg.Max,
+		Open:   agg.Open,
+		Closed: agg.Closed,
+		Time:   agg.Time,
 	}
 
 	if err := a.mongo.InsertStockBatch(tx.(*mongo.Transaction), stockId, []*mongo.StockAggregate{dto}); err != nil {
@@ -48,14 +45,11 @@ func (a *Adapter) StoreStockBatch(tx port.Transactioner, stockId string, aggs []
 
 	for _, agg := range aggs {
 		dtos = append(dtos, &mongo.StockAggregate{
-			EventType: agg.EventType,
-			Avg:       agg.Average,
-			Min:       agg.Min,
-			Max:       agg.Max,
-			Start:     agg.Start,
-			End:       agg.End,
-			StartTime: agg.StartTime,
-			EndTime:   agg.EndTime,
+			Min:    agg.Min,
+			Max:    agg.Max,
+			Open:   agg.Open,
+			Closed: agg.Closed,
+			Time:   agg.Time,
 		})
 	}
 

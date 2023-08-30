@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Goboolean/fetch-server/api/model"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/kafka"
 	"github.com/Goboolean/shared/pkg/resolver"
 	"github.com/stretchr/testify/assert"
@@ -14,20 +15,20 @@ import (
 var sub *kafka.Subscriber
 
 type SubscribeListenerImpl struct {
-	ch chan<- *kafka.StockAggregate
+	ch chan<- *model.StockAggregate
 }
 
-func (i *SubscribeListenerImpl) OnReceiveStockAggs(name string, data *kafka.StockAggregate) {
+func (i *SubscribeListenerImpl) OnReceiveStockAggs(name string, data *model.StockAggregate) {
 	i.ch <- data
 }
 
-func NewSubscribeListener(ch chan *kafka.StockAggregate) *SubscribeListenerImpl {
+func NewSubscribeListener(ch chan *model.StockAggregate) *SubscribeListenerImpl {
 	return &SubscribeListenerImpl{
 		ch: ch,
 	}
 }
 
-var received = make(chan *kafka.StockAggregate, 10)
+var received = make(chan *model.StockAggregate, 10)
 
 func SetupSubscriber() {
 	var err error
@@ -36,6 +37,7 @@ func SetupSubscriber() {
 		"HOST":  os.Getenv("KAFKA_HOST"),
 		"PORT":  os.Getenv("KAFKA_PORT"),
 		"GROUP": "test",
+		"DEBUG": true,
 	}, NewSubscribeListener(received))
 	if err != nil {
 		panic(err)
@@ -60,9 +62,12 @@ func Test_Subscriber(t *testing.T) {
 	})
 }
 
+
 func Test_Subscribe(t *testing.T) {
 
-	var topic = "test-topic"
+	var topic = "default-topic"
+
+	var data = &model.StockAggregate{Min: 1.0, Max: 1.0}
 
 	SetupSubscriber()
 	SetupPublisher()
@@ -79,17 +84,33 @@ func Test_Subscribe(t *testing.T) {
 		err := sub.Subscribe(topic)
 		assert.NoError(t, err)
 
-		err = pub.SendData(topic, &kafka.StockAggregate{})
+		err = pub.SendData(topic, data)
 		assert.NoError(t, err)
 
 		select {
-		case <-time.After(3 * time.Second):
+		case <-time.After(time.Second * 16 / 2):
+			assert.Fail(t, "timeout")
+		case <-received:
+			return
+		}
+	})
+
+	t.Run("ReceiveBeforeSubscribed", func(t *testing.T) {
+		err := pub.SendData(topic, data)
+		assert.NoError(t, err)
+
+		err = sub.Subscribe(topic)
+		assert.NoError(t, err)
+
+		select {
+		case <-time.After(1 * time.Second):
 			assert.Fail(t, "timeout")
 		case <-received:
 			return
 		}
 	})
 }
+
 
 func Test_SubscribeSameGroup(t *testing.T) {
 
@@ -99,7 +120,7 @@ func Test_SubscribeSameGroup(t *testing.T) {
 	SetupPublisher()
 	defer TeardownPublisher()
 
-	chanA1 := make(chan *kafka.StockAggregate)
+	chanA1 := make(chan *model.StockAggregate)
 	subA1, err := kafka.NewSubscriber(&resolver.ConfigMap{
 		"HOST":  os.Getenv("KAFKA_HOST"),
 		"PORT":  os.Getenv("KAFKA_PORT"),
@@ -110,7 +131,7 @@ func Test_SubscribeSameGroup(t *testing.T) {
 	}
 	defer subA1.Close()
 
-	chanA2 := make(chan *kafka.StockAggregate)
+	chanA2 := make(chan *model.StockAggregate)
 	subA2, err := kafka.NewSubscriber(&resolver.ConfigMap{
 		"HOST":  os.Getenv("KAFKA_HOST"),
 		"PORT":  os.Getenv("KAFKA_PORT"),
@@ -129,7 +150,7 @@ func Test_SubscribeSameGroup(t *testing.T) {
 		assert.NoError(t, err)
 
 		for i := 0; i < count; i++ {
-			err := pub.SendData(topic, &kafka.StockAggregate{})
+			err := pub.SendData(topic, &model.StockAggregate{})
 			assert.NoError(t, err)
 		}
 
@@ -161,7 +182,7 @@ func Test_SubscribeDifferentGroup(t *testing.T) {
 	var topic = "test-topic"
 	var count = 5
 
-	chanA := make(chan *kafka.StockAggregate)
+	chanA := make(chan *model.StockAggregate)
 	subA, err := kafka.NewSubscriber(&resolver.ConfigMap{
 		"HOST":  os.Getenv("KAFKA_HOST"),
 		"PORT":  os.Getenv("KAFKA_PORT"),
@@ -172,7 +193,7 @@ func Test_SubscribeDifferentGroup(t *testing.T) {
 	}
 	defer subA.Close()
 
-	chanB := make(chan *kafka.StockAggregate)
+	chanB := make(chan *model.StockAggregate)
 	subB, err := kafka.NewSubscriber(&resolver.ConfigMap{
 		"HOST":  os.Getenv("KAFKA_HOST"),
 		"PORT":  os.Getenv("KAFKA_PORT"),
@@ -191,7 +212,7 @@ func Test_SubscribeDifferentGroup(t *testing.T) {
 		assert.NoError(t, err)
 
 		for i := 0; i < count; i++ {
-			err := pub.SendData(topic, &kafka.StockAggregate{})
+			err := pub.SendData(topic, &model.StockAggregate{})
 			assert.NoError(t, err)
 		}
 

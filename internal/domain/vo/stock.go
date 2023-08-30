@@ -4,13 +4,12 @@ package vo
 
 type StockAggregate struct {
 	EventType string
-	Average   float64
-	Min       float64
+	Time      int64
+	Open      float64
+	Closed    float64
 	Max       float64
-	Start     float64
-	End       float64
-	StartTime int64
-	EndTime   int64
+	Min       float64
+	Volume	  float64
 }
 
 type StockAggsMeta struct {

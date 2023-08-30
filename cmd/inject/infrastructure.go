@@ -10,6 +10,7 @@ import (
 
 	"github.com/Goboolean/fetch-server/internal/domain/port/in"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/grpc"
+	"github.com/Goboolean/fetch-server/internal/infrastructure/kafka"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/mongo"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/rdbms"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/redis"
@@ -19,7 +20,6 @@ import (
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws/mock"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws/polygon"
 	"github.com/Goboolean/fetch-server/internal/util/prometheus"
-	"github.com/Goboolean/shared/pkg/broker"
 	"github.com/Goboolean/shared/pkg/resolver"
 	"github.com/google/wire"
 )
@@ -112,9 +112,9 @@ var PsqlSet = wire.NewSet(
 
 var KafkaSet = wire.NewSet(
 	provideKafkaArgs,
-	broker.NewConfigurator,
-	broker.NewPublisher,
-	broker.NewSubscriber,
+	kafka.NewConfigurator,
+	kafka.NewPublisher,
+	kafka.NewSubscriber,
 )
 
 var RedisSet = wire.NewSet(
@@ -164,14 +164,14 @@ func InitRedis() (*redis.Redis, error) {
 	return &redis.Redis{}, nil
 }
 
-func InitKafkaConfigurator() (*broker.Configurator, error) {
+func InitKafkaConfigurator() (*kafka.Configurator, error) {
 	wire.Build(KafkaSet)
-	return &broker.Configurator{}, nil
+	return &kafka.Configurator{}, nil
 }
 
-func InitKafkaPublisher() (*broker.Publisher, error) {
+func InitKafkaPublisher() (*kafka.Publisher, error) {
 	wire.Build(KafkaSet)
-	return &broker.Publisher{}, nil
+	return &kafka.Publisher{}, nil
 }
 
 func InitGrpc(in.ConfiguratorPort) (*grpc.Host, error) {

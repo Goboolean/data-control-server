@@ -34,8 +34,10 @@ GRPC_GEN_PATH = .
 
 grpc-generate:
 	protoc \
-		--go_out=${GRPC_GEN_PATH}  --go_opt=paths=source_relative \
-		--go-grpc_out=$(GRPC_GEN_PATH) --go-grpc_opt=paths=source_relative \
+		--go_out=${GRPC_GEN_PATH} \
+		--go_opt=paths=source_relative \
+		--go-grpc_out=$(GRPC_GEN_PATH) \
+		--go-grpc_opt=paths=source_relative \
     ${GRPC_PROTO_PATH}	
 
 REDIS_MODEL_PROTO_PATH = ./api/redis-model/model.proto
@@ -43,11 +45,10 @@ REDIS_MODEL_GEN_PATH = ./internal/infrastructure/redis
 
 proto-generate:
 	protoc \
-		--go_out=$(REDIS_MODEL_GEN_PATH) \
+		--go_out=. \
 		--go_opt=paths=source_relative \
-		$(REDIS_MODEL_PROTO_PATH)
-	mv $(REDIS_MODEL_GEN_PATH)/api/redis-model/model.pb.go $(REDIS_MODEL_GEN_PATH)
-	rm -rf $(REDIS_MODEL_GEN_PATH)/api
+	./api/model/model.proto
+
 
 wire-generate:
 	wire cmd/inject/infrastructure.go cmd/inject/service.go

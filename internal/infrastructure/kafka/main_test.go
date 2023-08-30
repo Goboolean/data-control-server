@@ -22,11 +22,15 @@ import (
 
 func SetUp() {
 
+	// Topic Policy:
+	// As many services(configurator, publisher, subscriber) and many tests
+	// in same package, we need to make sure that topic information does not interrupt the other test.
+
 	const (
-		existingTopic    = "existing-topic" // this code is assured
-		nonExistentTopic = "non-existent-topic"
-		testTopic        = "test-topic"
-		defaultTopic     = "default-topic"
+		existingTopic    = "existing-topic" // it is assured to be exist
+		nonExistentTopic = "non-existent-topic" // it is assured to be not exist
+		testTopic        = "test-topic" // it does not exist at first state, and it is assured to be deleted at last state
+		defaultTopic     = "default-topic" // exists at first state, and it is assured to be exist at last state
 	)
 
 	conf, err := kafka.NewConfigurator(&resolver.ConfigMap{
@@ -89,6 +93,7 @@ func SetUp() {
 			panic(err)
 		}
 	}
+
 }
 
 func TestMain(m *testing.M) {

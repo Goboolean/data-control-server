@@ -3,11 +3,11 @@ package kis
 import (
 	"bytes"
 	"errors"
+	"io"
 	"log"
 	"time"
 
 	"encoding/json"
-	"io/ioutil"
 	"net/http"
 )
 
@@ -29,7 +29,7 @@ func (s *Subscriber) GetApprovalKey(Appkey string, Secretkey string) (string, er
 	}
 	defer response.Body.Close()
 
-	body, err := ioutil.ReadAll(response.Body)
+	body, err := io.ReadAll(response.Body)
 	if err != nil {
 		return "", err
 	}

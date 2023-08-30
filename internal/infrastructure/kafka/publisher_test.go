@@ -2,10 +2,12 @@ package kafka_test
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"testing"
 	"time"
 
+	"github.com/Goboolean/fetch-server/api/model"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/kafka"
 	"github.com/Goboolean/shared/pkg/resolver"
 	"github.com/stretchr/testify/assert"
@@ -13,7 +15,6 @@ import (
 
 var (
 	pub  *kafka.Publisher
-	data = &kafka.StockAggregate{}
 )
 
 func SetupPublisher() {
@@ -34,6 +35,8 @@ func TeardownPublisher() {
 
 func TestPublisher(t *testing.T) {
 
+	fmt.Println("do not cache")
+
 	SetupPublisher()
 	defer TeardownPublisher()
 
@@ -48,8 +51,16 @@ func TestPublisher(t *testing.T) {
 }
 
 func Test_SendData(t *testing.T) {
+	fmt.Println("do not cache plzzzz")
 
 	const topic = "default-topic"
+
+	var data = &model.StockAggregate{Min: 1.0, Max: 1.0}
+	var dataBatch = []*model.StockAggregate{
+		{Min: 1.1, Max: 1.2},
+		{Min: 1.3, Max: 1.4},
+		{Min: 1.5, Max: 1.6},
+	}
 
 	SetupPublisher()
 	defer TeardownPublisher()
@@ -66,10 +77,6 @@ func Test_SendData(t *testing.T) {
 	})
 
 	t.Run("SendDataBatch", func(t *testing.T) {
-		var dataBatch = []*kafka.StockAggregate{
-			{}, {}, {},
-		}
-
 		err := pub.SendDataBatch(topic, dataBatch)
 		assert.NoError(t, err)
 	})

@@ -11,9 +11,9 @@ import (
 	persistence_adapter "github.com/Goboolean/fetch-server/internal/adapter/persistence"
 	"github.com/Goboolean/fetch-server/internal/adapter/transaction"
 	"github.com/Goboolean/fetch-server/internal/adapter/websocket"
+	"github.com/Goboolean/fetch-server/internal/infrastructure/kafka"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/mongo"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/rdbms"
-	"github.com/Goboolean/shared/pkg/broker"
 
 	"github.com/Goboolean/fetch-server/internal/domain/port"
 	"github.com/Goboolean/fetch-server/internal/domain/port/in"
@@ -87,7 +87,7 @@ func InitRelayer(port.TX, *mongo.Queries, *rdbms.Queries, out.RelayerPort) (*rel
 	return &relay.Manager{}, nil
 }
 
-func InitTransmitter(port.TX, transmission.Option, *broker.Configurator, *broker.Publisher, *relay.Manager) (*transmission.Manager, error) {
+func InitTransmitter(port.TX, transmission.Option, *kafka.Configurator, *kafka.Publisher, *relay.Manager) (*transmission.Manager, error) {
 	wire.Build(AdapterSet, transmission.New)
 	return &transmission.Manager{}, nil
 }

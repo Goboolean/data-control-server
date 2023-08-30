@@ -6,6 +6,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Goboolean/fetch-server/api/model"
 	"github.com/Goboolean/shared/pkg/resolver"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"google.golang.org/protobuf/proto"
@@ -38,7 +39,7 @@ func NewPublisher(c *resolver.ConfigMap) (*Publisher, error) {
 
 	config := &kafka.ConfigMap{
 		"bootstrap.servers":   address,
-		"acks":                0,    // 0 if no response is required, 1 if only leader response is required, -1 if all in-sync replicas' response is required
+		"acks":                -1,    // 0 if no response is required, 1 if only leader response is required, -1 if all in-sync replicas' response is required
 		"go.delivery.reports": true, // Delivery reports (on delivery success/failure) will be sent on the Producer.Events() channel
 	}
 
@@ -51,6 +52,8 @@ func NewPublisher(c *resolver.ConfigMap) (*Publisher, error) {
 		producer: producer,
 	}
 
+	
+
 	go func() {
 		instance.wg.Add(1)
 		defer instance.wg.Done()
@@ -60,10 +63,16 @@ func NewPublisher(c *resolver.ConfigMap) (*Publisher, error) {
 			case *kafka.Message:
 				if ev.TopicPartition.Error != nil {
 					log.WithFields(log.Fields{
-						"topic": &ev.TopicPartition.Topic,
+						"topic": *ev.TopicPartition.Topic,
 						"data":  ev.Value,
-						"msg":   ev.TopicPartition.Error,
+						"info":   ev.TopicPartition.Error,
 					}).Error(ErrFailedToDeliveryData)
+				} else {
+					log.WithFields(log.Fields{
+						"topic": *ev.TopicPartition.Topic,
+						"data":  ev.Value,
+						"info":   ev.TopicPartition.String(),
+					}).Info("data arrived")
 				}
 			}
 		}
@@ -96,7 +105,7 @@ func (p *Publisher) Ping(ctx context.Context) error {
 	return err
 }
 
-func (p *Publisher) SendData(topic string, data *StockAggregate) error {
+func (p *Publisher) SendData(topic string, data *model.StockAggregate) error {
 
 	topic = prefix + topic
 
@@ -113,12 +122,16 @@ func (p *Publisher) SendData(topic string, data *StockAggregate) error {
 		return err
 	}
 
+	//if left := p.producer.Flush(1); left != 0 {
+	//	return fmt.Errorf("failed to flush all data, %d messages left", left)
+	//}
+
 	log.WithField("topic", topic).Debug("data sent")
 
 	return nil
 }
 
-func (p *Publisher) SendDataBatch(topic string, batch []*StockAggregate) error {
+func (p *Publisher) SendDataBatch(topic string, batch []*model.StockAggregate) error {
 
 	topic = prefix + topic
 
