@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/Goboolean/fetch-server/internal/domain/port"
+	"github.com/Goboolean/fetch-server/internal/infrastructure/mongo"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/rdbms"
-	"github.com/Goboolean/shared/pkg/mongo"
 )
 
 type Tx struct {

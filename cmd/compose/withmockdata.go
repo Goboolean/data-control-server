@@ -10,10 +10,10 @@ import (
 	"github.com/Goboolean/fetch-server/cmd/inject"
 	"github.com/Goboolean/fetch-server/internal/domain/service/persistence"
 	"github.com/Goboolean/fetch-server/internal/domain/service/transmission"
+	"github.com/Goboolean/fetch-server/internal/infrastructure/mongo"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/rdbms"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/redis"
 	"github.com/Goboolean/fetch-server/internal/infrastructure/ws/mock"
-	"github.com/Goboolean/shared/pkg/mongo"
 	"github.com/joho/godotenv"
 )
 
